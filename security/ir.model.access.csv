@@ -1,0 +1,14 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_is_centrale,access_is_centrale,model_is_centrale,base.group_user,1,0,0,0
+access_is_centrale_manager,access_is_centrale_manager,model_is_centrale,project.group_project_manager,1,1,1,1
+
+access_is_famille,access_is_famille,model_is_famille,base.group_user,1,0,0,0
+access_is_famille_manager,access_is_famille_manager,model_is_famille,project.group_project_manager,1,1,1,1
+
+access_is_sav,access_is_sav,model_is_sav,base.group_user,1,0,0,0
+access_is_sav_manager,access_is_sav_manager,model_is_sav,project.group_project_manager,1,1,1,1
+
+
+access_is_centrale_panneau,access_is_centrale_panneau,model_is_centrale_panneau,base.group_user,1,1,1,1
+access_is_centrale_onduleur,access_is_centrale_onduleur,model_is_centrale_onduleur,base.group_user,1,1,1,1
+access_is_centrale_coffret,access_is_centrale_coffret,model_is_centrale_coffret,base.group_user,1,1,1,1

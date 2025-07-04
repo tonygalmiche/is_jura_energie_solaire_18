@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="is_sav_list_view" model="ir.ui.view">
+        <field name="name">is.sav.list</field>
+        <field name="model">is.sav</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"            optional="show"/>
+                <field name="centrale_id"     optional="show" widget="many2one_clickable"/>
+                <field name="date_demande"    optional="show"/>
+                <field name="degre_urgence"   optional="show"  widget="badge"
+                    decoration-info="degre_urgence == 'non_urgent'"
+                    decoration-warning="degre_urgence == 'inter'"
+                    decoration-danger="degre_urgence == 'urgent'"
+                />
+                <field name="date_resolution" optional="show"/>
+                <field name="intervenant_id"  optional="show" widget="many2one_clickable"/>
+                <field name="ticket_number"   optional="show"/>
+                <field name="description"     optional="show"/>
+                <field name="info_depannage"  optional="show"/>
+                <field name="state"           optional="show"  widget="badge"
+                    decoration-info="state == 'pas_commence'"
+                    decoration-warning="state in ('en_cours','en_etude')"
+                    decoration-danger="state == 'planifie'"
+                    decoration-success="state == 'termine'"
+                />
+            </list>
+        </field>
+    </record>
+
+    <record id="is_sav_form_view" model="ir.ui.view">
+        <field name="name">is.sav.form</field>
+        <field name="model">is.sav</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="state" widget="statusbar" options="{'clickable': '1'}"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="centrale_id"/>
+                            <field name="date_demande"/>
+                            <field name="degre_urgence"/>
+                            <field name="date_resolution"/>
+                        </group>
+                        <group>
+                            <field name="intervenant_id"/>
+                            <field name="ticket_number"/>
+                            <field name="description"/>
+                            <field name="info_depannage"/>
+                        </group>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="is_sav_search_view" model="ir.ui.view">
+        <field name="name">is.sav.search</field>
+        <field name="model">is.sav</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="centrale_id"/>
+                <field name="date_demande"/>
+                <field name="state"/>
+                <filter string="Pas commencé" name="pas_commence" domain="[('state','=','pas_commence')]"/>
+                <filter string="En Cours"     name="en_cours" domain="[('state','=','en_cours')]"/>
+                <filter string="Terminé"      name="termine" domain="[('state','=','termine')]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="is_sav_action" model="ir.actions.act_window">
+        <field name="name">SAV</field>
+        <field name="res_model">is.sav</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

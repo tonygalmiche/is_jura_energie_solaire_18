@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="is_edit_project" model="ir.ui.view">
+        <field name="name">is_edit_project</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.edit_project"/>
+        <field name="arch" type="xml">
+            <page name="description" position="before">
+                <page string="CRM">
+                    <group>
+                        <group>
+                            <field name="is_das"/>
+                            <field name="is_origine"/>
+                            <field name="is_charge_affaire_id"/>
+                            <field name="is_date_devis"/>
+                            <field name="is_montant"/>
+                        </group>
+                        <group>
+                            <field name="is_taux_chance"/>
+                            <field name="is_date_decision"/>
+                            <field name="is_potentiel"/>
+                            <field name="is_informations"/>
+                            <field name="is_version"/>
+                            <field name="currency_id"/>
+                        </group>
+                    </group>
+                </page>
+            </page>
+        </field>
+    </record> 
+    <!-- <record id="is_product_template_tree_view" model="ir.ui.view">
+        <field name="name">is_product_template_tree_view</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_tree_view"/>
+        <field name="arch" type="xml">
+           <field name="default_code" position="after">
+                <field name="is_famille_id" optional="show"/>
+                <field name="is_reference"  optional="show"/>
+                <field name="is_marque"     optional="show"/>
+                <field name="is_puissance"  optional="show"/>
+            </field>
+        </field>
+    </record>  -->
+</odoo>

@@ -1,0 +1,39 @@
+# -*- coding: utf-8 -*-
+{
+    "name"     : "Module Odoo 18 pour Jura Energie Solaire",
+    "version"  : "0.1",
+    "author"   : "InfoSaône",
+    "category" : "InfoSaône",
+    "description": """
+Module Odoo 18 pour Jura Energie Solaire
+===================================================
+""",
+    "maintainer" : "InfoSaône",
+    "website"    : "http://www.infosaone.com",
+    "depends"    : [
+        "base",
+        "purchase",
+        "product",
+        "project",
+        "hr_timesheet",
+        "l10n_fr_account",
+        "web_chatter_position",
+    ],
+    "data" : [
+        "security/ir.model.access.csv",
+        "views/product_view.xml",
+        "views/project_view.xml",
+        "views/is_sav_view.xml",
+        "views/is_centrale_view.xml",
+        "views/menu.xml"
+    ],
+    'assets': {
+        'web.assets_backend': [
+            'is_jura_energie_solaire_18/static/src/scss/styles.scss',
+            
+        ],
+    },
+    "installable": True,
+    "application": True,
+    "license": "LGPL-3",
+}

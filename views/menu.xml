@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+
+    <record id="is_contact_action" model="ir.actions.act_window">
+        <field name="name">Contacts</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">list,kanban,form,activity</field>
+    </record>
+
+
+    <menuitem id="is_crm_root_menu" name="CRM" sequence="1"/>
+
+
+    <!-- Centrales -->
+    <menuitem id="is_centrale_main_menu" name="Centrales" parent="is_crm_root_menu" sequence="10"/>
+    <menuitem id="is_centrale_menu"             name="Centrales"   parent="is_centrale_main_menu" action="is_centrale_action"             sequence="10"/>
+    <menuitem id="is_centrale_kanban_adm1_menu" name="Kanban ADM1" parent="is_centrale_main_menu" action="is_centrale_kanban_adm1_action" sequence="20"/>
+    <menuitem id="is_centrale_kanban_crd_menu"  name="Kanban CRD"  parent="is_centrale_main_menu" action="is_centrale_kanban_crd_action"  sequence="30"/>
+    <menuitem id="is_centrale_kanban_adm2_menu" name="Kanban ADM2" parent="is_centrale_main_menu" action="is_centrale_kanban_adm2_action" sequence="40"/>
+
+
+    <menuitem id="is_sav_menu"      name="SAV"       parent="is_crm_root_menu" action="is_sav_action"                        sequence="20"/>
+    <menuitem id="is_projet_menu"   name="Projets"   parent="is_crm_root_menu" action="project.open_view_project_all_config" sequence="30"/>
+    <menuitem id="is_produit_menu"  name="Produits"  parent="is_crm_root_menu" action="is_produit_action"                    sequence="40"/>
+    <menuitem id="is_contact_menu"  name="Contacts"  parent="is_crm_root_menu" action="is_contact_action"                    sequence="50"/>
+
+
+    <!-- Configuration -->
+    <record id="is_crm_configuration_menu" model="ir.ui.menu" >
+        <field name="name">Configuration</field>
+        <field name="sequence">90</field>
+        <field name="parent_id" eval="ref('is_crm_root_menu')"/>
+        <field name="groups_id" eval="[(6,0,[
+            ref('project.group_project_manager'),
+        ])]"/>
+    </record>
+    <menuitem id="is_famille_menu" name="Familles" parent="is_crm_configuration_menu" action="is_famille_action" sequence="900"/>
+
+
+
+</odoo>
