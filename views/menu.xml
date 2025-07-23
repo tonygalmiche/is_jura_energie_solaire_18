@@ -15,13 +15,25 @@
     <!-- Centrales -->
     <menuitem id="is_centrale_main_menu" name="Centrales" parent="is_crm_root_menu" sequence="10"/>
     <menuitem id="is_centrale_menu"             name="Centrales"   parent="is_centrale_main_menu" action="is_centrale_action"             sequence="10"/>
-    <menuitem id="is_centrale_kanban_adm1_menu" name="Kanban ADM1" parent="is_centrale_main_menu" action="is_centrale_kanban_adm1_action" sequence="20"/>
-    <menuitem id="is_centrale_kanban_crd_menu"  name="Kanban CRD"  parent="is_centrale_main_menu" action="is_centrale_kanban_crd_action"  sequence="30"/>
-    <menuitem id="is_centrale_kanban_adm2_menu" name="Kanban ADM2" parent="is_centrale_main_menu" action="is_centrale_kanban_adm2_action" sequence="40"/>
+
+    <menuitem id="is_centrale_kanban_dp_menu"      name="Kanban DP/CP"   parent="is_centrale_main_menu" action="is_centrale_kanban_dp_action"      sequence="30"/>
+    <menuitem id="is_centrale_kanban_ptf_menu"     name="Kanban PTF"     parent="is_centrale_main_menu" action="is_centrale_kanban_ptf_action"     sequence="31"/>
+    <menuitem id="is_centrale_kanban_crd_menu"     name="Kanban CRD"     parent="is_centrale_main_menu" action="is_centrale_kanban_crd_action"     sequence="32"/>
+    <menuitem id="is_centrale_kanban_cardi_menu"   name="Kanban CARD-I"  parent="is_centrale_main_menu" action="is_centrale_kanban_cardi_action"   sequence="33"/>
+    <menuitem id="is_centrale_kanban_socotec_menu" name="Kanban Socotec" parent="is_centrale_main_menu" action="is_centrale_kanban_socotec_action" sequence="34"/>
+    <menuitem id="is_centrale_kanban_consuel_menu" name="Kanban Consuel" parent="is_centrale_main_menu" action="is_centrale_kanban_consuel_action" sequence="35"/>
+    <menuitem id="is_centrale_kanban_s21_menu"     name="Kanban S21"     parent="is_centrale_main_menu" action="is_centrale_kanban_s21_action"     sequence="36"/>
+    <menuitem id="is_centrale_kanban_edf_menu"     name="Kanban EDF AO"  parent="is_centrale_main_menu" action="is_centrale_kanban_edf_action"     sequence="37"/>
 
 
-    <menuitem id="is_sav_menu"      name="SAV"       parent="is_crm_root_menu" action="is_sav_action"                        sequence="20"/>
-    <menuitem id="is_projet_menu"   name="Projets"   parent="is_crm_root_menu" action="project.open_view_project_all_config" sequence="30"/>
+    <!-- SAV -->
+    <menuitem id="is_sav_main_menu"   name="SAV"        parent="is_crm_root_menu" sequence="20"/>
+    <menuitem id="is_sav_menu"        name="SAV"        parent="is_sav_main_menu" action="is_sav_action"        sequence="10"/>
+    <menuitem id="is_sav_kanban_menu" name="Vue Kanban" parent="is_sav_main_menu" action="is_sav_kanban_action" sequence="20"/>
+
+
+
+    <!-- <menuitem id="is_projet_menu"   name="Projets"   parent="is_crm_root_menu" action="project.open_view_project_all_config" sequence="30"/> -->
     <menuitem id="is_produit_menu"  name="Produits"  parent="is_crm_root_menu" action="is_produit_action"                    sequence="40"/>
     <menuitem id="is_contact_menu"  name="Contacts"  parent="is_crm_root_menu" action="is_contact_action"                    sequence="50"/>
 

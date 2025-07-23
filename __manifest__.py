@@ -15,6 +15,7 @@ Module Odoo 18 pour Jura Energie Solaire
         "purchase",
         "product",
         "project",
+        "crm",
         "hr_timesheet",
         "l10n_fr_account",
         "web_chatter_position",
@@ -25,6 +26,8 @@ Module Odoo 18 pour Jura Energie Solaire
         "views/project_view.xml",
         "views/is_sav_view.xml",
         "views/is_centrale_view.xml",
+        "views/calendar_view.xml",
+        "views/crm_lead_view.xml",
         "views/menu.xml"
     ],
     'assets': {

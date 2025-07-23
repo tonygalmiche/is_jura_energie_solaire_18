@@ -5,29 +5,71 @@
         <field name="model">is.centrale</field>
         <field name="arch" type="xml">
             <list>
-                <field name="name"                   optional="show"/>
-                <field name="das"                    optional="show" widget="badge"/>
-                <field name="projet_id"              optional="show" widget="many2one_clickable"/>
-                <field name="localisation"           optional="hide"/>
-                <field name="adresse"                optional="show"/>
-                <field name="client_id"              optional="show" widget="many2one_clickable"/>
-                <field name="adm1"                   optional="show" widget="badge"/>
-                <field name="date_depose_dp"         optional="hide"/>
-                <field name="reference_enedis"       optional="hide"/>
-                <field name="ptf_depose"             optional="hide"/>
-                <field name="ptf_obtenu"             optional="hide"/>
-                <field name="dp_ptf_informations"    optional="hide"/>
-                <field name="crd"                    optional="show" widget="badge"/>
-                <field name="crd_recu"               optional="hide"/>
-                <field name="adm2"                   optional="show" widget="badge"/>
-                <field name="cardi_depose"           optional="hide"/>
-                <field name="crd_cardi_informations" optional="hide"/>
-                <field name="socotec"                optional="hide"/>
-                <field name="socotec_date"           optional="hide"/>
-                <field name="consuel"                optional="hide"/>
-                <field name="consuel_depose"         optional="hide"/>
-                <field name="mes_date"               optional="hide"/>
-                <field name="info_mise_en_service"   optional="hide"/>
+                <field name="name"/>
+                <field name="secteur" optional="show"/>
+                <field name="das" invisible="secteur!='gp'" optional="show"/>
+                <field name="projet_id" optional="hide" widget="many2one_clickable"/>
+                <field name="adresse" optional="hide"/>
+                <field name="localisation" optional="hide"/>
+
+                <field name="puissance_panneau_demandee" optional="hide"/>
+                <field name="puissance_onduleur_demandee" optional="hide"/>
+                <field name="puissance_panneau_totale" optional="hide"/>
+                <field name="puissance_onduleur_totale" optional="hide"/>
+
+                <field name="client_id" optional="show" widget="many2one_clickable"/>
+
+
+                <field name="dp_etat" optional="show" widget="badge" decoration-success="dp_etat == 'obtenu'"/>
+                <field name="dp_depose" optional="hide"/>
+                <field name="dp_obtention" optional="hide"/>                  
+                <field name="dp_informations" optional="hide"/>                            
+
+                <field name="ptf_etat" optional="show" widget="badge" decoration-success="ptf_etat == 'obtenu'"/>
+                <field name="ptf_reference" optional="hide"/>
+                <field name="ptf_depose" optional="hide"/>                  
+                <field name="ptf_obtention" optional="hide"/>                  
+                <field name="ptf_informations" optional="hide"/>                            
+
+                <field name="crd_etat" optional="show" widget="badge" decoration-success="crd_etat == 'signe'"/>
+                <field name="crd_recu" optional="hide"/>
+                <field name="crd_signature" optional="hide"/>                  
+                <field name="crd_informations" optional="hide"/>                            
+
+                <field name="cardi_etat" optional="show" widget="badge" decoration-success="cardi_etat == 'obtenu'"/>
+                <field name="cardi_depose" optional="hide"/>
+                <field name="cardi_obtenu" optional="hide"/>                  
+                <field name="cardi_informations" optional="hide"/>                            
+
+                <field name="socotec_etat" optional="show" widget="badge" decoration-success="socotec_etat == 'planifie'"/>
+                <field name="socotec_controle" optional="hide"/>
+                <field name="socotec_informations" optional="hide"/>                            
+
+                <field name="consuel_etat" optional="show" widget="badge" decoration-success="consuel_etat == 'obtenu'"/>
+                <field name="consuel_depose" optional="hide"/>
+                <field name="consuel_obtention" optional="hide"/>
+                <field name="consuel_informations" optional="hide"/>                            
+
+                <field name="mes_demande" optional="show"/>
+                <field name="mes_realise" optional="hide"/>
+                <field name="mes_informations" optional="hide"/>                            
+
+                <field name="s21_etat" optional="show" widget="badge" decoration-success="s21_etat == 'envoye'"/>
+                <field name="s21_envoye" optional="hide"/>
+                <field name="s21_obtenu" optional="hide"/>
+                <field name="s21_informations" optional="hide"/>                            
+
+                <field name="edf_identifiant" optional="hide"/>
+                <field name="edf_mail" optional="hide"/>
+                <field name="edf_mot_de_passe" optional="hide"/>
+                <field name="edf_num_bta" optional="hide"/>
+                <field name="edf_etat" optional="show" widget="badge" decoration-success="edf_etat == 'signe'"/>
+
+                <field name="edf_informations" optional="hide"/>                            
+
+                <field name="type_communication" optional="hide"/>
+                <field name="nature_entrale" optional="hide"/>
+
             </list>
         </field>
     </record>
@@ -46,12 +88,15 @@
                     <group>
                         <group>
                             <field name="name"/>
-                            <field name="das"/>
+                            <field name="secteur"/>
+                            <field name="das" invisible="secteur!='gp'"/>
                             <field name="projet_id"/>
+                            <field name="adresse"/>
                             <field name="localisation"/>
                         </group>
                         <group>
-                            <field name="adresse"/>
+                            <field name="puissance_panneau_demandee"/>
+                            <field name="puissance_onduleur_demandee"/>
                             <field name="puissance_panneau_totale"/>
                             <field name="puissance_onduleur_totale"/>
                         </group>
@@ -76,49 +121,161 @@
                             </group>
 
                         </page>
-                       <page string="DP-PC/PTF">
+                        <page string="DP/PC">
                             <group>
                                 <group>
-                                    <field name="adm1"/>
-                                    <field name="date_depose_dp"/>
-                                    <field name="reference_enedis"/>                  
-                                </group>
-                                <group>
-                                    <field name="ptf_depose"/>
-                                    <field name="ptf_obtenu"/>
-                                    <field name="dp_ptf_informations"/>                            
+                                    <field name="dp_etat"/>
+                                    <field name="dp_depose"/>
+                                    <field name="dp_obtention"/>                  
                                 </group>
                             </group>
-                        </page>
-                       <page string="CRD/CARD-I">
                             <group>
-                                <field name="crd"/>
-                                <field name="crd_recu"/>
-                                <field name="adm2"/>
-                                <field name="cardi_depose"/>
-                                <field name="crd_cardi_informations"/>                            
+                                <field name="dp_informations"/>                            
                             </group>
                         </page>
-
+                        <page string="PTF">
+                            <group>
+                                <group>
+                                    <field name="ptf_etat"/>
+                                    <field name="ptf_reference"/>
+                                    <field name="ptf_depose"/>                  
+                                    <field name="ptf_obtention"/>                  
+                                </group>
+                            </group>
+                            <group>
+                                <field name="ptf_informations"/>                            
+                            </group>
+                        </page>
+                        <page string="CRD">
+                            <group>
+                                <group>
+                                    <field name="crd_etat"/>
+                                    <field name="crd_recu"/>
+                                    <field name="crd_signature"/>                  
+                                </group>
+                            </group>
+                            <group>
+                                <field name="crd_informations"/>                            
+                            </group>
+                        </page>
+                        <page string="CARD-I">
+                            <group>
+                                <group>
+                                    <field name="cardi_etat"/>
+                                    <field name="cardi_depose"/>
+                                    <field name="cardi_obtenu"/>                  
+                                </group>
+                            </group>
+                            <group>
+                                <field name="cardi_informations"/>                            
+                            </group>
+                        </page>
+                        <page string="Socotec">
+                            <group>
+                                <group>
+                                    <field name="socotec_etat"/>
+                                    <field name="socotec_controle"/>
+                                </group>
+                            </group>
+                            <group>
+                                <field name="socotec_informations"/>                            
+                            </group>
+                        </page>
+                        <page string="Consuel">
+                            <group>
+                                <group>
+                                    <field name="consuel_etat"/>
+                                    <field name="consuel_depose"/>
+                                    <field name="consuel_obtention"/>
+                                </group>
+                            </group>
+                            <group>
+                                <field name="consuel_informations"/>                            
+                            </group>
+                        </page>
                         <page string="Mise en service">
                             <group>
-
-                            <group>
-                                <field name="socotec"/>
-                                <field name="consuel"/>
-                                <field name="mes_date"/>
-                                <field name="info_mise_en_service"/>                            
+                                <group>
+                                    <field name="mes_demande"/>
+                                    <field name="mes_realise"/>
+                                </group>
                             </group>
                             <group>
-                                <field name="socotec_date"/>
-                                <field name="consuel_depose"/>
-                            </group>
-
-
+                                <field name="mes_informations"/>                            
                             </group>
                         </page>
-
-                       <page string="SAV">
+                        <page string="S21">
+                            <group>
+                                <group>
+                                    <field name="s21_etat"/>
+                                    <field name="s21_envoye"/>
+                                    <field name="s21_obtenu"/>
+                                </group>
+                            </group>
+                            <group>
+                                <field name="s21_informations"/>                            
+                            </group>
+                        </page>
+                        <page string="EDF AO">
+                            <group>
+                                <group>
+                                    <field name="edf_identifiant"/>
+                                    <field name="edf_mail"/>
+                                    <field name="edf_mot_de_passe"/>
+                                    <field name="edf_num_bta"/>
+                                    <field name="edf_etat"/>
+                                </group>
+                            </group>
+                            <group>
+                                <field name="edf_informations"/>                            
+                            </group>
+                        </page>
+                        <page string="Informations techniques">
+                            <group string="Informations techniques">
+                                <group>
+                                    <field name="type_communication"/>
+                                    <field name="nature_entrale"/>
+                                </group>
+                            </group>
+                            <group string="Panneaux">
+                                <group>
+                                    <field name="panneau_ids" nolabel="1">
+                                        <list editable="bottom">
+                                            <field name="sequence" widget="handle"/>
+                                            <field name="panneau_id"        optional="show"/>
+                                            <field name="puissance_panneau" optional="show" force-save="1"/>
+                                            <field name="quantite"          optional="show" sum="Total"/>
+                                            <field name="puissance_totale"  optional="show" sum="Total"/>
+                                        </list>
+                                    </field>
+                                </group>
+                            </group>
+                            <group string="Onduleurs">
+                                <group>
+                                    <field name="onduleur_ids" nolabel="1">
+                                        <list editable="bottom">
+                                            <field name="sequence" widget="handle"/>
+                                            <field name="onduleur_id"        optional="show"/>
+                                            <field name="puissance_onduleur" optional="show" force-save="1"/>
+                                            <field name="quantite"           optional="show" sum="Total"/>
+                                            <field name="puissance_totale"   optional="show" sum="Total"/>
+                                        </list>
+                                    </field>
+                                </group>
+                             </group>
+                            <group string="Coffrets">
+                                <group>
+                                    <field name="coffret_ids" nolabel="1">
+                                        <list editable="bottom">
+                                            <field name="sequence" widget="handle"/>
+                                            <field name="coffret_id" optional="show"/>
+                                            <field name="quantite"   optional="show" sum="Total"/>
+                                        </list>
+                                    </field>
+                                </group>
+                             </group>
+                        </page>
+                        <page string="SAV">
                             <field name="sav_ids">
                                 <list>
                                     <field name="name"             optional="show"/>
@@ -138,56 +295,7 @@
                                 </list>
                             </field>
                         </page>
-
-                       <page string="Panneaux">
-                            <group>
-                                <group>
-                                    <field name="panneau_ids" nolabel="1">
-                                        <list editable="bottom">
-                                            <field name="sequence" widget="handle"/>
-                                            <field name="panneau_id"        optional="show"/>
-                                            <field name="puissance_panneau" optional="show" force-save="1"/>
-                                            <field name="quantite"          optional="show" sum="Total"/>
-                                            <field name="puissance_totale"  optional="show" sum="Total"/>
-                                        </list>
-                                    </field>
-                                </group>
-                             </group>
-                        </page>
-                       <page string="Onduleurs">
-                            <group>
-                                <group>
-                                    <field name="onduleur_ids" nolabel="1">
-                                        <list editable="bottom">
-                                            <field name="sequence" widget="handle"/>
-                                            <field name="onduleur_id"        optional="show"/>
-                                            <field name="puissance_onduleur" optional="show" force-save="1"/>
-                                            <field name="quantite"           optional="show" sum="Total"/>
-                                            <field name="puissance_totale"   optional="show" sum="Total"/>
-                                        </list>
-                                    </field>
-                                </group>
-                             </group>
-                        </page>
-
-                       <page string="Coffrets">
-                            <group>
-                                <group>
-                                    <field name="coffret_ids" nolabel="1">
-                                        <list editable="bottom">
-                                            <field name="sequence" widget="handle"/>
-                                            <field name="coffret_id" optional="show"/>
-                                            <field name="quantite"   optional="show" sum="Total"/>
-                                        </list>
-                                    </field>
-                                </group>
-                             </group>
-                        </page>
-
-
                     </notebook>
-
-
                  </sheet>
                 <chatter/>
             </form>
@@ -217,6 +325,9 @@
                                 <field name="adresse"/>
                             </div>
                             <div>
+                                <field name="secteur"/>
+                            </div>
+                            <div>
                                 <field name="das"/>
                             </div>
                         </div>
@@ -225,23 +336,48 @@
             </kanban>
         </field>
     </record>
-
-
-
     <record id="view_is_centrale_search" model="ir.ui.view">
         <field name="name">is.centrale.search</field>
         <field name="model">is.centrale</field>
         <field name="arch" type="xml">
             <search>
                 <field name="name"/>
+                <field name="secteur"/>
                 <field name="das"/>
                 <field name="projet_id"/>
-                <field name="localisation"/>
                 <field name="adresse"/>
                 <field name="client_id"/>
             </search>
         </field>
     </record>
+    <record id="is_centrale_action" model="ir.actions.act_window">
+        <field name="name">Centrales</field>
+        <field name="res_model">is.centrale</field>
+        <field name="view_mode">list,form,kanban</field>
+        <field name="search_view_id" ref="view_is_centrale_search"/>
+    </record>
+
+
+
+
+    <record id="is_centrale_kanban_dp_action" model="ir.actions.act_window">
+        <field name="name">DP/PC</field>
+        <field name="res_model">is.centrale</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="view_id" ref="view_is_centrale_kanban"/>
+        <field name="context">{'group_by': 'dp_etat', 'group_expand': True}</field>
+        <field name="domain">[]</field>
+    </record>
+    <record id="is_centrale_kanban_ptf_action" model="ir.actions.act_window">
+        <field name="name">PTF</field>
+        <field name="res_model">is.centrale</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="view_id" ref="view_is_centrale_kanban"/>
+        <field name="context">{'group_by': 'ptf_etat', 'group_expand': True}</field>
+        <field name="domain">[]</field>
+    </record>
+
+
 
 
     <record id="is_centrale_kanban_crd_action" model="ir.actions.act_window">
@@ -249,23 +385,47 @@
         <field name="res_model">is.centrale</field>
         <field name="view_mode">kanban,list,form</field>
         <field name="view_id" ref="view_is_centrale_kanban"/>
-        <field name="context">{'group_by': 'crd', 'group_expand': True}</field>
+        <field name="context">{'group_by': 'crd_etat', 'group_expand': True}</field>
         <field name="domain">[]</field>
     </record>
-    <record id="is_centrale_kanban_adm1_action" model="ir.actions.act_window">
-        <field name="name">ADM1</field>
+    <record id="is_centrale_kanban_cardi_action" model="ir.actions.act_window">
+        <field name="name">CARD-I</field>
         <field name="res_model">is.centrale</field>
         <field name="view_mode">kanban,list,form</field>
         <field name="view_id" ref="view_is_centrale_kanban"/>
-        <field name="context">{'group_by': 'adm1', 'group_expand': True}</field>
+        <field name="context">{'group_by': 'cardi_etat', 'group_expand': True}</field>
         <field name="domain">[]</field>
     </record>
-    <record id="is_centrale_kanban_adm2_action" model="ir.actions.act_window">
-        <field name="name">ADM2</field>
+    <record id="is_centrale_kanban_socotec_action" model="ir.actions.act_window">
+        <field name="name">Socotec</field>
         <field name="res_model">is.centrale</field>
         <field name="view_mode">kanban,list,form</field>
         <field name="view_id" ref="view_is_centrale_kanban"/>
-        <field name="context">{'group_by': 'adm2', 'group_expand': True}</field>
+        <field name="context">{'group_by': 'socotec_etat', 'group_expand': True}</field>
+        <field name="domain">[]</field>
+    </record>
+    <record id="is_centrale_kanban_consuel_action" model="ir.actions.act_window">
+        <field name="name">Consuel</field>
+        <field name="res_model">is.centrale</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="view_id" ref="view_is_centrale_kanban"/>
+        <field name="context">{'group_by': 'consuel_etat', 'group_expand': True}</field>
+        <field name="domain">[]</field>
+    </record>
+    <record id="is_centrale_kanban_s21_action" model="ir.actions.act_window">
+        <field name="name">S21</field>
+        <field name="res_model">is.centrale</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="view_id" ref="view_is_centrale_kanban"/>
+        <field name="context">{'group_by': 's21_etat', 'group_expand': True}</field>
+        <field name="domain">[]</field>
+    </record>
+    <record id="is_centrale_kanban_edf_action" model="ir.actions.act_window">
+    <field name="name">EDF AO</field>
+        <field name="res_model">is.centrale</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="view_id" ref="view_is_centrale_kanban"/>
+        <field name="context">{'group_by': 'edf_etat', 'group_expand': True}</field>
         <field name="domain">[]</field>
     </record>
 
@@ -279,10 +439,6 @@
 
 
 
-    <record id="is_centrale_action" model="ir.actions.act_window">
-        <field name="name">Centrales</field>
-        <field name="res_model">is.centrale</field>
-        <field name="view_mode">list,form,kanban</field>
-        <field name="search_view_id" ref="view_is_centrale_search"/>
-    </record>
+
+
 </odoo>

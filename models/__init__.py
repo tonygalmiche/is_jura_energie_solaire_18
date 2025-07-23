@@ -3,5 +3,6 @@ from . import product
 from . import project
 from . import is_sav
 from . import is_centrale
-
+from . import calendar
+from . import crm_lead
 
