@@ -431,6 +431,131 @@
 
 
 
+    <!-- Vues pour is.centrale.panneau -->
+    <record id="view_is_centrale_panneau_list" model="ir.ui.view">
+        <field name="name">is.centrale.panneau.list</field>
+        <field name="model">is.centrale.panneau</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence"/>
+                <field name="panneau_id"/>
+                <field name="puissance_panneau"/>
+                <field name="quantite"/>
+                <field name="puissance_totale"/>
+                <field name="centrale_id"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_is_centrale_panneau_form" model="ir.ui.view">
+        <field name="name">is.centrale.panneau.form</field>
+        <field name="model">is.centrale.panneau</field>
+        <field name="arch" type="xml">
+            <form string="Panneau de centrale">
+                <sheet>
+                    <group>
+                        <field name="sequence"/>
+                        <field name="panneau_id"/>
+                        <field name="puissance_panneau"/>
+                        <field name="quantite"/>
+                        <field name="puissance_totale"/>
+                        <field name="centrale_id"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="is_centrale_panneau_action" model="ir.actions.act_window">
+        <field name="name">Panneaux de centrale</field>
+        <field name="res_model">is.centrale.panneau</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_is_centrale_panneau_list"/>
+        <field name="domain">[]</field>
+    </record>
+
+
+    <!-- Vues pour is.centrale.onduleur -->
+    <record id="view_is_centrale_onduleur_list" model="ir.ui.view">
+        <field name="name">is.centrale.onduleur.list</field>
+        <field name="model">is.centrale.onduleur</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence"/>
+                <field name="onduleur_id"/>
+                <field name="puissance_onduleur"/>
+                <field name="quantite"/>
+                <field name="puissance_totale"/>
+                <field name="centrale_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_is_centrale_onduleur_form" model="ir.ui.view">
+        <field name="name">is.centrale.onduleur.form</field>
+        <field name="model">is.centrale.onduleur</field>
+        <field name="arch" type="xml">
+            <form string="Onduleur de centrale">
+                <sheet>
+                    <group>
+                        <field name="sequence"/>
+                        <field name="onduleur_id"/>
+                        <field name="puissance_onduleur"/>
+                        <field name="quantite"/>
+                        <field name="puissance_totale"/>
+                        <field name="centrale_id"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="is_centrale_onduleur_action" model="ir.actions.act_window">
+        <field name="name">Onduleurs de centrale</field>
+        <field name="res_model">is.centrale.onduleur</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_is_centrale_onduleur_list"/>
+        <field name="domain">[]</field>
+    </record>
+
+
+    <!-- Vues pour is.centrale.coffret -->
+    <record id="view_is_centrale_coffret_list" model="ir.ui.view">
+        <field name="name">is.centrale.coffret.list</field>
+        <field name="model">is.centrale.coffret</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence"/>
+                <field name="coffret_id"/>
+                <field name="quantite"/>
+                <field name="centrale_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_is_centrale_coffret_form" model="ir.ui.view">
+        <field name="name">is.centrale.coffret.form</field>
+        <field name="model">is.centrale.coffret</field>
+        <field name="arch" type="xml">
+            <form string="Coffret de centrale">
+                <sheet>
+                    <group>
+                        <field name="sequence"/>
+                        <field name="coffret_id"/>
+                        <field name="quantite"/>
+                        <field name="centrale_id"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="is_centrale_coffret_action" model="ir.actions.act_window">
+        <field name="name">Coffrets de centrale</field>
+        <field name="res_model">is.centrale.coffret</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_is_centrale_coffret_list"/>
+        <field name="domain">[]</field>
+    </record>
+
 
 
 

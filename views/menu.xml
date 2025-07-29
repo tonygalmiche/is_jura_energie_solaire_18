@@ -9,13 +9,15 @@
     </record>
 
 
-    <menuitem id="is_crm_root_menu" name="CRM" sequence="1"/>
+    <!-- JES -->
+    <menuitem id="is_crm_root_menu" name="JES" sequence="1"/>
 
+    <!-- JES / CRM -->
+    <menuitem id="is_crm_menu" name="CRM" parent="is_crm_root_menu" action="crm.crm_lead_action_pipeline" sequence="5"/>
 
-    <!-- Centrales -->
+    <!-- JES / Centrales -->
     <menuitem id="is_centrale_main_menu" name="Centrales" parent="is_crm_root_menu" sequence="10"/>
-    <menuitem id="is_centrale_menu"             name="Centrales"   parent="is_centrale_main_menu" action="is_centrale_action"             sequence="10"/>
-
+    <menuitem id="is_centrale_menu"                name="Centrales"      parent="is_centrale_main_menu" action="is_centrale_action"             sequence="10"/>
     <menuitem id="is_centrale_kanban_dp_menu"      name="Kanban DP/CP"   parent="is_centrale_main_menu" action="is_centrale_kanban_dp_action"      sequence="30"/>
     <menuitem id="is_centrale_kanban_ptf_menu"     name="Kanban PTF"     parent="is_centrale_main_menu" action="is_centrale_kanban_ptf_action"     sequence="31"/>
     <menuitem id="is_centrale_kanban_crd_menu"     name="Kanban CRD"     parent="is_centrale_main_menu" action="is_centrale_kanban_crd_action"     sequence="32"/>
@@ -25,20 +27,18 @@
     <menuitem id="is_centrale_kanban_s21_menu"     name="Kanban S21"     parent="is_centrale_main_menu" action="is_centrale_kanban_s21_action"     sequence="36"/>
     <menuitem id="is_centrale_kanban_edf_menu"     name="Kanban EDF AO"  parent="is_centrale_main_menu" action="is_centrale_kanban_edf_action"     sequence="37"/>
 
-
-    <!-- SAV -->
+    <!-- JES / SAV -->
     <menuitem id="is_sav_main_menu"   name="SAV"        parent="is_crm_root_menu" sequence="20"/>
     <menuitem id="is_sav_menu"        name="SAV"        parent="is_sav_main_menu" action="is_sav_action"        sequence="10"/>
     <menuitem id="is_sav_kanban_menu" name="Vue Kanban" parent="is_sav_main_menu" action="is_sav_kanban_action" sequence="20"/>
 
-
-
-    <!-- <menuitem id="is_projet_menu"   name="Projets"   parent="is_crm_root_menu" action="project.open_view_project_all_config" sequence="30"/> -->
+    <!-- JES / Produits -->
     <menuitem id="is_produit_menu"  name="Produits"  parent="is_crm_root_menu" action="is_produit_action"                    sequence="40"/>
+    
+    <!-- JES / Contact -->
     <menuitem id="is_contact_menu"  name="Contacts"  parent="is_crm_root_menu" action="is_contact_action"                    sequence="50"/>
 
-
-    <!-- Configuration -->
+    <!-- JES / Configuration -->
     <record id="is_crm_configuration_menu" model="ir.ui.menu" >
         <field name="name">Configuration</field>
         <field name="sequence">90</field>
@@ -47,7 +47,10 @@
             ref('project.group_project_manager'),
         ])]"/>
     </record>
-    <menuitem id="is_famille_menu" name="Familles" parent="is_crm_configuration_menu" action="is_famille_action" sequence="900"/>
+    <menuitem id="is_famille_menu"           name="Familles"               parent="is_crm_configuration_menu" action="is_famille_action"           sequence="10"/>
+    <menuitem id="is_centrale_panneau_menu"  name="Panneaux de centrales"  parent="is_crm_configuration_menu" action="is_centrale_panneau_action"  sequence="20"/>
+    <menuitem id="is_centrale_onduleur_menu" name="Onduleurs de centrales" parent="is_crm_configuration_menu" action="is_centrale_onduleur_action" sequence="30"/>
+    <menuitem id="is_centrale_coffret_menu"  name="Coffrets de centrales"  parent="is_crm_configuration_menu" action="is_centrale_coffret_action"  sequence="40"/>
 
 
 
