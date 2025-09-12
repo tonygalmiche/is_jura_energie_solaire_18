@@ -91,7 +91,7 @@ class IsCentrale(models.Model):
     projet_id                = fields.Many2one('project.project', string="Projet")
     localisation             = fields.Char("Localisation", tracking=True)
     adresse                  = fields.Char("Adresse", size=60, tracking=True)
-    client_id                = fields.Many2one('res.partner', string="Client", tracking=True, domain=[("is_company","=",True)])
+    client_id                = fields.Many2one('res.partner', string="Client", tracking=True)
     client_child_ids = fields.One2many(related="client_id.child_ids")
     sav_ids = fields.One2many('is.sav', 'centrale_id', string="SAVs", tracking=True)
     puissance_onduleur_demandee = fields.Integer(string="Puissance onduleurs demandée (kVA)")
