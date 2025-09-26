@@ -8,6 +8,7 @@
                 <field name="name"            optional="show"/>
                 <field name="secteur"         optional="show"/>
                 <field name="centrale_id"     optional="show" widget="many2one_clickable"/>
+                <field name="is_client_a_risque" optional="show" widget="badge" decoration-danger="is_client_a_risque == 'oui'"/>
                 <field name="date_demande"    optional="show"/>
                 <field name="degre_urgence"   optional="show"  widget="badge"
                     decoration-info="degre_urgence == 'non_urgent'"
@@ -94,16 +95,14 @@
         <field name="model">is.sav</field>
         <field name="arch" type="xml">
             <kanban class="o_kanban_small_column">
+                <field name="is_client_a_risque"/>
                 <templates>
                     <t t-name="card">
                         <div class="oe_kanban_global_click">
-                            <div class="o_kanban_record_top">
+                            <div class="o_kanban_record_top" style="background-color: #f8f9fa; padding: 5px; margin-bottom: 5px;">
                                 <strong>
                                     <field name="name"/>
                                 </strong>
-                            </div>
-                            <div>
-                                <field name="secteur"/>
                             </div>
                             <div>
                                 <field name="centrale_id"/>
@@ -111,14 +110,19 @@
                             <div>
                                 <field name="client_id"/>
                             </div>
-                            <div>
+                            <div t-if="record.is_client_a_risque.raw_value == 'oui'" style="background-color: #dc3545; color: white; padding: 3px 6px; border-radius: 3px; font-size: 12px; text-align: center; margin: 2px 0; font-weight: bold;">
+                                Client à risque
+                            </div>
+                            <div style="font-style: italic; color: #6c757d;">
                                 <field name="date_demande"/>
                             </div>
-                            <div>
-                                <field name="intervenant_ids" widget="many2many_tags"/>
-                            </div>
-                            <div>
-                                <field name="state"/>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <field name="secteur" widget="badge"/>
+                                <field name="degre_urgence" widget="badge"
+                                    decoration-info="degre_urgence == 'non_urgent'"
+                                    decoration-warning="degre_urgence == 'inter'"
+                                    decoration-danger="degre_urgence == 'urgent'"
+                                />
                             </div>
                         </div>
                     </t>
@@ -137,12 +141,15 @@
                 <field name="secteur"/>
                 <field name="centrale_id"/>
                 <field name="intervenant_ids"/>
+                <field name="is_client_a_risque"/>
                 <field name="date_demande"/>
                 <field name="state"/>
                 <separator/>
                 <filter string="TH" name="secteur_th" domain="[('secteur','=','th')]"/>
                 <filter string="SI" name="secteur_si" domain="[('secteur','=','si')]"/>
                 <filter string="PV" name="secteur_pv" domain="[('secteur','in',['re','gp'])]"/>
+                <separator/>
+                <filter string="Clients à risque" name="clients_a_risque" domain="[('is_client_a_risque','=','oui')]"/>
                 <group expand="0" string="Grouper par">
                     <filter string="Secteur" name="group_by_secteur" context="{'group_by': 'secteur'}"/>
                     <filter string="Intervenants" name="group_by_intervenants" context="{'group_by': 'intervenant_ids'}"/>

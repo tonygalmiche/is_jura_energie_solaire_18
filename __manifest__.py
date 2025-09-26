@@ -22,6 +22,7 @@ Module Odoo 18 pour Jura Energie Solaire
     ],
     "data" : [
         "security/ir.model.access.csv",
+        "views/res_partner_view.xml",
         "views/product_view.xml",
         "views/project_view.xml",
         "views/is_sav_view.xml",

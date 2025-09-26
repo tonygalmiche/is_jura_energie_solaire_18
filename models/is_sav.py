@@ -16,7 +16,8 @@ class IsSav(models.Model):
     centrale_id      = fields.Many2one('is.centrale', string="Centrale", tracking=True)
     client_id        = fields.Many2one(related="centrale_id.client_id")
     client_child_ids = fields.One2many(related="centrale_id.client_id.child_ids")
-    date_demande     = fields.Date(string="Date demande", tracking=True)
+    is_client_a_risque = fields.Selection(related="centrale_id.client_id.is_client_a_risque", string="Client à risque")
+    date_demande     = fields.Date(string="Date demande", required=True, default=fields.Date.today, tracking=True)
     degre_urgence    = fields.Selection(
         [
             ('non_urgent', 'Non Urgent'),

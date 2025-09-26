@@ -96,9 +96,9 @@ class IsCentrale(models.Model):
     client_id                = fields.Many2one('res.partner', string="Client", tracking=True)
     client_child_ids = fields.One2many(related="client_id.child_ids")
     sav_ids = fields.One2many('is.sav', 'centrale_id', string="SAVs", tracking=True)
-    puissance_onduleur_demandee = fields.Integer(string="Puissance onduleurs demandée (kVA)")
-    puissance_panneau_demandee  = fields.Integer(string="Puissance panneaux demandée (kWc)")
-    puissance_onduleur_totale = fields.Integer(
+    puissance_onduleur_demandee = fields.Float(string="Puissance onduleurs demandée (kVA)")
+    puissance_panneau_demandee  = fields.Float(string="Puissance panneaux demandée (kWc)")
+    puissance_onduleur_totale = fields.Float(
         string="Puissance des onduleurs (kVA)",
         compute="_compute_puissance_onduleur_totale",
         store=True,

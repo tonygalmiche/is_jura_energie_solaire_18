@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- res.partner -->
+        <record model="ir.ui.view" id="is_view_partner_form">
+            <field name="name">is_view_partner_form</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field name="arch" type="xml">
+                <field name="function" position="before">
+                    <field name="is_client_a_risque"/>
+                </field>
+            </field>
+        </record> 
+        <record id="is_view_partner_tree" model="ir.ui.view">
+            <field name="name">res.partner.tree</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_tree"/>
+            <field name="arch" type="xml">
+                <field name="complete_name" position="after">
+                    <field name="is_client_a_risque" optional="show"  widget="badge"
+                        decoration-danger="is_client_a_risque == 'oui'"
+                    />
+                </field>
+            </field>
+        </record>
+        <record id="is_view_res_partner_filter" model="ir.ui.view">
+            <field name="name">is.res.partner.select</field>
+            <field name="inherit_id" ref="base.view_res_partner_filter"/>
+            <field name="model">res.partner</field>
+            <field name="arch" type="xml">
+                <field name="parent_id" position="before">
+                    <field name="is_client_a_risque"/>
+                </field>
+            </field>
+        </record>
+
+
+    </data>
+</odoo>

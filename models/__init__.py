@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from . import res_partner
 from . import product
 from . import project
 from . import is_sav
