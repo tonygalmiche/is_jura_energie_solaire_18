@@ -282,7 +282,7 @@
                                     <field name="date_demande"     optional="show"/>
                                     <field name="degre_urgence"    optional="show"/>
                                     <field name="date_resolution"  optional="show"/>
-                                    <field name="intervenant_id"   optional="show"/>
+                                    <field name="intervenant_ids"  optional="show" widget="many2many_tags"/>
                                     <field name="ticket_number"    optional="show"/>
                                     <field name="description"      optional="show"/>
                                     <field name="info_depannage"   optional="show"/>

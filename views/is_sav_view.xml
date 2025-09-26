@@ -6,6 +6,7 @@
         <field name="arch" type="xml">
             <list>
                 <field name="name"            optional="show"/>
+                <field name="secteur"         optional="show"/>
                 <field name="centrale_id"     optional="show" widget="many2one_clickable"/>
                 <field name="date_demande"    optional="show"/>
                 <field name="degre_urgence"   optional="show"  widget="badge"
@@ -14,7 +15,7 @@
                     decoration-danger="degre_urgence == 'urgent'"
                 />
                 <field name="date_resolution" optional="show"/>
-                <field name="intervenant_id"  optional="show" widget="many2one_clickable"/>
+                <field name="intervenant_ids" optional="show" widget="many2many_tags"/>
                 <field name="ticket_number"   optional="show"/>
                 <field name="description"     optional="show"/>
                 <field name="info_depannage"  optional="show"/>
@@ -37,7 +38,6 @@
                     <field name="state" widget="statusbar" options="{'clickable': '1'}"/>
                 </header>
                 <sheet>
-
                     <div class="oe_button_box" name="button_box">
                         <button name="action_schedule_meeting" type="object" class="oe_stat_button" icon="fa-calendar" context="{'partner_id': client_id}">
                             <div class="o_stat_info">
@@ -46,25 +46,22 @@
                             </div>
                         </button>
                     </div>
-
-
-
                     <group>
                         <group>
                             <field name="name"/>
                             <field name="centrale_id"/>
+                            <field name="secteur"/>
                             <field name="date_demande"/>
                             <field name="degre_urgence"/>
                             <field name="date_resolution"/>
                         </group>
                         <group>
-                            <field name="intervenant_id"/>
+                            <field name="intervenant_ids" widget="many2many_tags"/>
                             <field name="ticket_number"/>
                             <field name="description"/>
                             <field name="info_depannage"/>
                         </group>
                     </group>
-
                     <notebook>
                         <page string="Client">
                             <group>
@@ -86,7 +83,6 @@
 
                         </page>
                     </notebook>
-
                 </sheet>
                 <chatter/>
             </form>
@@ -107,6 +103,9 @@
                                 </strong>
                             </div>
                             <div>
+                                <field name="secteur"/>
+                            </div>
+                            <div>
                                 <field name="centrale_id"/>
                             </div>
                             <div>
@@ -116,7 +115,7 @@
                                 <field name="date_demande"/>
                             </div>
                             <div>
-                                <field name="intervenant_id"/>
+                                <field name="intervenant_ids" widget="many2many_tags"/>
                             </div>
                             <div>
                                 <field name="state"/>
@@ -135,12 +134,20 @@
         <field name="arch" type="xml">
             <search>
                 <field name="name"/>
+                <field name="secteur"/>
                 <field name="centrale_id"/>
+                <field name="intervenant_ids"/>
                 <field name="date_demande"/>
                 <field name="state"/>
-                <filter string="Pas commencé" name="pas_commence" domain="[('state','=','pas_commence')]"/>
-                <filter string="En Cours"     name="en_cours" domain="[('state','=','en_cours')]"/>
-                <filter string="Terminé"      name="termine" domain="[('state','=','termine')]"/>
+                <separator/>
+                <filter string="TH" name="secteur_th" domain="[('secteur','=','th')]"/>
+                <filter string="SI" name="secteur_si" domain="[('secteur','=','si')]"/>
+                <filter string="PV" name="secteur_pv" domain="[('secteur','in',['re','gp'])]"/>
+                <group expand="0" string="Grouper par">
+                    <filter string="Secteur" name="group_by_secteur" context="{'group_by': 'secteur'}"/>
+                    <filter string="Intervenants" name="group_by_intervenants" context="{'group_by': 'intervenant_ids'}"/>
+                    <filter string="État" name="group_by_state" context="{'group_by': 'state'}"/>
+                </group>
             </search>
         </field>
     </record>

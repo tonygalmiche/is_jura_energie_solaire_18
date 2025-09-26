@@ -2,6 +2,7 @@
 from odoo import fields, models, api  
 from datetime import datetime, timedelta
 import pytz
+from .is_centrale import SECTEUR_SELECTION
 
 
 class IsSav(models.Model):
@@ -11,6 +12,7 @@ class IsSav(models.Model):
     _order='name'
 
     name             = fields.Char(string="Nom", size=40, required=True, tracking=True)
+    secteur          = fields.Selection(SECTEUR_SELECTION, string="Secteur", tracking=True)
     centrale_id      = fields.Many2one('is.centrale', string="Centrale", tracking=True)
     client_id        = fields.Many2one(related="centrale_id.client_id")
     client_child_ids = fields.One2many(related="centrale_id.client_id.child_ids")
@@ -26,7 +28,7 @@ class IsSav(models.Model):
         default='non_urgent'
     )
     date_resolution = fields.Date(string="Date de résolution", tracking=True)
-    intervenant_id  = fields.Many2one('res.partner', string="Intervenant", tracking=True)
+    intervenant_ids = fields.Many2many('res.partner', string="Intervenants", tracking=True)
     ticket_number   = fields.Char(string="N°Ticket", size=40, tracking=True)
     description     = fields.Text(string="Description", tracking=True)
     info_depannage  = fields.Text(string="Informations Dépannage", tracking=True)
@@ -178,9 +180,11 @@ class IsSav(models.Model):
                 return "month", earliest_start_dt.date()
 
 
-
-
-
+    @api.onchange('centrale_id')
+    def _onchange_centrale_id(self):
+        """Récupère le secteur de la centrale sélectionnée"""
+        if self.centrale_id and self.centrale_id.secteur:
+            self.secteur = self.centrale_id.secteur
 
     @api.model
     def _read_group_state(self, stages, domain):

@@ -1,6 +1,13 @@
 # -*- coding: utf-8 -*-
 from odoo import api, fields, models  
 
+# Liste partagée des secteurs
+SECTEUR_SELECTION = [
+    ('gp', 'GP'),
+    ('re', 'RE'),
+    ('th', 'TH'),
+    ('si', 'SI'),
+]
 
 
 class IsCentralePanneau(models.Model):
@@ -70,12 +77,7 @@ class IsCentrale(models.Model):
 
     name                     = fields.Char("Nom", size=40, required=True, tracking=True)
     secteur = fields.Selection(
-        [
-            ('gp', 'GP'),
-            ('re', 'RE'),
-            ('th', 'TH'),
-            ('si', 'SI'),
-        ],
+        SECTEUR_SELECTION,
         string="Secteur",
         tracking=True,
     )

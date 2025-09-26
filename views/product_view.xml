@@ -10,7 +10,17 @@
                 <sheet>
                     <group>
                         <field name="name" />
+                        <field name="parent_id" />
                     </group>
+                    <notebook>
+                        <page string="Sous-familles">
+                            <field name="sous_famille_ids">
+                                <list editable="bottom">
+                                    <field name="name" />
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
                 </sheet>
             </form>
         </field>
@@ -21,6 +31,7 @@
         <field name="arch" type="xml">
             <list>
                 <field name="name" />
+                <field name="parent_id" optional="show"/>
             </list>
         </field>
     </record>
@@ -30,6 +41,12 @@
         <field name="arch" type="xml">
             <search>
                 <field name="name" />
+                <field name="parent_id" />
+                <filter string="Familles principales" name="parent_families" domain="[('parent_id', '=', False)]"/>
+                <filter string="Sous-familles" name="sub_families" domain="[('parent_id', '!=', False)]"/>
+                <group expand="0" string="Grouper par">
+                    <filter string="Famille parent" name="group_by_parent" context="{'group_by': 'parent_id'}"/>
+                </group>
             </search>
         </field>
     </record>
@@ -37,6 +54,8 @@
         <field name="name">Famille article</field>
         <field name="res_model">is.famille</field>
         <field name="view_mode">list,form</field>
+        <field name="domain">[]</field>
+        <field name="context">{'search_default_parent_families': 1}</field>
     </record>
 
 
@@ -48,6 +67,7 @@
         <field name="arch" type="xml">
            <field name="product_tooltip" position="after">
                 <field name="is_famille_id"/>
+                <field name="is_sous_famille_id" domain="[('parent_id', '=', is_famille_id)]" context="{'default_parent_id': is_famille_id}"/>
                 <field name="is_reference"/>
                 <field name="is_marque"/>
                 <field name="is_puissance_kva"/>
@@ -62,6 +82,7 @@
         <field name="arch" type="xml">
            <field name="default_code" position="after">
                 <field name="is_famille_id" optional="show"/>
+                <field name="is_sous_famille_id" optional="show"/>
                 <field name="is_reference"  optional="show"/>
                 <field name="is_marque"     optional="show"/>
                 <field name="is_puissance_kva" optional="show"/>
@@ -77,11 +98,13 @@
         <field name="arch" type="xml">
            <field name="name" position="after">
                 <field name="is_famille_id"/>
+                <field name="is_sous_famille_id"/>
                 <field name="is_reference"/>
                 <field name="is_marque"/>
             </field>
             <filter name="type" position="before">
                 <filter string="Famille"      name="is_famille_id"      context="{'group_by':'is_famille_id'}"/>
+                <filter string="Sous-famille" name="is_sous_famille_id" context="{'group_by':'is_sous_famille_id'}"/>
             </filter>
         </field>
     </record> 
