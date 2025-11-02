@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Vue Formulaire -->
+    <record id="is_suivi_temps_form_view" model="ir.ui.view">
+        <field name="name">is.suivi.temps.form</field>
+        <field name="model">is.suivi.temps</field>
+        <field name="arch" type="xml">
+            <form string="Suivi du temps">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="utilisateur_id"/>
+                            <field name="date"/>
+                            <field name="heure_debut" widget="float_time"/>
+                            <field name="heure_fin" widget="float_time"/>
+                            <field name="duree" widget="float_time"/>
+                            <field name="heure_route" widget="float_time" invisible="duree &lt; 10"/>
+                            <field name="duree_hors_deplacement" widget="float_time"/>
+                            <field name="type_travail"/>
+                            <field name="centrale_id" invisible="type_travail != 'chantier'" required="type_travail == 'chantier'"/>
+                            <field name="absence" invisible="type_travail != 'absence'" required="type_travail == 'absence'"/>
+                            <field name="panier"/>
+                            <field name="nuitee"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="commentaire" placeholder="Commentaire..."/>
+                    </group>
+                    <field name="date_debut" invisible="1"/>
+                    <field name="date_fin" invisible="1"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vue Liste -->
+    <record id="is_suivi_temps_tree_view" model="ir.ui.view">
+        <field name="name">is.suivi.temps.tree</field>
+        <field name="model">is.suivi.temps</field>
+        <field name="arch" type="xml">
+            <list string="Suivi du temps">
+                <field name="utilisateur_id" optional="show"/>
+                <field name="date" optional="show"/>
+                <field name="heure_debut" widget="float_time" optional="show"/>
+                <field name="heure_fin" widget="float_time" optional="show"/>
+                <field name="date_debut" optional="show"/>
+                <field name="date_fin" optional="show"/>
+                <field name="duree" widget="float_time" optional="show"/>
+                <field name="heure_route" widget="float_time" optional="show"/>
+                <field name="duree_hors_deplacement" widget="float_time" optional="show"/>
+                <field name="type_travail" optional="show"/>
+                <field name="centrale_id" optional="show"/>
+                <field name="absence" optional="show"/>
+                <field name="commentaire" optional="show"/>
+                <field name="panier" optional="show"/>
+                <field name="nuitee" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Vue Recherche -->
+    <record id="is_suivi_temps_search_view" model="ir.ui.view">
+        <field name="name">is.suivi.temps.search</field>
+        <field name="model">is.suivi.temps</field>
+        <field name="arch" type="xml">
+            <search string="Rechercher">
+                <field name="utilisateur_id"/>
+                <field name="centrale_id"/>
+                <field name="type_travail"/>
+                <field name="absence"/>
+                 <separator/>
+                <filter string="Avec panier" name="panier" domain="[('panier', '=', True)]"/>
+                <filter string="Avec nuitée" name="nuitee" domain="[('nuitee', '=', True)]"/>
+                <group expand="0" string="Regrouper par">
+                    <filter string="Utilisateur" name="group_utilisateur" context="{'group_by': 'utilisateur_id'}"/>
+                    <filter string="Type de travail" name="group_type_travail" context="{'group_by': 'type_travail'}"/>
+                    <filter string="Centrale" name="group_centrale" context="{'group_by': 'centrale_id'}"/>
+                    <filter string="Absence" name="group_absence" context="{'group_by': 'absence'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Vue Calendrier -->
+    <record id="is_suivi_temps_calendar_view" model="ir.ui.view">
+        <field name="name">is.suivi.temps.calendar</field>
+        <field name="model">is.suivi.temps</field>
+        <field name="arch" type="xml">
+            <calendar 
+                string="Suivi du temps" 
+                date_start="date_debut" 
+                date_stop="date_fin" 
+                color="utilisateur_id" 
+                mode="month" 
+                quick_create="0"
+                event_open_popup="1">
+                <field name="utilisateur_id" filters="1" avatar_field="image_128"/>
+                <field name="type_travail" filters="1" />
+                <field name="centrale_id"/>
+                <field name="absence" filters="1" />
+            </calendar>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="is_suivi_temps_action" model="ir.actions.act_window">
+        <field name="name">Suivi du temps</field>
+        <field name="res_model">is.suivi.temps</field>
+        <field name="view_mode">list,form,calendar</field>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créer un nouveau suivi du temps
+            </p>
+        </field>
+    </record>
+
+</odoo>

@@ -6,4 +6,5 @@ from . import is_sav
 from . import is_centrale
 from . import calendar
 from . import crm_lead
+from . import is_suivi_temps
 
