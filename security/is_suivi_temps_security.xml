@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Groupe Gestionnaire suivi du temps -->
+    <record id="group_suivi_temps_manager" model="res.groups">
+        <field name="name">Gestionnaire suivi du temps</field>
+        <field name="category_id" ref="base.module_category_human_resources"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <!-- Règles d'enregistrement pour is.suivi.temps -->
+    <record id="is_suivi_temps_user_rule" model="ir.rule">
+        <field name="name">Suivi temps: utilisateur voit uniquement ses propres enregistrements</field>
+        <field name="model_id" ref="model_is_suivi_temps"/>
+        <field name="domain_force">[('utilisateur_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <record id="is_suivi_temps_manager_rule" model="ir.rule">
+        <field name="name">Suivi temps: gestionnaire voit tout</field>
+        <field name="model_id" ref="model_is_suivi_temps"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_suivi_temps_manager'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <!-- Règles d'enregistrement pour is.suivi.temps.saisie -->
+    <record id="is_suivi_temps_saisie_user_rule" model="ir.rule">
+        <field name="name">Saisie temps: utilisateur voit uniquement ses propres saisies</field>
+        <field name="model_id" ref="model_is_suivi_temps_saisie"/>
+        <field name="domain_force">[('utilisateur_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <record id="is_suivi_temps_saisie_manager_rule" model="ir.rule">
+        <field name="name">Saisie temps: gestionnaire voit tout</field>
+        <field name="model_id" ref="model_is_suivi_temps_saisie"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_suivi_temps_manager'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <!-- Règles d'enregistrement pour is.suivi.temps.saisie.ligne -->
+    <record id="is_suivi_temps_saisie_ligne_user_rule" model="ir.rule">
+        <field name="name">Ligne saisie temps: utilisateur voit uniquement ses propres lignes</field>
+        <field name="model_id" ref="model_is_suivi_temps_saisie_ligne"/>
+        <field name="domain_force">[('saisie_id.utilisateur_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <record id="is_suivi_temps_saisie_ligne_manager_rule" model="ir.rule">
+        <field name="name">Ligne saisie temps: gestionnaire voit tout</field>
+        <field name="model_id" ref="model_is_suivi_temps_saisie_ligne"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_suivi_temps_manager'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+</odoo>

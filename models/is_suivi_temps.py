@@ -178,18 +178,19 @@ class IsSuiviTempsSaisie(models.Model):
     _description = 'Saisie simplifiée du temps'
     _rec_name = "utilisateur_id"
     _order = 'date desc'
+    _inherit = ['mail.thread', 'mail.activity.mixin']
 
-    utilisateur_id = fields.Many2one('res.users', string='Utilisateur', required=True, default=lambda self: self.env.user, index=True)
-    date = fields.Date(string='Date', required=True, default=fields.Date.context_today, index=True)
-    heure_debut = fields.Float(string='Heure de début', help='Heure de début de journée')
-    heure_fin = fields.Float(string='Heure de fin', help='Heure de fin de journée')
-    heure_route = fields.Float(string='Heure de route', help='Temps de route en heures')
-    temps_pose = fields.Float(string='Temps de pose', help='Temps de pause en heures')
+    utilisateur_id = fields.Many2one('res.users', string='Utilisateur', required=True, default=lambda self: self.env.user, index=True, tracking=True)
+    date = fields.Date(string='Date', required=True, default=fields.Date.context_today, index=True, tracking=True)
+    heure_debut = fields.Float(string='Heure de début', help='Heure de début de journée', tracking=True)
+    heure_fin = fields.Float(string='Heure de fin', help='Heure de fin de journée', tracking=True)
+    heure_route = fields.Float(string='Heure de route', help='Temps de route en heures', tracking=True)
+    temps_pose = fields.Float(string='Temps de pose', help='Temps de pause en heures', tracking=True)
     temps_travail = fields.Float(string='Temps de travail', compute='_compute_temps', store=True, help='Temps de travail effectif')
     temps_presence = fields.Float(string='Temps de présence', compute='_compute_temps', store=True, help='Temps de présence total')
-    nuitee = fields.Boolean(string='Nuitée', default=False)
-    panier = fields.Boolean(string='Panier', default=False)
-    commentaire = fields.Text(string='Commentaire')
+    nuitee = fields.Boolean(string='Nuitée', default=False, tracking=True)
+    panier = fields.Boolean(string='Panier', default=False, tracking=True)
+    commentaire = fields.Text(string='Commentaire', tracking=True)
     ligne_ids = fields.One2many('is.suivi.temps.saisie.ligne', 'saisie_id', string='Lignes de saisie', copy=True)
     has_sav = fields.Boolean(string='Contient du SAV', compute='_compute_has_sav', store=False)
 
@@ -200,25 +201,16 @@ class IsSuiviTempsSaisie(models.Model):
         """
         result = {'heure_debut': 8.0, 'heure_fin': 17.0, 'temps_pose': 0.0}
         
-        print(f"[DEBUG _get_horaires] user_id={user_id}, date={date}")
-        
         # Chercher l'employé lié à cet utilisateur
         employee = self.env['hr.employee'].search([('user_id', '=', user_id)], limit=1)
-        print(f"[DEBUG _get_horaires] employee trouvé: {employee.name if employee else 'None'}")
         
         if not employee or not employee.resource_calendar_id:
-            print(f"[DEBUG _get_horaires] Pas d'employé ou pas de calendrier, retour valeurs par défaut")
             return result
         
         calendar = employee.resource_calendar_id
-        print(f"[DEBUG _get_horaires] calendar: {calendar.name}")
         
         # Récupérer le jour de la semaine (0=Lundi, 6=Dimanche)
         dayofweek = str(date.weekday())
-        print(f"[DEBUG _get_horaires] dayofweek={dayofweek} (0=Lundi, 6=Dimanche)")
-        
-        # Afficher tous les attendances du calendrier (seulement en mode debug détaillé)
-        print(f"[DEBUG _get_horaires] Nombre total d'attendances: {len(calendar.attendance_ids)}")
         
         # Récupérer les horaires de travail pour ce jour (hors lunch)
         attendances = calendar.attendance_ids.filtered(
@@ -228,14 +220,11 @@ class IsSuiviTempsSaisie(models.Model):
                      (not a.date_to or a.date_to >= date)
         ).sorted('hour_from')
         
-        print(f"[DEBUG _get_horaires] Attendances filtrées (hors lunch): {len(attendances)}")
-        
         if attendances:
             # Première plage horaire = heure de début
             # Dernière plage horaire = heure de fin
             result['heure_debut'] = attendances[0].hour_from
             result['heure_fin'] = attendances[-1].hour_to
-            print(f"[DEBUG _get_horaires] heure_debut={result['heure_debut']}, heure_fin={result['heure_fin']}")
             
             # Calculer le temps de pause (somme des périodes 'lunch')
             lunch_attendances = calendar.attendance_ids.filtered(
@@ -246,13 +235,42 @@ class IsSuiviTempsSaisie(models.Model):
             )
             if lunch_attendances:
                 result['temps_pose'] = sum((att.hour_to - att.hour_from) for att in lunch_attendances)
-                print(f"[DEBUG _get_horaires] temps_pose={result['temps_pose']}")
-            else:
-                print(f"[DEBUG _get_horaires] Pas de lunch")
-        else:
-            print(f"[DEBUG _get_horaires] Pas d'horaires pour ce jour, retour valeurs par défaut")
         
         return result
+
+    def _get_default_lignes(self, user_id, date):
+        """
+        Récupère les lignes du jour précédent pour les mettre par défaut avec durée à 0
+        Retourne [] si la date est un lundi (weekday() == 0)
+        """
+        from datetime import timedelta
+        
+        # Si c'est un lundi, ne rien retourner
+        if date.weekday() == 0:
+            return []
+        
+        # Chercher la saisie du jour précédent pour le même utilisateur
+        date_precedente = date - timedelta(days=1)
+        saisie_precedente = self.env['is.suivi.temps.saisie'].search([
+            ('utilisateur_id', '=', user_id),
+            ('date', '=', date_precedente)
+        ], limit=1)
+        
+        if not saisie_precedente or not saisie_precedente.ligne_ids:
+            return []
+        
+        # Créer les lignes avec durée à 0
+        lignes = []
+        for ligne in saisie_precedente.ligne_ids.sorted('sequence'):
+            lignes.append((0, 0, {
+                'sequence': ligne.sequence,
+                'type_travail': ligne.type_travail,
+                'centrale_id': ligne.centrale_id.id if ligne.centrale_id else False,
+                'absence': ligne.absence,
+                'duree': 0.0,
+            }))
+        
+        return lignes
 
     @api.model
     def default_get(self, fields_list):
@@ -262,8 +280,6 @@ class IsSuiviTempsSaisie(models.Model):
         # Récupérer l'utilisateur (soit depuis res, soit l'utilisateur courant)
         user_id = res.get('utilisateur_id') or self.env.user.id
         date = res.get('date') or fields.Date.context_today(self)
-        
-        print(f"[DEBUG default_get] Appel avec user_id={user_id}, date={date}")
         
         # Récupérer les horaires depuis le calendrier
         horaires = self._get_horaires_from_calendar(user_id, date)
@@ -276,15 +292,16 @@ class IsSuiviTempsSaisie(models.Model):
         if 'temps_pose' in fields_list:
             res['temps_pose'] = horaires['temps_pose']
         
-        print(f"[DEBUG default_get] Résultat: heure_debut={res.get('heure_debut')}, heure_fin={res.get('heure_fin')}, temps_pose={res.get('temps_pose')}")
+        # Pré-remplir les lignes à partir du jour précédent (sauf si lundi)
+        if 'ligne_ids' in fields_list:
+            res['ligne_ids'] = self._get_default_lignes(user_id, date)
+        
         return res
 
     @api.onchange('date', 'utilisateur_id')
     def _onchange_date_utilisateur(self):
         """Met à jour les horaires quand la date ou l'utilisateur change"""
         if self.date and self.utilisateur_id:
-            print(f"[DEBUG _onchange] date={self.date}, utilisateur={self.utilisateur_id.name}")
-            
             # Récupérer les horaires depuis le calendrier
             horaires = self._get_horaires_from_calendar(self.utilisateur_id.id, self.date)
             
@@ -292,6 +309,15 @@ class IsSuiviTempsSaisie(models.Model):
             self.heure_debut = horaires['heure_debut']
             self.heure_fin = horaires['heure_fin']
             self.temps_pose = horaires['temps_pose']
+            
+            # Recharger les lignes à partir du jour précédent (sauf si lundi)
+            # On recharge toujours si le formulaire est nouveau (pas d'id)
+            if not self.id:
+                lignes_default = self._get_default_lignes(self.utilisateur_id.id, self.date)
+                # Supprimer toutes les lignes existantes et ajouter les nouvelles
+                self.ligne_ids = [(5, 0, 0)]
+                if lignes_default:
+                    self.ligne_ids = lignes_default
 
     @api.depends('ligne_ids.type_travail')
     def _compute_has_sav(self):
@@ -401,8 +427,6 @@ class IsSuiviTempsSaisie(models.Model):
         ], limit=1):
             nouvelle_date += timedelta(days=1)
         
-        print(f"[DEBUG] IsSuiviTempsSaisie.copy() - Ancienne date: {self.date}, Nouvelle date: {nouvelle_date}")
-        
         # Mettre à jour le dictionnaire default avec la nouvelle date
         default.update({
             'date': nouvelle_date,
@@ -411,10 +435,18 @@ class IsSuiviTempsSaisie(models.Model):
         # Appeler la méthode parente pour créer la copie (avec copy=True, les lignes seront copiées)
         new_record = super(IsSuiviTempsSaisie, self).copy(default)
         
-        print(f"[DEBUG] IsSuiviTempsSaisie créé, ID: {new_record.id}, Date: {new_record.date}")
-        print(f"[DEBUG] Nombre de lignes dans la copie: {len(new_record.ligne_ids)}")
-        
         return new_record
+
+    def unlink(self):
+        """Supprimer les IsSuiviTemps associés avant de supprimer la saisie"""
+        # Récupérer tous les suivis du temps liés aux lignes
+        suivis_to_delete = self.mapped('ligne_ids.suivi_temps_id')
+        # Supprimer d'abord la saisie (cela supprimera les lignes en cascade)
+        res = super(IsSuiviTempsSaisie, self).unlink()
+        # Ensuite supprimer les suivis du temps avec sudo() pour avoir les droits
+        if suivis_to_delete:
+            suivis_to_delete.sudo().unlink()
+        return res
 
 
 class IsSuiviTempsSaisieLigne(models.Model):
@@ -459,19 +491,13 @@ class IsSuiviTempsSaisieLigne(models.Model):
         """Crée ou met à jour l'enregistrement is.suivi.temps lié à cette ligne"""
         self.ensure_one()
         
-        print(f"[DEBUG] _create_or_update_suivi_temps appelé pour ligne ID: {self.id}")
-        
         if not self.saisie_id or not self.duree:
-            print(f"[DEBUG] Sortie: saisie_id={self.saisie_id.id if self.saisie_id else 'None'}, duree={self.duree}")
             return
         
         saisie = self.saisie_id
         
         if not saisie.heure_debut:
-            print(f"[DEBUG] Sortie: pas de heure_debut dans la saisie")
             return
-        
-        print(f"[DEBUG] Saisie ID: {saisie.id}, Date: {saisie.date}, heure_debut: {saisie.heure_debut}")
         
         # Récupérer toutes les lignes de la saisie dans l'ordre de séquence
         all_lignes = saisie.ligne_ids.sorted('sequence')
@@ -488,8 +514,6 @@ class IsSuiviTempsSaisieLigne(models.Model):
         # Calculer l'heure de fin pour cette ligne
         heure_fin_ligne = heure_debut_ligne + self.duree
         
-        print(f"[DEBUG] Heures calculées: début={heure_debut_ligne}, fin={heure_fin_ligne}")
-        
         # Préparer les valeurs pour is.suivi.temps
         vals = {
             'utilisateur_id': saisie.utilisateur_id.id,
@@ -504,13 +528,9 @@ class IsSuiviTempsSaisieLigne(models.Model):
             'nuitee': saisie.nuitee,
         }
         
-        # Créer ou mettre à jour l'enregistrement
+        # Créer ou mettre à jour l'enregistrement avec sudo()
         if self.suivi_temps_id:
-            print(f"[DEBUG] Mise à jour is.suivi.temps ID: {self.suivi_temps_id.id}")
-            self.suivi_temps_id.write(vals)
+            self.suivi_temps_id.sudo().write(vals)
         else:
-            print(f"[DEBUG] Création d'un nouveau is.suivi.temps")
-            suivi = self.env['is.suivi.temps'].create(vals)
-            print(f"[DEBUG] is.suivi.temps créé, ID: {suivi.id}")
+            suivi = self.env['is.suivi.temps'].sudo().create(vals)
             self.suivi_temps_id = suivi.id
-            print(f"[DEBUG] Lien établi, self.suivi_temps_id={self.suivi_temps_id.id if self.suivi_temps_id else 'None'}")

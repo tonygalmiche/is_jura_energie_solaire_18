@@ -128,7 +128,7 @@
     <record id="is_suivi_temps_action" model="ir.actions.act_window">
         <field name="name">Suivi du temps</field>
         <field name="res_model">is.suivi.temps</field>
-        <field name="view_mode">list,form,calendar,graph,pivot</field>
+        <field name="view_mode">calendar,list,form,graph,pivot</field>
         <field name="context">{}</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
@@ -153,7 +153,11 @@
                 <sheet>
                     <group>
                         <group>
-                            <field name="utilisateur_id"/>
+                            <field name="utilisateur_id" groups="is_jura_energie_solaire_18.group_suivi_temps_manager"/>
+                            <label for="utilisateur_id" groups="!is_jura_energie_solaire_18.group_suivi_temps_manager"/>
+                            <div groups="!is_jura_energie_solaire_18.group_suivi_temps_manager">
+                                <field name="utilisateur_id" readonly="1" nolabel="1"/>
+                            </div>
                             <field name="date"/>
                             <field name="heure_debut"/>
                             <field name="heure_fin"/>
@@ -197,6 +201,7 @@
                     </div>
 
                 </sheet>
+                <chatter/>
             </form>
         </field>
     </record>
