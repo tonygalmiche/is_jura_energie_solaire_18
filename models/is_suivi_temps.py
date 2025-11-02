@@ -4,53 +4,81 @@ from datetime import datetime, time
 import pytz
 
 
+# Listes de sélection communes
+TYPE_TRAVAIL_SELECTION = [
+    ('chantier', 'Chantier'),
+    ('bureau', 'Bureau'),
+    ('atelier', 'Atelier'),
+    ('sav', 'SAV'),
+    ('absence', 'Absence')
+]
+
+
 class IsSuiviTemps(models.Model):
     _name = 'is.suivi.temps'
     _description = 'Suivi du temps'
     _rec_name = "name"
     _order = 'date_debut desc'
+    _inherit = ['mail.thread', 'mail.activity.mixin']
 
     name = fields.Char(string='Nom', compute='_compute_name', store=True)
-    utilisateur_id = fields.Many2one('res.users', string='Utilisateur', required=True, default=lambda self: self.env.user, index=True)
-    date = fields.Date(string='Date', store=True, required=True, default=fields.Date.context_today)
-    heure_debut = fields.Float(string='Heure début', store=True, required=True)
-    heure_fin = fields.Float(string='Heure fin', store=True, required=True)
-    date_debut = fields.Datetime(string='Heure de début', compute='_compute_datetimes', store=True, readonly=False)
-    date_fin = fields.Datetime(string='Heure de fin', compute='_compute_datetimes', store=True, readonly=False)
-    type_travail = fields.Selection([
-            ('chantier', 'Chantier'), ('bureau', 'Bureau'), ('atelier', 'Atelier'), ('sav', 'SAV'), ('absence', 'Absence')
-        ], string='Type de travail', default='bureau', required=True, index=True)
-    centrale_id = fields.Many2one('is.centrale', string='Centrale', index=True)
-    absence = fields.Selection([('recup', 'Récup'), ('cp', 'CP'), ('sans_solde', 'Sans solde'), ('conge', 'Congé'), ('evenement', 'Evenement'), ('repos', 'Repos')], string='Absence', index=True)
-    heure_route = fields.Float(string='Heure de route', help='Temps de route en heures et minutes')
+    utilisateur_id = fields.Many2one('res.users', string='Utilisateur', required=True, default=lambda self: self.env.user, index=True, tracking=True)
+    date = fields.Date(string='Date', store=True, required=True, default=fields.Date.context_today, tracking=True)
+    heure_debut = fields.Float(string='Heure début', store=True, required=True, tracking=True)
+    heure_fin = fields.Float(string='Heure fin', store=True, required=True, tracking=True)
+    date_debut = fields.Datetime(string='Heure de début', compute='_compute_datetimes', store=True, readonly=False, tracking=True)
+    date_fin = fields.Datetime(string='Heure de fin', compute='_compute_datetimes', store=True, readonly=False, tracking=True)
+    type_travail = fields.Selection(TYPE_TRAVAIL_SELECTION, string='Type de travail', default='bureau', required=True, index=True, tracking=True)
+    centrale_id = fields.Many2one('is.centrale', string='Centrale', index=True, tracking=True)
+    absence = fields.Selection([('recup', 'Récup'), ('cp', 'CP'), ('sans_solde', 'Sans solde'), ('conge', 'Congé'), ('evenement', 'Evenement'), ('repos', 'Repos')], string='Absence', index=True, tracking=True)
+    heure_route = fields.Float(string='Heure de route', help='Temps de route en heures et minutes', tracking=True)
     duree = fields.Float(string='Durée', compute='_compute_duree', store=True, help='Durée en heures')
     duree_hors_deplacement = fields.Float(string='Durée hors déplacement', compute='_compute_duree_hors_deplacement', store=True, help='Durée en heures sans le temps de route')
-    commentaire = fields.Text(string='Commentaire')
-    panier = fields.Boolean(string='Panier', default=False)
-    nuitee = fields.Boolean(string='Nuitée', default=False)
+    commentaire = fields.Text(string='Commentaire', tracking=True)
+    panier = fields.Boolean(string='Panier', default=False, tracking=True)
+    nuitee = fields.Boolean(string='Nuitée', default=False, tracking=True)
+
+    def _get_tz(self):
+        """Retourne le timezone de l'utilisateur"""
+        return pytz.timezone(self.env.user.tz or 'Europe/Paris')
+    
+    def _utc_to_local(self, dt_utc):
+        """Convertit un datetime UTC (naive) vers le timezone local"""
+        if not dt_utc:
+            return None
+        dt_utc = pytz.UTC.localize(dt_utc) if not dt_utc.tzinfo else dt_utc
+        return dt_utc.astimezone(self._get_tz())
+    
+    def _local_to_utc(self, dt_local):
+        """Convertit un datetime local (naive) vers UTC (naive)"""
+        if not dt_local:
+            return None
+        dt_local = self._get_tz().localize(dt_local) if not dt_local.tzinfo else dt_local
+        return dt_local.astimezone(pytz.UTC).replace(tzinfo=None)
+    
+    def _float_to_time(self, float_hour):
+        """Convertit une heure en float (8.5) vers un objet time"""
+        # Gérer les cas où l'heure dépasse 24h (normaliser à 0-23)
+        float_hour = float_hour % 24
+        hours = int(float_hour)
+        minutes = int((float_hour - hours) * 60)
+        return time(hours, minutes)
+    
+    def _datetime_to_float_hour(self, dt):
+        """Extrait l'heure en float d'un datetime"""
+        return dt.hour + dt.minute / 60.0
 
     @api.model
     def default_get(self, fields_list):
         res = super(IsSuiviTemps, self).default_get(fields_list)
-        print("=== DEFAULT_GET ===")
-        print(f"fields_list: {fields_list}")
-        print(f"res initial: {res}")
         
         # Si date_debut et date_fin sont présents (création depuis calendrier)
-        # extraire la date et les heures
         if 'date_debut' in res and 'date_fin' in res:
-            dt_debut = fields.Datetime.to_datetime(res['date_debut'])
-            dt_fin = fields.Datetime.to_datetime(res['date_fin'])
-            # Convertir de UTC vers heure locale
-            tz = pytz.timezone(self.env.user.tz or 'Europe/Paris')
-            dt_debut_utc = pytz.UTC.localize(dt_debut)
-            dt_fin_utc = pytz.UTC.localize(dt_fin)
-            dt_debut_local = dt_debut_utc.astimezone(tz)
-            dt_fin_local = dt_fin_utc.astimezone(tz)
-            # Mettre à jour avec les bonnes valeurs
+            dt_debut_local = self._utc_to_local(fields.Datetime.to_datetime(res['date_debut']))
+            dt_fin_local = self._utc_to_local(fields.Datetime.to_datetime(res['date_fin']))
             res['date'] = dt_debut_local.date()
-            res['heure_debut'] = dt_debut_local.hour + dt_debut_local.minute / 60.0
-            res['heure_fin'] = dt_fin_local.hour + dt_fin_local.minute / 60.0
+            res['heure_debut'] = self._datetime_to_float_hour(dt_debut_local)
+            res['heure_fin'] = self._datetime_to_float_hour(dt_fin_local)
         else:
             # Création manuelle - valeurs par défaut 8h-17h
             if 'heure_debut' in fields_list and 'heure_debut' not in res:
@@ -58,98 +86,43 @@ class IsSuiviTemps(models.Model):
             if 'heure_fin' in fields_list and 'heure_fin' not in res:
                 res['heure_fin'] = 17.0
         
-        print(f"res final: {res}")
         return res
 
     @api.depends('date', 'heure_debut', 'heure_fin')
     def _compute_datetimes(self):
         for record in self:
-            # Ne calculer que si les valeurs sont définies et cohérentes
             if record.date and record.heure_debut is not False and record.heure_fin is not False:
-                hours = int(record.heure_debut)
-                minutes = int((record.heure_debut - hours) * 60)
-                # Créer datetime en heure locale
-                tz = pytz.timezone(record.env.user.tz or 'Europe/Paris')
-                local_dt = tz.localize(datetime.combine(record.date, time(hours, minutes)))
-                # Convertir en UTC pour le stockage
-                record.date_debut = local_dt.astimezone(pytz.UTC).replace(tzinfo=None)
+                # Convertir date + heure_debut -> date_debut (UTC)
+                dt_local = datetime.combine(record.date, record._float_to_time(record.heure_debut))
+                record.date_debut = record._local_to_utc(dt_local)
                 
-                hours = int(record.heure_fin)
-                minutes = int((record.heure_fin - hours) * 60)
-                # Créer datetime en heure locale
-                local_dt = tz.localize(datetime.combine(record.date, time(hours, minutes)))
-                # Convertir en UTC pour le stockage
-                record.date_fin = local_dt.astimezone(pytz.UTC).replace(tzinfo=None)
-
-    @api.onchange('date_debut')
-    def _onchange_date_debut(self):
-        print(f"=== ONCHANGE date_debut: {self.date_debut} ===")
-        if self.date_debut:
-            # Convertir de UTC vers heure locale
-            tz = pytz.timezone(self.env.user.tz or 'Europe/Paris')
-            dt_utc = pytz.UTC.localize(self.date_debut)
-            dt_local = dt_utc.astimezone(tz)
-            self.date = dt_local.date()
-            self.heure_debut = dt_local.hour + dt_local.minute / 60.0
-            print(f"  -> date: {self.date}, heure_debut: {self.heure_debut}")
-
-    @api.onchange('date_fin')
-    def _onchange_date_fin(self):
-        print(f"=== ONCHANGE date_fin: {self.date_fin} ===")
-        if self.date_fin:
-            # Convertir de UTC vers heure locale
-            tz = pytz.timezone(self.env.user.tz or 'Europe/Paris')
-            dt_utc = pytz.UTC.localize(self.date_fin)
-            dt_local = dt_utc.astimezone(tz)
-            if not self.date:
-                self.date = dt_local.date()
-            self.heure_fin = dt_local.hour + dt_local.minute / 60.0
-            print(f"  -> date: {self.date}, heure_fin: {self.heure_fin}")
+                # Convertir date + heure_fin -> date_fin (UTC)
+                dt_local = datetime.combine(record.date, record._float_to_time(record.heure_fin))
+                record.date_fin = record._local_to_utc(dt_local)
 
     @api.model_create_multi
     def create(self, vals_list):
-        print("=== CREATE ===")
         for vals in vals_list:
-            print(f"vals initial: {vals}")
-            # Si date_debut et date_fin sont fournis (création depuis calendrier), calculer date et heures
+            # Si date_debut et date_fin sont fournis (création depuis calendrier)
             if 'date_debut' in vals and 'date_fin' in vals:
-                dt_debut = fields.Datetime.to_datetime(vals['date_debut'])
-                dt_fin = fields.Datetime.to_datetime(vals['date_fin'])
-                print(f"dt_debut (from vals): {dt_debut}")
-                print(f"dt_fin (from vals): {dt_fin}")
-                # Convertir de UTC vers heure locale
-                tz = pytz.timezone(self.env.user.tz or 'Europe/Paris')
-                dt_debut_utc = pytz.UTC.localize(dt_debut)
-                dt_fin_utc = pytz.UTC.localize(dt_fin)
-                dt_debut_local = dt_debut_utc.astimezone(tz)
-                dt_fin_local = dt_fin_utc.astimezone(tz)
-                print(f"dt_debut_local: {dt_debut_local}")
-                print(f"dt_fin_local: {dt_fin_local}")
+                dt_debut_local = self._utc_to_local(fields.Datetime.to_datetime(vals['date_debut']))
+                dt_fin_local = self._utc_to_local(fields.Datetime.to_datetime(vals['date_fin']))
                 vals['date'] = dt_debut_local.date()
-                vals['heure_debut'] = dt_debut_local.hour + dt_debut_local.minute / 60.0
-                vals['heure_fin'] = dt_fin_local.hour + dt_fin_local.minute / 60.0
-                print(f"vals final: {vals}")
+                vals['heure_debut'] = self._datetime_to_float_hour(dt_debut_local)
+                vals['heure_fin'] = self._datetime_to_float_hour(dt_fin_local)
         return super(IsSuiviTemps, self).create(vals_list)
 
     def write(self, vals):
-        # Si date_debut ou date_fin sont modifiés directement (calendrier), mettre à jour les autres champs
+        # Si date_debut ou date_fin modifiés (drag & drop calendrier)
         if 'date_debut' in vals and vals.get('date_debut'):
-            dt_utc = fields.Datetime.to_datetime(vals['date_debut'])
-            # Convertir de UTC vers heure locale
-            tz = pytz.timezone(self.env.user.tz or 'Europe/Paris')
-            dt_utc = pytz.UTC.localize(dt_utc)
-            dt_local = dt_utc.astimezone(tz)
+            dt_local = self._utc_to_local(fields.Datetime.to_datetime(vals['date_debut']))
             vals['date'] = dt_local.date()
-            vals['heure_debut'] = dt_local.hour + dt_local.minute / 60.0
+            vals['heure_debut'] = self._datetime_to_float_hour(dt_local)
         if 'date_fin' in vals and vals.get('date_fin'):
-            dt_utc = fields.Datetime.to_datetime(vals['date_fin'])
-            # Convertir de UTC vers heure locale
-            tz = pytz.timezone(self.env.user.tz or 'Europe/Paris')
-            dt_utc = pytz.UTC.localize(dt_utc)
-            dt_local = dt_utc.astimezone(tz)
+            dt_local = self._utc_to_local(fields.Datetime.to_datetime(vals['date_fin']))
             if 'date' not in vals:
                 vals['date'] = dt_local.date()
-            vals['heure_fin'] = dt_local.hour + dt_local.minute / 60.0
+            vals['heure_fin'] = self._datetime_to_float_hour(dt_local)
         return super(IsSuiviTemps, self).write(vals)
 
     @api.depends('utilisateur_id', 'type_travail', 'centrale_id', 'absence')
@@ -198,3 +171,346 @@ class IsSuiviTemps(models.Model):
         for record in self:
             if record.duree_hors_deplacement and record.duree_hors_deplacement > 10.0:
                 raise models.ValidationError("La durée hors déplacement ne peut pas être supérieure à 10 heures.")
+
+
+class IsSuiviTempsSaisie(models.Model):
+    _name = 'is.suivi.temps.saisie'
+    _description = 'Saisie simplifiée du temps'
+    _rec_name = "utilisateur_id"
+    _order = 'date desc'
+
+    utilisateur_id = fields.Many2one('res.users', string='Utilisateur', required=True, default=lambda self: self.env.user, index=True)
+    date = fields.Date(string='Date', required=True, default=fields.Date.context_today, index=True)
+    heure_debut = fields.Float(string='Heure de début', help='Heure de début de journée')
+    heure_fin = fields.Float(string='Heure de fin', help='Heure de fin de journée')
+    heure_route = fields.Float(string='Heure de route', help='Temps de route en heures')
+    temps_pose = fields.Float(string='Temps de pose', help='Temps de pause en heures')
+    temps_travail = fields.Float(string='Temps de travail', compute='_compute_temps', store=True, help='Temps de travail effectif')
+    temps_presence = fields.Float(string='Temps de présence', compute='_compute_temps', store=True, help='Temps de présence total')
+    nuitee = fields.Boolean(string='Nuitée', default=False)
+    panier = fields.Boolean(string='Panier', default=False)
+    commentaire = fields.Text(string='Commentaire')
+    ligne_ids = fields.One2many('is.suivi.temps.saisie.ligne', 'saisie_id', string='Lignes de saisie', copy=True)
+    has_sav = fields.Boolean(string='Contient du SAV', compute='_compute_has_sav', store=False)
+
+    def _get_horaires_from_calendar(self, user_id, date):
+        """
+        Récupère les horaires de travail à partir du calendrier de l'employé
+        Retourne un dict avec heure_debut, heure_fin, temps_pose
+        """
+        result = {'heure_debut': 8.0, 'heure_fin': 17.0, 'temps_pose': 0.0}
+        
+        print(f"[DEBUG _get_horaires] user_id={user_id}, date={date}")
+        
+        # Chercher l'employé lié à cet utilisateur
+        employee = self.env['hr.employee'].search([('user_id', '=', user_id)], limit=1)
+        print(f"[DEBUG _get_horaires] employee trouvé: {employee.name if employee else 'None'}")
+        
+        if not employee or not employee.resource_calendar_id:
+            print(f"[DEBUG _get_horaires] Pas d'employé ou pas de calendrier, retour valeurs par défaut")
+            return result
+        
+        calendar = employee.resource_calendar_id
+        print(f"[DEBUG _get_horaires] calendar: {calendar.name}")
+        
+        # Récupérer le jour de la semaine (0=Lundi, 6=Dimanche)
+        dayofweek = str(date.weekday())
+        print(f"[DEBUG _get_horaires] dayofweek={dayofweek} (0=Lundi, 6=Dimanche)")
+        
+        # Afficher tous les attendances du calendrier (seulement en mode debug détaillé)
+        print(f"[DEBUG _get_horaires] Nombre total d'attendances: {len(calendar.attendance_ids)}")
+        
+        # Récupérer les horaires de travail pour ce jour (hors lunch)
+        attendances = calendar.attendance_ids.filtered(
+            lambda a: a.dayofweek == dayofweek and 
+                     a.day_period != 'lunch' and
+                     (not a.date_from or a.date_from <= date) and
+                     (not a.date_to or a.date_to >= date)
+        ).sorted('hour_from')
+        
+        print(f"[DEBUG _get_horaires] Attendances filtrées (hors lunch): {len(attendances)}")
+        
+        if attendances:
+            # Première plage horaire = heure de début
+            # Dernière plage horaire = heure de fin
+            result['heure_debut'] = attendances[0].hour_from
+            result['heure_fin'] = attendances[-1].hour_to
+            print(f"[DEBUG _get_horaires] heure_debut={result['heure_debut']}, heure_fin={result['heure_fin']}")
+            
+            # Calculer le temps de pause (somme des périodes 'lunch')
+            lunch_attendances = calendar.attendance_ids.filtered(
+                lambda a: a.dayofweek == dayofweek and 
+                         a.day_period == 'lunch' and
+                         (not a.date_from or a.date_from <= date) and
+                         (not a.date_to or a.date_to >= date)
+            )
+            if lunch_attendances:
+                result['temps_pose'] = sum((att.hour_to - att.hour_from) for att in lunch_attendances)
+                print(f"[DEBUG _get_horaires] temps_pose={result['temps_pose']}")
+            else:
+                print(f"[DEBUG _get_horaires] Pas de lunch")
+        else:
+            print(f"[DEBUG _get_horaires] Pas d'horaires pour ce jour, retour valeurs par défaut")
+        
+        return result
+
+    @api.model
+    def default_get(self, fields_list):
+        """Surcharge pour définir les valeurs par défaut à partir des horaires de travail de l'employé"""
+        res = super(IsSuiviTempsSaisie, self).default_get(fields_list)
+        
+        # Récupérer l'utilisateur (soit depuis res, soit l'utilisateur courant)
+        user_id = res.get('utilisateur_id') or self.env.user.id
+        date = res.get('date') or fields.Date.context_today(self)
+        
+        print(f"[DEBUG default_get] Appel avec user_id={user_id}, date={date}")
+        
+        # Récupérer les horaires depuis le calendrier
+        horaires = self._get_horaires_from_calendar(user_id, date)
+        
+        # Définir les valeurs par défaut
+        if 'heure_debut' in fields_list:
+            res['heure_debut'] = horaires['heure_debut']
+        if 'heure_fin' in fields_list:
+            res['heure_fin'] = horaires['heure_fin']
+        if 'temps_pose' in fields_list:
+            res['temps_pose'] = horaires['temps_pose']
+        
+        print(f"[DEBUG default_get] Résultat: heure_debut={res.get('heure_debut')}, heure_fin={res.get('heure_fin')}, temps_pose={res.get('temps_pose')}")
+        return res
+
+    @api.onchange('date', 'utilisateur_id')
+    def _onchange_date_utilisateur(self):
+        """Met à jour les horaires quand la date ou l'utilisateur change"""
+        if self.date and self.utilisateur_id:
+            print(f"[DEBUG _onchange] date={self.date}, utilisateur={self.utilisateur_id.name}")
+            
+            # Récupérer les horaires depuis le calendrier
+            horaires = self._get_horaires_from_calendar(self.utilisateur_id.id, self.date)
+            
+            # Mettre à jour les champs
+            self.heure_debut = horaires['heure_debut']
+            self.heure_fin = horaires['heure_fin']
+            self.temps_pose = horaires['temps_pose']
+
+    @api.depends('ligne_ids.type_travail')
+    def _compute_has_sav(self):
+        for record in self:
+            record.has_sav = any(ligne.type_travail == 'sav' for ligne in record.ligne_ids)
+
+    @api.depends('heure_debut', 'heure_fin', 'temps_pose', 'heure_route')
+    def _compute_temps(self):
+        for record in self:
+            if record.heure_debut and record.heure_fin:
+                # Temps de présence = heure fin - heure début
+                record.temps_presence = record.heure_fin - record.heure_debut
+                # Temps de travail = temps présence - temps pose
+                record.temps_travail = record.temps_presence - (record.temps_pose or 0.0)
+            else:
+                record.temps_presence = 0.0
+                record.temps_travail = 0.0
+
+    def write(self, vals):
+        res = super(IsSuiviTempsSaisie, self).write(vals)
+        # Si des champs qui impactent les suivis du temps sont modifiés, mettre à jour les lignes
+        if any(field in vals for field in ['heure_debut', 'heure_fin', 'temps_pose', 'heure_route', 'commentaire', 'panier', 'nuitee']):
+            for record in self:
+                for ligne in record.ligne_ids:
+                    ligne._create_or_update_suivi_temps()
+        return res
+
+    @api.constrains('heure_debut', 'heure_fin')
+    def _check_heures(self):
+        for record in self:
+            if record.heure_debut and record.heure_fin:
+                if record.heure_debut >= record.heure_fin:
+                    raise models.ValidationError("L'heure de fin doit être postérieure à l'heure de début.")
+
+    @api.constrains('ligne_ids', 'commentaire')
+    def _check_sav_commentaire(self):
+        for record in self:
+            # Vérifier si une ligne contient du SAV
+            has_sav = any(ligne.type_travail == 'sav' for ligne in record.ligne_ids)
+            if has_sav and not record.commentaire:
+                raise models.ValidationError("Le commentaire est obligatoire lorsqu'une activité SAV est saisie. Veuillez indiquer les numéros des SAV concernés.")
+
+    @api.constrains('ligne_ids', 'temps_pose', 'heure_route', 'temps_presence')
+    def _check_durees_coherence(self):
+        for record in self:
+            # Vérifier qu'il y a au moins une ligne
+            if not record.ligne_ids:
+                raise models.ValidationError("Vous devez saisir au moins une ligne d'activité.")
+            
+            if record.temps_presence:
+                # Calculer la somme des durées des lignes
+                total_lignes = sum(record.ligne_ids.mapped('duree'))
+                # Ajouter temps_pose et heure_route
+                total_calcule = total_lignes + (record.temps_pose or 0.0) + (record.heure_route or 0.0)
+                
+                # Vérifier l'égalité (avec une tolérance de 0.01h pour les erreurs d'arrondi)
+                if abs(total_calcule - record.temps_presence) > 0.01:
+                    raise models.ValidationError(
+                        f"Incohérence dans les durées :\n"
+                        f"Total des activités : {total_lignes:.2f}h\n"
+                        f"Temps de pose : {record.temps_pose or 0:.2f}h\n"
+                        f"Heure de route : {record.heure_route or 0:.2f}h\n"
+                        f"Total calculé : {total_calcule:.2f}h\n"
+                        f"Temps de présence : {record.temps_presence:.2f}h\n\n"
+                        f"Le total des durées des activités + temps de pose + heure de route doit être égal au temps de présence."
+                    )
+
+    _sql_constraints = [
+        ('unique_utilisateur_date', 'UNIQUE(utilisateur_id, date)', 
+         'Une saisie existe déjà pour cet utilisateur à cette date !')
+    ]
+
+    def action_voir_suivis_temps(self):
+        """Ouvre la liste des suivis du temps liés à cette saisie"""
+        self.ensure_one()
+        
+        # Récupérer les IDs des suivis du temps liés aux lignes
+        suivi_temps_ids = self.ligne_ids.mapped('suivi_temps_id').ids
+        
+        return {
+            'name': 'Suivis du temps',
+            'type': 'ir.actions.act_window',
+            'res_model': 'is.suivi.temps',
+            'view_mode': 'list,form,calendar',
+            'domain': [('id', 'in', suivi_temps_ids)],
+            'context': {
+                'default_utilisateur_id': self.utilisateur_id.id,
+                'default_date': self.date,
+            }
+        }
+
+    def copy(self, default=None):
+        """Surcharge de la méthode copy pour incrémenter la date de 1 jour"""
+        self.ensure_one()
+        if default is None:
+            default = {}
+        
+        # Calculer la date J+1
+        from datetime import timedelta
+        nouvelle_date = self.date + timedelta(days=1)
+        
+        # Vérifier si une saisie existe déjà pour cet utilisateur à cette date
+        # Si oui, trouver la prochaine date disponible
+        while self.env['is.suivi.temps.saisie'].search([
+            ('utilisateur_id', '=', self.utilisateur_id.id),
+            ('date', '=', nouvelle_date)
+        ], limit=1):
+            nouvelle_date += timedelta(days=1)
+        
+        print(f"[DEBUG] IsSuiviTempsSaisie.copy() - Ancienne date: {self.date}, Nouvelle date: {nouvelle_date}")
+        
+        # Mettre à jour le dictionnaire default avec la nouvelle date
+        default.update({
+            'date': nouvelle_date,
+        })
+        
+        # Appeler la méthode parente pour créer la copie (avec copy=True, les lignes seront copiées)
+        new_record = super(IsSuiviTempsSaisie, self).copy(default)
+        
+        print(f"[DEBUG] IsSuiviTempsSaisie créé, ID: {new_record.id}, Date: {new_record.date}")
+        print(f"[DEBUG] Nombre de lignes dans la copie: {len(new_record.ligne_ids)}")
+        
+        return new_record
+
+
+class IsSuiviTempsSaisieLigne(models.Model):
+    _name = 'is.suivi.temps.saisie.ligne'
+    _description = 'Ligne de saisie du temps'
+    _order = 'sequence, id'
+
+    sequence = fields.Integer(string='Séquence', default=10)
+    saisie_id = fields.Many2one('is.suivi.temps.saisie', string='Saisie', required=True, ondelete='cascade', index=True)
+    type_travail = fields.Selection(TYPE_TRAVAIL_SELECTION, string='Type de travail', required=True)
+    centrale_id = fields.Many2one('is.centrale', string='Centrale', index=True)
+    absence = fields.Selection([('recup', 'Récup'), ('cp', 'CP'), ('sans_solde', 'Sans solde'), ('conge', 'Congé'), ('evenement', 'Evenement'), ('repos', 'Repos')], string='Absence', index=True)
+    duree = fields.Float(string='Durée', required=True, help='Durée en heures')
+    suivi_temps_id = fields.Many2one('is.suivi.temps', string='Suivi du temps lié', readonly=True, index=True, copy=False)
+    suivi_heure_debut = fields.Float(string='Suivi heure début', related='suivi_temps_id.heure_debut', readonly=True, store=False)
+    suivi_heure_fin = fields.Float(string='Suivi heure fin', related='suivi_temps_id.heure_fin', readonly=True, store=False)
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        lignes = super(IsSuiviTempsSaisieLigne, self).create(vals_list)
+        for ligne in lignes:
+            ligne._create_or_update_suivi_temps()
+        return lignes
+
+    def write(self, vals):
+        res = super(IsSuiviTempsSaisieLigne, self).write(vals)
+        # Mettre à jour les suivis du temps liés si les champs importants changent
+        if any(field in vals for field in ['type_travail', 'centrale_id', 'duree', 'absence']):
+            for ligne in self:
+                ligne._create_or_update_suivi_temps()
+        return res
+
+    def unlink(self):
+        # Supprimer les suivis du temps liés avant de supprimer les lignes
+        suivis_to_delete = self.mapped('suivi_temps_id')
+        res = super(IsSuiviTempsSaisieLigne, self).unlink()
+        if suivis_to_delete:
+            suivis_to_delete.unlink()
+        return res
+
+    def _create_or_update_suivi_temps(self):
+        """Crée ou met à jour l'enregistrement is.suivi.temps lié à cette ligne"""
+        self.ensure_one()
+        
+        print(f"[DEBUG] _create_or_update_suivi_temps appelé pour ligne ID: {self.id}")
+        
+        if not self.saisie_id or not self.duree:
+            print(f"[DEBUG] Sortie: saisie_id={self.saisie_id.id if self.saisie_id else 'None'}, duree={self.duree}")
+            return
+        
+        saisie = self.saisie_id
+        
+        if not saisie.heure_debut:
+            print(f"[DEBUG] Sortie: pas de heure_debut dans la saisie")
+            return
+        
+        print(f"[DEBUG] Saisie ID: {saisie.id}, Date: {saisie.date}, heure_debut: {saisie.heure_debut}")
+        
+        # Récupérer toutes les lignes de la saisie dans l'ordre de séquence
+        all_lignes = saisie.ligne_ids.sorted('sequence')
+        
+        # Calculer l'heure de début pour cette ligne
+        # La première ligne commence à heure_debut, les suivantes à la fin de la précédente
+        heure_debut_ligne = saisie.heure_debut
+        for ligne in all_lignes:
+            if ligne.id == self.id:
+                break
+            # Ajouter la durée de chaque ligne précédente
+            heure_debut_ligne += ligne.duree
+        
+        # Calculer l'heure de fin pour cette ligne
+        heure_fin_ligne = heure_debut_ligne + self.duree
+        
+        print(f"[DEBUG] Heures calculées: début={heure_debut_ligne}, fin={heure_fin_ligne}")
+        
+        # Préparer les valeurs pour is.suivi.temps
+        vals = {
+            'utilisateur_id': saisie.utilisateur_id.id,
+            'date': saisie.date,
+            'heure_debut': heure_debut_ligne,
+            'heure_fin': heure_fin_ligne,
+            'type_travail': self.type_travail,
+            'centrale_id': self.centrale_id.id if self.centrale_id else False,
+            'absence': self.absence,
+            'commentaire': saisie.commentaire,
+            'panier': saisie.panier,
+            'nuitee': saisie.nuitee,
+        }
+        
+        # Créer ou mettre à jour l'enregistrement
+        if self.suivi_temps_id:
+            print(f"[DEBUG] Mise à jour is.suivi.temps ID: {self.suivi_temps_id.id}")
+            self.suivi_temps_id.write(vals)
+        else:
+            print(f"[DEBUG] Création d'un nouveau is.suivi.temps")
+            suivi = self.env['is.suivi.temps'].create(vals)
+            print(f"[DEBUG] is.suivi.temps créé, ID: {suivi.id}")
+            self.suivi_temps_id = suivi.id
+            print(f"[DEBUG] Lien établi, self.suivi_temps_id={self.suivi_temps_id.id if self.suivi_temps_id else 'None'}")

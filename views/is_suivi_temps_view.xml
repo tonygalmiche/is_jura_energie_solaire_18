@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- Vue Formulaire -->
+    <!-- is.suivi.temps -->
     <record id="is_suivi_temps_form_view" model="ir.ui.view">
         <field name="name">is.suivi.temps.form</field>
         <field name="model">is.suivi.temps</field>
@@ -25,16 +25,21 @@
                         </group>
                     </group>
                     <group>
-                        <field name="commentaire" placeholder="Commentaire..."/>
+                        <field name="commentaire" placeholder="Commentaire..." required="type_travail == 'sav'"/>
                     </group>
+                    <div invisible="type_travail != 'sav' or commentaire" class="alert alert-info" role="alert">
+                        <strong>SAV :</strong> Veuillez indiquer dans le commentaire les numéros des SAV concernés.
+                    </div>
+                    <div invisible="duree_hors_deplacement &lt;= 10" class="alert alert-warning" role="alert">
+                        <strong>Attention :</strong> La durée hors déplacement dépasse 10h. Veuillez indiquer les heures de route pour que la durée hors déplacement ne dépasse pas 10h.
+                    </div>
                     <field name="date_debut" invisible="1"/>
                     <field name="date_fin" invisible="1"/>
                 </sheet>
+                <chatter/>
             </form>
         </field>
     </record>
-
-    <!-- Vue Liste -->
     <record id="is_suivi_temps_tree_view" model="ir.ui.view">
         <field name="name">is.suivi.temps.tree</field>
         <field name="model">is.suivi.temps</field>
@@ -44,8 +49,8 @@
                 <field name="date" optional="show"/>
                 <field name="heure_debut" widget="float_time" optional="show"/>
                 <field name="heure_fin" widget="float_time" optional="show"/>
-                <field name="date_debut" optional="show"/>
-                <field name="date_fin" optional="show"/>
+                <field name="date_debut" optional="hide"/>
+                <field name="date_fin" optional="hide"/>
                 <field name="duree" widget="float_time" optional="show"/>
                 <field name="heure_route" widget="float_time" optional="show"/>
                 <field name="duree_hors_deplacement" widget="float_time" optional="show"/>
@@ -58,8 +63,6 @@
             </list>
         </field>
     </record>
-
-    <!-- Vue Recherche -->
     <record id="is_suivi_temps_search_view" model="ir.ui.view">
         <field name="name">is.suivi.temps.search</field>
         <field name="model">is.suivi.temps</field>
@@ -81,8 +84,6 @@
             </search>
         </field>
     </record>
-
-    <!-- Vue Calendrier -->
     <record id="is_suivi_temps_calendar_view" model="ir.ui.view">
         <field name="name">is.suivi.temps.calendar</field>
         <field name="model">is.suivi.temps</field>
@@ -102,16 +103,147 @@
             </calendar>
         </field>
     </record>
-
-    <!-- Action -->
+    <record id="is_suivi_temps_graph_view" model="ir.ui.view">
+        <field name="name">is.suivi.temps.graph</field>
+        <field name="model">is.suivi.temps</field>
+        <field name="arch" type="xml">
+            <graph string="Suivi du temps" type="bar" stacked="True">
+                <field name="date" interval="week"/>
+                <field name="utilisateur_id"/>
+                <field name="duree" type="measure"/>
+            </graph>
+        </field>
+    </record>
+    <record id="is_suivi_temps_pivot_view" model="ir.ui.view">
+        <field name="name">is.suivi.temps.pivot</field>
+        <field name="model">is.suivi.temps</field>
+        <field name="arch" type="xml">
+            <pivot string="Suivi du temps">
+                <field name="date" interval="week" type="row"/>
+                <field name="utilisateur_id" type="col"/>
+                <field name="duree" type="measure"/>
+            </pivot>
+        </field>
+    </record>
     <record id="is_suivi_temps_action" model="ir.actions.act_window">
         <field name="name">Suivi du temps</field>
         <field name="res_model">is.suivi.temps</field>
-        <field name="view_mode">list,form,calendar</field>
+        <field name="view_mode">list,form,calendar,graph,pivot</field>
         <field name="context">{}</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                 Créer un nouveau suivi du temps
+            </p>
+        </field>
+    </record>
+
+
+    <!-- is.suivi.temps.saisie -->
+    <record id="is_suivi_temps_saisie_form_view" model="ir.ui.view">
+        <field name="name">is.suivi.temps.saisie.form</field>
+        <field name="model">is.suivi.temps.saisie</field>
+        <field name="arch" type="xml">
+            <form string="Saisie du temps">
+                <header>
+                    <button name="action_voir_suivis_temps" 
+                            type="object" 
+                            string="Voir les suivis du temps" 
+                    />
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="utilisateur_id"/>
+                            <field name="date"/>
+                            <field name="heure_debut"/>
+                            <field name="heure_fin"/>
+                            <field name="temps_presence" readonly="1"/>
+                            <field name="temps_pose" />
+                            <field name="heure_route"/>
+                            <field name="temps_travail" readonly="1"/>
+                            <field name="panier"/>
+                            <field name="nuitee"/> 
+                        </group>
+                    </group>
+                    <group string="Détail des activités">
+                        <field name="ligne_ids"  nolabel="1" colspan="2">
+                            <list>
+                                <field name="sequence" widget="handle"/>
+                                <field name="type_travail"/>
+                                <field name="centrale_id"/>
+                                <field name="absence"/>
+                                <field name="duree" sum="Total"/>
+                                <field name="suivi_temps_id" optional="hide"/>
+                                <field name="suivi_heure_debut" optional="hide"/>
+                                <field name="suivi_heure_fin" optional="hide"/>
+                            </list>
+                            <form>
+                                <group>
+                                    <field name="type_travail"/>
+                                    <field name="centrale_id" invisible="type_travail != 'chantier'" required="type_travail == 'chantier'"/>
+                                    <field name="absence" invisible="type_travail != 'absence'" required="type_travail == 'absence'"/>
+                                    <field name="duree"/>
+                                </group>
+                            </form>
+                        </field>
+                    </group>
+
+                    <group>
+                        <field name="commentaire" placeholder="Commentaire (obligatoire si SAV)..."/>
+                    </group>
+                    <field name="has_sav" invisible="1"/>
+                    <div invisible="not has_sav or commentaire" class="alert alert-info" role="alert">
+                        <strong>SAV :</strong> Le commentaire est obligatoire car vous avez saisi une activité SAV. Veuillez indiquer les numéros des SAV concernés.
+                    </div>
+
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="is_suivi_temps_saisie_tree_view" model="ir.ui.view">
+        <field name="name">is.suivi.temps.saisie.tree</field>
+        <field name="model">is.suivi.temps.saisie</field>
+        <field name="arch" type="xml">
+            <list string="Saisie du temps">
+                <field name="utilisateur_id" optional="show"/>
+                <field name="date" optional="show"/>
+                <field name="heure_debut" widget="float_time" optional="show"/>
+                <field name="heure_fin" widget="float_time" optional="show"/>
+                <field name="temps_presence" widget="float_time" optional="show"/>
+                <field name="temps_pose" widget="float_time" optional="show"/>
+                <field name="heure_route" widget="float_time" optional="show"/>
+                <field name="temps_travail" widget="float_time" optional="show"/>
+                <field name="panier" optional="show"/>
+                <field name="nuitee" optional="show"/>
+                <field name="commentaire" optional="show"/>
+            </list>
+        </field>
+    </record>
+    <record id="is_suivi_temps_saisie_search_view" model="ir.ui.view">
+        <field name="name">is.suivi.temps.saisie.search</field>
+        <field name="model">is.suivi.temps.saisie</field>
+        <field name="arch" type="xml">
+            <search string="Rechercher">
+                <field name="utilisateur_id"/>
+                <field name="date"/>
+                <separator/>
+                <filter string="Avec panier" name="panier" domain="[('panier', '=', True)]"/>
+                <filter string="Avec nuitée" name="nuitee" domain="[('nuitee', '=', True)]"/>
+                <group expand="0" string="Regrouper par">
+                    <filter string="Utilisateur" name="group_utilisateur" context="{'group_by': 'utilisateur_id'}"/>
+                    <filter string="Date" name="group_date" context="{'group_by': 'date'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <record id="is_suivi_temps_saisie_action" model="ir.actions.act_window">
+        <field name="name">Saisie du temps</field>
+        <field name="res_model">is.suivi.temps.saisie</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créer une nouvelle saisie de temps
             </p>
         </field>
     </record>

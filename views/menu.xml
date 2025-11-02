@@ -14,7 +14,9 @@
 
     <!-- Suivi du temps -->
     <menuitem id="is_suivi_temps_root_menu" name="Suivi du temps" sequence="2"/>
-    <menuitem id="is_suivi_temps_menu" name="Suivi du temps" parent="is_suivi_temps_root_menu" action="is_suivi_temps_action" sequence="10"/>
+    <menuitem id="is_suivi_temps_saisie_menu" name="Saisie suivi du temps" parent="is_suivi_temps_root_menu" action="is_suivi_temps_saisie_action" sequence="10"/>
+    <menuitem id="is_suivi_temps_menu" name="Suivi du temps" parent="is_suivi_temps_root_menu" action="is_suivi_temps_action" sequence="20"/>
+
 
     <!-- JES / CRM -->
     <menuitem id="is_crm_menu" name="CRM" parent="is_crm_root_menu" action="crm.crm_lead_action_pipeline" sequence="5"/>
