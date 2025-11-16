@@ -60,4 +60,11 @@
 
 
 
+    <!-- Masquer les menus de base inutilisés -->
+    <menuitem id="spreadsheet_dashboard.spreadsheet_dashboard_menu_root" parent="base.menu_custom"/>
+    <menuitem id="utm.menu_link_tracker_root" parent="base.menu_custom"/>
+
+
+
+
 </odoo>
