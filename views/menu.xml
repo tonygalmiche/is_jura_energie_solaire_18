@@ -32,6 +32,7 @@
     <menuitem id="is_centrale_kanban_consuel_menu" name="Kanban Consuel" parent="is_centrale_main_menu" action="is_centrale_kanban_consuel_action" sequence="35"/>
     <menuitem id="is_centrale_kanban_s21_menu"     name="Kanban S21"     parent="is_centrale_main_menu" action="is_centrale_kanban_s21_action"     sequence="36"/>
     <menuitem id="is_centrale_kanban_edf_menu"     name="Kanban EDF AO"  parent="is_centrale_main_menu" action="is_centrale_kanban_edf_action"     sequence="37"/>
+    <menuitem id="is_centrale_kanban_maintenance_menu" name="Kanban Maintenance" parent="is_centrale_main_menu" action="is_centrale_kanban_maintenance_action" sequence="38"/>
 
     <!-- JES / SAV -->
     <menuitem id="is_sav_main_menu"   name="SAV"        parent="is_crm_root_menu" sequence="20"/>
@@ -57,7 +58,9 @@
     <menuitem id="is_centrale_panneau_menu"  name="Panneaux de centrales"  parent="is_crm_configuration_menu" action="is_centrale_panneau_action"  sequence="20"/>
     <menuitem id="is_centrale_onduleur_menu" name="Onduleurs de centrales" parent="is_crm_configuration_menu" action="is_centrale_onduleur_action" sequence="30"/>
     <menuitem id="is_centrale_coffret_menu"  name="Coffrets de centrales"  parent="is_crm_configuration_menu" action="is_centrale_coffret_action"  sequence="40"/>
-
+    <menuitem id="is_provenance_client_menu" name="Provenance client"      parent="is_crm_configuration_menu" action="is_provenance_client_action" sequence="50"/>
+    <menuitem id="is_centrale_affaire_menu"  name="Affaires"               parent="is_crm_configuration_menu" action="is_centrale_affaire_action"  sequence="60"/>
+    <menuitem id="is_centrale_formule_menu"  name="Formules"               parent="is_crm_configuration_menu" action="is_centrale_formule_action"  sequence="70"/>
 
 
     <!-- Masquer les menus de base inutilisés -->

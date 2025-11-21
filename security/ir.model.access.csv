@@ -1,4 +1,7 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_is_provenance_client,access_is_provenance_client,model_is_provenance_client,base.group_user,1,0,0,0
+access_is_provenance_client_manager,access_is_provenance_client_manager,model_is_provenance_client,project.group_project_manager,1,1,1,1
+
 access_is_centrale,access_is_centrale,model_is_centrale,base.group_user,1,0,0,0
 access_is_centrale_manager,access_is_centrale_manager,model_is_centrale,project.group_project_manager,1,1,1,1
 
@@ -20,3 +23,9 @@ access_is_suivi_temps_saisie_ligne_manager,access_is_suivi_temps_saisie_ligne_ma
 access_is_centrale_panneau,access_is_centrale_panneau,model_is_centrale_panneau,base.group_user,1,1,1,1
 access_is_centrale_onduleur,access_is_centrale_onduleur,model_is_centrale_onduleur,base.group_user,1,1,1,1
 access_is_centrale_coffret,access_is_centrale_coffret,model_is_centrale_coffret,base.group_user,1,1,1,1
+
+access_is_centrale_affaire,access_is_centrale_affaire,model_is_centrale_affaire,base.group_user,1,0,0,0
+access_is_centrale_affaire_manager,access_is_centrale_affaire_manager,model_is_centrale_affaire,project.group_project_manager,1,1,1,1
+
+access_is_centrale_formule,access_is_centrale_formule,model_is_centrale_formule,base.group_user,1,0,0,0
+access_is_centrale_formule_manager,access_is_centrale_formule_manager,model_is_centrale_formule,project.group_project_manager,1,1,1,1

@@ -8,7 +8,6 @@
                 <field name="name"/>
                 <field name="secteur" optional="show"/>
                 <field name="das" invisible="secteur!='gp'" optional="show"/>
-                <field name="projet_id" optional="hide" widget="many2one_clickable"/>
                 <field name="adresse" optional="hide"/>
                 <field name="localisation" optional="hide"/>
 
@@ -67,6 +66,13 @@
 
                 <field name="edf_informations" optional="hide"/>                            
 
+                <field name="maintenance_statut" optional="show" widget="badge"
+                    decoration-info="maintenance_statut == 'en_attente'"
+                    decoration-warning="maintenance_statut == 'envoye'"
+                    decoration-success="maintenance_statut == 'signe'"
+                    decoration-danger="maintenance_statut == 'refuse'"
+                />
+
                 <field name="type_communication" optional="hide"/>
                 <field name="nature_entrale" optional="hide"/>
 
@@ -90,7 +96,6 @@
                             <field name="name"/>
                             <field name="secteur"/>
                             <field name="das" invisible="secteur!='gp'"/>
-                            <field name="projet_id"/>
                             <field name="adresse"/>
                             <field name="localisation"/>
                         </group>
@@ -146,7 +151,7 @@
                                 <field name="ptf_informations"/>                            
                             </group>
                         </page>
-                        <page string="CRD">
+                        <page string="CRD" invisible="secteur == 're'">
                             <group>
                                 <group>
                                     <field name="crd_etat"/>
@@ -158,7 +163,7 @@
                                 <field name="crd_informations"/>                            
                             </group>
                         </page>
-                        <page string="CARD-I">
+                        <page string="CARD-I" invisible="secteur == 're' or loget == 'tarif_bleu'">
                             <group>
                                 <group>
                                     <field name="cardi_etat"/>
@@ -170,7 +175,7 @@
                                 <field name="cardi_informations"/>                            
                             </group>
                         </page>
-                        <page string="Socotec">
+                        <page string="Socotec" invisible="secteur == 're'">
                             <group>
                                 <group>
                                     <field name="socotec_etat"/>
@@ -204,7 +209,7 @@
                                 <field name="mes_informations"/>                            
                             </group>
                         </page>
-                        <page string="S21">
+                        <page string="S21" invisible="secteur == 're'">
                             <group>
                                 <group>
                                     <field name="s21_etat"/>
@@ -235,6 +240,25 @@
                                 <group>
                                     <field name="type_communication"/>
                                     <field name="nature_entrale"/>
+                                    <field name="prm"/>
+                                    <field name="loget"/>
+                                </group>
+                            </group>
+                            <group string="Onduleurs">
+                                <field name="onduleur_ids" nolabel="1">
+                                    <list>
+                                        <field name="sequence" widget="handle"/>
+                                        <field name="onduleur_id"        optional="show"/>
+                                        <field name="puissance_onduleur" optional="show"/>
+                                        <field name="quantite"           optional="show" sum="Total"/>
+                                        <field name="puissance_totale"   optional="show" sum="Total"/>
+                                        <field name="numero_serie"       optional="show"/>
+                                        <field name="date_debut_garantie" optional="show"/>
+                                        <field name="annee_garantie"     optional="show"/>
+                                    </list>
+                                </field>
+                                <group>
+                                    <field name="bridage_onduleur"/>
                                 </group>
                             </group>
                             <group string="Panneaux">
@@ -250,19 +274,6 @@
                                     </field>
                                 </group>
                             </group>
-                            <group string="Onduleurs">
-                                <group>
-                                    <field name="onduleur_ids" nolabel="1">
-                                        <list editable="bottom">
-                                            <field name="sequence" widget="handle"/>
-                                            <field name="onduleur_id"        optional="show"/>
-                                            <field name="puissance_onduleur" optional="show" force-save="1"/>
-                                            <field name="quantite"           optional="show" sum="Total"/>
-                                            <field name="puissance_totale"   optional="show" sum="Total"/>
-                                        </list>
-                                    </field>
-                                </group>
-                             </group>
                             <group string="Coffrets">
                                 <group>
                                     <field name="coffret_ids" nolabel="1">
@@ -295,6 +306,22 @@
                                 </list>
                             </field>
                         </page>
+                        <page string="Maintenance" invisible="secteur != 'gp'">
+                            <group>
+                                <group>
+                                    <field name="affaire_id"/>
+                                    <field name="maintenance_statut"/>
+                                    <field name="maintenance_date_signature"/>
+                                </group>
+                                <group>
+                                    <field name="affaire_puissance_panneau_totale"/>
+                                    <field name="affaire_formule_id"/>
+                                    <field name="affaire_euro_par_kwc"/>
+                                    <field name="affaire_forfait"/>
+                                    <field name="montant_maintenance"/>
+                                </group>
+                             </group>
+                        </page>
                     </notebook>
                  </sheet>
                 <chatter/>
@@ -314,9 +341,6 @@
                                 <strong>
                                     <field name="name"/>
                                 </strong>
-                            </div>
-                            <div>
-                                <field name="projet_id"/>
                             </div>
                             <div>
                                 <field name="client_id"/>
@@ -344,7 +368,6 @@
                 <field name="name"/>
                 <field name="secteur"/>
                 <field name="das"/>
-                <field name="projet_id"/>
                 <field name="adresse"/>
                 <field name="client_id"/>
             </search>
@@ -428,6 +451,14 @@
         <field name="context">{'group_by': 'edf_etat', 'group_expand': True}</field>
         <field name="domain">[]</field>
     </record>
+    <record id="is_centrale_kanban_maintenance_action" model="ir.actions.act_window">
+        <field name="name">Maintenance</field>
+        <field name="res_model">is.centrale</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="view_id" ref="view_is_centrale_kanban"/>
+        <field name="context">{'group_by': 'maintenance_statut', 'group_expand': True}</field>
+        <field name="domain">[]</field>
+    </record>
 
 
 
@@ -496,12 +527,23 @@
             <form string="Onduleur de centrale">
                 <sheet>
                     <group>
-                        <field name="sequence"/>
-                        <field name="onduleur_id"/>
-                        <field name="puissance_onduleur"/>
-                        <field name="quantite"/>
-                        <field name="puissance_totale"/>
-                        <field name="centrale_id"/>
+                        <group>
+                            <field name="onduleur_id" required="1"/>
+                            <field name="puissance_onduleur"/>
+                            <field name="quantite"/>
+                            <field name="puissance_totale"/>
+                        </group>
+                        <group>
+                            <field name="numero_serie"/>
+                            <field name="date_debut_garantie"/>
+                            <field name="annee_garantie"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="garantie_ids" widget="many2many_binary"/>
+                    </group>
+                    <group>
+                        <field name="centrale_id" invisible="1"/>
                     </group>
                 </sheet>
             </form>
@@ -557,13 +599,113 @@
     </record>
 
 
+    <!-- Vues pour is.centrale.affaire -->
+    <record id="view_is_centrale_affaire_list" model="ir.ui.view">
+        <field name="name">is.centrale.affaire.list</field>
+        <field name="model">is.centrale.affaire</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="puissance_panneau_totale"/>
+                <field name="formule_id"/>
+                <field name="euro_par_kwc"/>
+                <field name="forfait"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_is_centrale_affaire_form" model="ir.ui.view">
+        <field name="name">is.centrale.affaire.form</field>
+        <field name="model">is.centrale.affaire</field>
+        <field name="arch" type="xml">
+            <form string="Affaire">
+                <header>
+                    <button name="action_view_centrales" string="Voir les centrales" type="object" class="oe_highlight"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="puissance_panneau_totale"/>
+                        <field name="formule_id"/>
+                        <field name="euro_par_kwc"/>
+                        <field name="forfait"/>
+                    </group>
+                    <group string="Centrales associées">
+                        <field name="centrale_ids" nolabel="1">
+                            <list>
+                                <button name="action_view_centrale" type="object" icon="fa-search" title="Voir la centrale"/>
+                                <field name="name"/>
+                                <field name="client_id"/>
+                                <field name="adresse"/>
+                                <field name="secteur"/>
+                                <field name="puissance_panneau_totale" sum="Total"/>
+                                <field name="maintenance_statut" widget="badge"
+                                    decoration-info="maintenance_statut == 'en_attente'"
+                                    decoration-warning="maintenance_statut == 'envoye'"
+                                    decoration-success="maintenance_statut == 'signe'"
+                                    decoration-danger="maintenance_statut == 'refuse'"
+                                />
+                                <field name="maintenance_date_signature"/>
+                                <field name="montant_maintenance" sum="Total"/>
+                            </list>
+                        </field>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="is_centrale_affaire_action" model="ir.actions.act_window">
+        <field name="name">Affaires</field>
+        <field name="res_model">is.centrale.affaire</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_is_centrale_affaire_list"/>
+        <field name="domain">[]</field>
+    </record>
 
 
+    <!-- Vues pour is.centrale.formule -->
+    <record id="view_is_centrale_formule_list" model="ir.ui.view">
+        <field name="name">is.centrale.formule.list</field>
+        <field name="model">is.centrale.formule</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="limite_kwc"/>
+                <field name="formule"/>
+                <field name="euro_par_kwc"/>
+                <field name="forfait"/>
+                <field name="commentaire"/>
+            </list>
+        </field>
+    </record>
 
+    <record id="view_is_centrale_formule_form" model="ir.ui.view">
+        <field name="name">is.centrale.formule.form</field>
+        <field name="model">is.centrale.formule</field>
+        <field name="arch" type="xml">
+            <form string="Formule">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="limite_kwc"/>
+                            <field name="formule"/>
+                            <field name="euro_par_kwc"/>
+                            <field name="forfait"/>
+                            <field name="commentaire"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
 
-
-
-
+    <record id="is_centrale_formule_action" model="ir.actions.act_window">
+        <field name="name">Formules</field>
+        <field name="res_model">is.centrale.formule</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_is_centrale_formule_list"/>
+        <field name="domain">[]</field>
+    </record>
 
 
 </odoo>

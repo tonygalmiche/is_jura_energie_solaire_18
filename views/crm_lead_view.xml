@@ -5,11 +5,24 @@
         <field name="model">crm.lead</field>
         <field name="inherit_id" ref="crm.crm_lead_view_form"/>
         <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <field name="is_centrale_id" invisible="1"/>
+                <button class="oe_stat_button" type="object" name="action_create_centrale" 
+                    icon="fa-plus-square" invisible="is_centrale_id">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_text">Créer</span>
+                        <span class="o_stat_text">Centrale</span>
+                    </div>
+                </button>
+            </xpath>
             <xpath expr="//group[@name='lead_priority']" position="after">
                 <group>
-                    <field name="is_secteur"/>
-                    <field name="is_adresse"/>
+                    <field name="is_provenance_client_id"/>
+                    <field name="is_secteur" required="1"/>
+                    <field name="is_adresse" required="1"/>
                     <field name="is_localisation"/>
+                    <field name="is_centrale_id"/>
+                    <field name="is_date_changement_etat"/>
                 </group>
             </xpath>
         </field>
@@ -20,10 +33,44 @@
         <field name="inherit_id" ref="crm.crm_case_tree_view_oppor"/>
         <field name="arch" type="xml">
            <field name="contact_name" position="after">
-                <field name="is_secteur" widget="badge"/>
-                <field name="is_adresse"/>
-                <field name="is_localisation"/>
+                <field name="is_provenance_client_id" optional="show"/>
+                <field name="is_secteur"              optional="show" widget="badge"/>
+                <field name="is_adresse"              optional="show"/>
+                <field name="is_localisation"         optional="show" />
+                <field name="is_centrale_id"          optional="show"  widget="many2one_clickable"/>
+                <field name="is_date_changement_etat" optional="show" />
             </field>
         </field>
     </record> 
+
+    <!-- Vues pour is.provenance.client -->
+    <record id="view_is_provenance_client_list" model="ir.ui.view">
+        <field name="name">is.provenance.client.list</field>
+        <field name="model">is.provenance.client</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_is_provenance_client_form" model="ir.ui.view">
+        <field name="name">is.provenance.client.form</field>
+        <field name="model">is.provenance.client</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="is_provenance_client_action" model="ir.actions.act_window">
+        <field name="name">Provenance client</field>
+        <field name="res_model">is.provenance.client</field>
+        <field name="view_mode">list,form</field>
+    </record>
 </odoo>
