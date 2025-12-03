@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="report_contrat_maintenance_document">
+        <t t-call="web.external_layout">
+            <t t-set="o" t-value="o.with_context(lang=o.client_id.lang or 'fr_FR')"/>
+            <t t-set="company" t-value="o.env.company"/>
+            <div class="page">
+                <style>
+                    .contrat-title {
+                        text-align: center;
+                        font-size: 18pt;
+                        font-weight: bold;
+                        margin-bottom: 30px;
+                        text-transform: uppercase;
+                    }
+                    .section-title {
+                        font-weight: bold;
+                        font-size: 12pt;
+                        margin-top: 20px;
+                        margin-bottom: 10px;
+                        text-decoration: underline;
+                    }
+                    .info-table {
+                        width: 100%;
+                        margin-bottom: 20px;
+                    }
+                    .info-table td {
+                        padding: 5px;
+                        vertical-align: top;
+                    }
+                    .info-label {
+                        font-weight: bold;
+                        width: 200px;
+                    }
+                    .signature-section {
+                        margin-top: 50px;
+                    }
+                    .signature-table {
+                        width: 100%;
+                    }
+                    .signature-table td {
+                        width: 50%;
+                        vertical-align: top;
+                        padding: 10px;
+                    }
+                    .signature-box {
+                        border: 1px solid #000;
+                        height: 100px;
+                        margin-top: 10px;
+                    }
+                </style>
+
+                <div class="contrat-title">
+                    Contrat de Maintenance
+                </div>
+
+                <!-- Informations de la société -->
+                <div class="section-title">Prestataire</div>
+                <table class="info-table">
+                    <tr>
+                        <td class="info-label">Société :</td>
+                        <td><span t-field="company.name"/></td>
+                    </tr>
+                    <tr>
+                        <td class="info-label">Adresse :</td>
+                        <td>
+                            <span t-field="company.street"/>
+                            <t t-if="company.street2"><br/><span t-field="company.street2"/></t>
+                            <br/>
+                            <span t-field="company.zip"/> <span t-field="company.city"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="info-label">Téléphone :</td>
+                        <td><span t-field="company.phone"/></td>
+                    </tr>
+                    <tr>
+                        <td class="info-label">Email :</td>
+                        <td><span t-field="company.email"/></td>
+                    </tr>
+                </table>
+
+                <!-- Informations du client -->
+                <div class="section-title">Client</div>
+                <table class="info-table">
+                    <tr>
+                        <td class="info-label">Nom :</td>
+                        <td><span t-field="o.client_id.name"/></td>
+                    </tr>
+                    <tr>
+                        <td class="info-label">Adresse :</td>
+                        <td>
+                            <span t-field="o.client_id.street"/>
+                            <t t-if="o.client_id.street2"><br/><span t-field="o.client_id.street2"/></t>
+                            <br/>
+                            <span t-field="o.client_id.zip"/> <span t-field="o.client_id.city"/>
+                        </td>
+                    </tr>
+                    <tr t-if="o.client_id.phone">
+                        <td class="info-label">Téléphone :</td>
+                        <td><span t-field="o.client_id.phone"/></td>
+                    </tr>
+                    <tr t-if="o.client_id.email">
+                        <td class="info-label">Email :</td>
+                        <td><span t-field="o.client_id.email"/></td>
+                    </tr>
+                </table>
+
+                <!-- Informations de la centrale -->
+                <div class="section-title">Installation photovoltaïque</div>
+                <table class="info-table">
+                    <tr>
+                        <td class="info-label">Nom de la centrale :</td>
+                        <td><span t-field="o.name"/></td>
+                    </tr>
+                    <tr>
+                        <td class="info-label">Adresse de l'installation :</td>
+                        <td><span t-field="o.adresse"/></td>
+                    </tr>
+                    <tr t-if="o.localisation">
+                        <td class="info-label">Localisation :</td>
+                        <td><span t-field="o.localisation"/></td>
+                    </tr>
+                    <tr>
+                        <td class="info-label">Puissance panneaux :</td>
+                        <td><span t-field="o.puissance_panneau_totale"/> kWc</td>
+                    </tr>
+                    <tr>
+                        <td class="info-label">Puissance onduleurs :</td>
+                        <td><span t-field="o.puissance_onduleur_totale"/> kVA</td>
+                    </tr>
+                    <tr t-if="o.prm">
+                        <td class="info-label">PRM :</td>
+                        <td><span t-field="o.prm"/></td>
+                    </tr>
+                </table>
+
+                <!-- Détails des équipements -->
+                <t t-if="o.panneau_ids">
+                    <div class="section-title">Panneaux</div>
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Panneau</th>
+                                <th class="text-right">Puissance (W)</th>
+                                <th class="text-right">Quantité</th>
+                                <th class="text-right">Puissance totale (kW)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="o.panneau_ids" t-as="panneau">
+                                <tr>
+                                    <td><span t-field="panneau.panneau_id.name"/></td>
+                                    <td class="text-right"><span t-field="panneau.puissance_panneau"/></td>
+                                    <td class="text-right"><span t-field="panneau.quantite"/></td>
+                                    <td class="text-right"><span t-field="panneau.puissance_totale"/></td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </t>
+
+                <t t-if="o.onduleur_ids">
+                    <div class="section-title">Onduleurs</div>
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Onduleur</th>
+                                <th class="text-right">Puissance (kVA)</th>
+                                <th class="text-right">Quantité</th>
+                                <th class="text-right">Puissance totale (kVA)</th>
+                                <th>N° série</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="o.onduleur_ids" t-as="onduleur">
+                                <tr>
+                                    <td><span t-field="onduleur.onduleur_id.name"/></td>
+                                    <td class="text-right"><span t-field="onduleur.puissance_onduleur"/></td>
+                                    <td class="text-right"><span t-field="onduleur.quantite"/></td>
+                                    <td class="text-right"><span t-field="onduleur.puissance_totale"/></td>
+                                    <td><span t-field="onduleur.numero_serie"/></td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </t>
+
+                <!-- Tarification -->
+                <div class="section-title">Tarification</div>
+                <table class="info-table">
+                    <tr t-if="o.affaire_id">
+                        <td class="info-label">Affaire :</td>
+                        <td><span t-field="o.affaire_id.name"/></td>
+                    </tr>
+                    <tr t-if="o.affaire_formule_id">
+                        <td class="info-label">Formule appliquée :</td>
+                        <td><span t-field="o.affaire_formule_id.limite_kwc"/> kWc</td>
+                    </tr>
+                    <tr>
+                        <td class="info-label">Tarif :</td>
+                        <td><span t-field="o.affaire_euro_par_kwc"/> €/kWc</td>
+                    </tr>
+                    <tr t-if="o.affaire_forfait">
+                        <td class="info-label">Forfait :</td>
+                        <td><span t-field="o.affaire_forfait"/> €</td>
+                    </tr>
+                    <tr>
+                        <td class="info-label"><strong>Montant annuel de la maintenance :</strong></td>
+                        <td><strong><span t-field="o.montant_maintenance" t-options='{"widget": "monetary", "display_currency": company.currency_id}'/></strong></td>
+                    </tr>
+                </table>
+
+                <!-- Entrée en vigueur -->
+                <div class="section-title">Entrée en vigueur du contrat</div>
+                <p>
+                    Ce contrat entre en vigueur à la date de signature de celui-ci pour un an et sera
+                    renouvelable par tacite reconduction pour une année (durée du contrat) à la date
+                    d'anniversaire de la signature de celui-ci.
+                </p>
+                <p style="margin-top: 20px;">
+                    Fait à ____________________, le ____________________
+                    et en deux exemplaires de 7 pages, un pour chaque signataire.
+                </p>
+                <p style="font-style: italic; margin-top: 10px;">
+                    Signatures précédées de la mention manuscrite « lu et approuvé »
+                </p>
+
+                <!-- Signatures -->
+                <div class="signature-section">
+                    <table class="signature-table">
+                        <tr>
+                            <td>
+                                <strong>Le Prestataire</strong><br/>
+                                <span t-field="company.name"/><br/>
+                                Date : ____________________<br/>
+                                <div class="signature-box"></div>
+                            </td>
+                            <td>
+                                <strong>Le Client</strong><br/>
+                                <span t-field="o.client_id.name"/><br/>
+                                Date : ____________________<br/>
+                                <div class="signature-box"></div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+            </div>
+        </t>
+    </template>
+
+    <template id="report_contrat_maintenance">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="is_jura_energie_solaire_18.report_contrat_maintenance_document"/>
+            </t>
+        </t>
+    </template>
+
+    <record id="action_report_contrat_maintenance" model="ir.actions.report">
+        <field name="name">Contrat de Maintenance</field>
+        <field name="model">is.centrale</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">is_jura_energie_solaire_18.report_contrat_maintenance</field>
+        <field name="report_file">is_jura_energie_solaire_18.report_contrat_maintenance</field>
+        <field name="print_report_name">'Contrat_Maintenance_%s' % object.name</field>
+        <field name="binding_model_id" ref="model_is_centrale"/>
+        <field name="binding_type">report</field>
+    </record>
+
+</odoo>

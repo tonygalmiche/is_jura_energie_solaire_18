@@ -533,3 +533,62 @@ class IsCentrale(models.Model):
             mylist.append(line[0])
         return mylist
 
+    def action_print_contrat_maintenance(self):
+        """Génère le PDF du contrat de maintenance avec les conditions générales"""
+        self.ensure_one()
+        import base64
+        from io import BytesIO
+        
+        # Générer le PDF du contrat de maintenance
+        report = self.env.ref('is_jura_energie_solaire_18.action_report_contrat_maintenance')
+        pdf_content, _ = report._render_qweb_pdf(report.id, [self.id])
+        
+        # Récupérer les conditions générales de la société
+        conditions_generales = self.env.company.is_conditions_generales_ids
+        
+        if not conditions_generales:
+            # Pas de conditions générales, retourner directement le PDF du contrat
+            return report.report_action(self)
+        
+        # Assembler les PDFs avec PyPDF2
+        try:
+            from PyPDF2 import PdfMerger
+        except ImportError:
+            # Si PyPDF2 n'est pas installé, retourner le PDF sans les conditions
+            return report.report_action(self)
+        
+        merger = PdfMerger()
+        
+        # Ajouter le PDF du contrat de maintenance
+        merger.append(BytesIO(pdf_content))
+        
+        # Ajouter les PDFs des conditions générales
+        for attachment in conditions_generales:
+            if attachment.mimetype == 'application/pdf':
+                pdf_data = base64.b64decode(attachment.datas)
+                merger.append(BytesIO(pdf_data))
+        
+        # Créer le PDF final
+        output = BytesIO()
+        merger.write(output)
+        merger.close()
+        output.seek(0)
+        pdf_final = output.read()
+        
+        # Créer une pièce jointe temporaire pour le téléchargement
+        attachment = self.env['ir.attachment'].create({
+            'name': f'Contrat_Maintenance_{self.name}.pdf',
+            'type': 'binary',
+            'datas': base64.b64encode(pdf_final),
+            'mimetype': 'application/pdf',
+            'res_model': self._name,
+            'res_id': self.id,
+        })
+        
+        # Retourner l'action de téléchargement
+        return {
+            'type': 'ir.actions.act_url',
+            'url': f'/web/content/{attachment.id}?download=true',
+            'target': 'self',
+        }
+

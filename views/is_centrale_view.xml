@@ -85,6 +85,9 @@
         <field name="model">is.centrale</field>
         <field name="arch" type="xml">
             <form>
+                <header>
+                    <button name="action_print_contrat_maintenance" string="Contrat de Maintenance" type="object" class="oe_highlight" invisible="secteur != 'gp'"/>
+                </header>
                 <style>
                     .o_form_view .o_form_sheet_bg > .o_form_sheet{
                         max-width: 1800px;
