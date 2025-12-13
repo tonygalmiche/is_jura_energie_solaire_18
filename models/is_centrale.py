@@ -212,6 +212,7 @@ class IsCentrale(models.Model):
     )
 
     maintenance_date_signature = fields.Date("Date de Signature", tracking=True)
+    contrat_signe_ids = fields.Many2many('ir.attachment', 'is_centrale_contrat_signe_rel', 'centrale_id', 'attachment_id', string="Contrat de maintenance signé")
     projet_id                = fields.Many2one('project.project', string="Projet")
     localisation             = fields.Char("Localisation", tracking=True)
     adresse                  = fields.Char("Adresse", size=60, tracking=True)

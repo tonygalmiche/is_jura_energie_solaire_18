@@ -324,6 +324,9 @@
                                     <field name="montant_maintenance"/>
                                 </group>
                              </group>
+                             <group>
+                                <field name="contrat_signe_ids" widget="many2many_binary"/>
+                             </group>
                         </page>
                     </notebook>
                  </sheet>
