@@ -7,6 +7,7 @@ SECTEUR_SELECTION = [
     ('re', 'RE'),
     ('th', 'TH'),
     ('si', 'SI'),
+    ('irve', 'IRVE'),
 ]
 
 class IsCentraleAffaire(models.Model):

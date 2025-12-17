@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from odoo import fields, models, api  
 from markupsafe import Markup
+from .is_centrale import SECTEUR_SELECTION
 
 
 class IsProvenanceClient(models.Model):
@@ -15,16 +16,7 @@ class crm_lead(models.Model):
     _inherit = "crm.lead"
     
     is_provenance_client_id = fields.Many2one('is.provenance.client', string="Provenance client", tracking=True)
-    is_secteur = fields.Selection(
-        [
-            ('gp', 'GP'),
-            ('re', 'RE'),
-            ('th', 'TH'),
-            ('si', 'SI'),
-        ],
-        string="Secteur",
-        tracking=True,
-    )
+    is_secteur      = fields.Selection(SECTEUR_SELECTION,string="Secteur",tracking=True)
     is_adresse      = fields.Char("Adresse", size=60, tracking=True, required=False)
     is_localisation = fields.Char("Localisation", tracking=True)
     is_centrale_id  = fields.Many2one('is.centrale', string="Centrale", tracking=True)

@@ -39,9 +39,29 @@
                 <field name="is_localisation"         optional="show" />
                 <field name="is_centrale_id"          optional="show"  widget="many2one_clickable"/>
                 <field name="is_date_changement_etat" optional="show" />
+                <field name="create_date" optional="hide" />
+                <field name="create_uid"  optional="hide" />
+                <field name="write_date"  optional="hide" />
+                <field name="write_uid"   optional="hide" />
             </field>
         </field>
     </record> 
+
+    <record id="is_crm_lead_view_search" model="ir.ui.view">
+        <field name="name">is.crm.lead.view.search</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.view_crm_case_opportunities_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="is_secteur"/>
+            </xpath>
+            <xpath expr="//filter[@name='filter_lost']" position="after">
+                <separator/>
+                <filter string="Créé depuis 30 jours" name="created_last_30_days" domain="[('create_date', '&gt;=', (context_today() - datetime.timedelta(days=30)).strftime('%Y-%m-%d'))]"/>
+                <filter string="Changement d'état depuis 30 jours" name="state_change_last_30_days" domain="[('is_date_changement_etat', '&gt;=', (context_today() - datetime.timedelta(days=30)).strftime('%Y-%m-%d'))]"/>
+            </xpath>
+        </field>
+    </record>
 
     <!-- Vues pour is.provenance.client -->
     <record id="view_is_provenance_client_list" model="ir.ui.view">
