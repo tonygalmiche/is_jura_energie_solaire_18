@@ -20,7 +20,7 @@ class crm_lead(models.Model):
     is_adresse      = fields.Char("Adresse", size=60, tracking=True, required=False)
     is_localisation = fields.Char("Localisation", tracking=True)
     is_centrale_id  = fields.Many2one('is.centrale', string="Centrale", tracking=True)
-    is_date_changement_etat = fields.Datetime("Date de dernier changement d'état", readonly=True, tracking=True)
+    is_date_changement_etat = fields.Datetime("Date de dernier changement d'état", readonly=False, tracking=True)
 
     def write(self, vals):
         # Mettre à jour la date de changement d'état si stage_id est modifié
