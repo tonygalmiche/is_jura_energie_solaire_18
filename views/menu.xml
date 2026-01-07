@@ -40,7 +40,7 @@
     <menuitem id="is_sav_kanban_menu" name="Vue Kanban" parent="is_sav_main_menu" action="is_sav_kanban_action" sequence="20"/>
 
     <!-- JES / Produits -->
-    <menuitem id="is_produit_menu"  name="Produits"  parent="is_crm_root_menu" action="is_produit_action"                    sequence="40"/>
+    <menuitem id="is_produit_menu"  name="Produits"  parent="is_crm_root_menu" action="is_produit_action" groups="sales_team.group_sale_salesman_all_leads,product.group_product_manager" sequence="40"/>
     
     <!-- JES / Contact -->
     <menuitem id="is_contact_menu"  name="Contacts"  parent="is_crm_root_menu" action="is_contact_action"                    sequence="50"/>

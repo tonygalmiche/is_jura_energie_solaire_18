@@ -1,10 +1,100 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <!-- Catégorie parent JES -->
+    <record id="module_category_jes" model="ir.module.category">
+        <field name="name">JES</field>
+        <field name="sequence">5</field>
+    </record>
+
+    <!-- Sous-catégorie CRM -->
+    <record id="module_category_jes_crm" model="ir.module.category">
+        <field name="name">CRM</field>
+        <field name="sequence">1</field>
+        <field name="parent_id" ref="module_category_jes"/>
+    </record>
+
+    <!-- Sous-catégorie Centrale -->
+    <record id="module_category_jes_centrale" model="ir.module.category">
+        <field name="name">Centrale</field>
+        <field name="sequence">2</field>
+        <field name="parent_id" ref="module_category_jes"/>
+    </record>
+
+    <!-- Sous-catégorie SAV -->
+    <record id="module_category_jes_sav" model="ir.module.category">
+        <field name="name">SAV</field>
+        <field name="sequence">3</field>
+        <field name="parent_id" ref="module_category_jes"/>
+    </record>
+
+    <!-- Sous-catégorie Suivi temps -->
+    <record id="module_category_jes_suivi_temps" model="ir.module.category">
+        <field name="name">Suivi du temps</field>
+        <field name="sequence">4</field>
+        <field name="parent_id" ref="module_category_jes"/>
+    </record>
+
+    <!-- Sous-catégorie Contacts -->
+    <record id="module_category_jes_contacts" model="ir.module.category">
+        <field name="name">Contacts</field>
+        <field name="sequence">10</field>
+        <field name="parent_id" ref="module_category_jes"/>
+    </record>
+
+    <!-- Sous-catégorie Produits -->
+    <record id="module_category_jes_produits" model="ir.module.category">
+        <field name="name">Produits</field>
+        <field name="sequence">11</field>
+        <field name="parent_id" ref="module_category_jes"/>
+    </record>
+
+    <!-- Groupe Accès en lecture à la CRM -->
+    <record id="group_crm_readonly" model="res.groups">
+        <field name="name">Accès en lecture</field>
+        <field name="category_id" ref="module_category_jes_crm"/>
+    </record>
+
+    <!-- Groupe Centrale / Consultation -->
+    <record id="group_centrale_consultation" model="res.groups">
+        <field name="name">Consultation</field>
+        <field name="category_id" ref="module_category_jes_centrale"/>
+    </record>
+
+    <!-- Groupe Centrale / Gestion -->
+    <record id="group_centrale_gestion" model="res.groups">
+        <field name="name">Gestion</field>
+        <field name="category_id" ref="module_category_jes_centrale"/>
+        <field name="implied_ids" eval="[(4, ref('group_centrale_consultation'))]"/>
+    </record>
+
     <!-- Groupe Gestionnaire suivi du temps -->
     <record id="group_suivi_temps_manager" model="res.groups">
-        <field name="name">Gestionnaire suivi du temps</field>
-        <field name="category_id" ref="base.module_category_human_resources"/>
+        <field name="name">Gestionnaire</field>
+        <field name="category_id" ref="module_category_jes_suivi_temps"/>
         <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <!-- Déplacer le groupe "Création de contact" vers la catégorie JES -->
+    <record id="base.group_partner_manager" model="res.groups">
+        <field name="category_id" ref="module_category_jes_contacts"/>
+    </record>
+
+    <!-- Déplacer le groupe "Création de produits" vers la catégorie JES -->
+    <record id="product.group_product_manager" model="res.groups">
+        <field name="category_id" ref="module_category_jes_produits"/>
+    </record>
+
+    <!-- Groupe SAV / Consultation -->
+    <record id="group_sav_consultation" model="res.groups">
+        <field name="name">Consultation</field>
+        <field name="category_id" ref="module_category_jes_sav"/>
+    </record>
+
+    <!-- Groupe SAV / Gestion -->
+    <record id="group_sav_gestion" model="res.groups">
+        <field name="name">Gestion</field>
+        <field name="category_id" ref="module_category_jes_sav"/>
+        <field name="implied_ids" eval="[(4, ref('group_sav_consultation'))]"/>
     </record>
 
     <!-- Règles d'enregistrement pour is.suivi.temps -->
