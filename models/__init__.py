@@ -8,4 +8,5 @@ from . import is_centrale
 from . import calendar
 from . import crm_lead
 from . import is_suivi_temps
+from . import is_user_group_matrix
 

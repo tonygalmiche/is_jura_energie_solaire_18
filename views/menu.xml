@@ -51,7 +51,7 @@
         <field name="sequence">90</field>
         <field name="parent_id" eval="ref('is_crm_root_menu')"/>
         <field name="groups_id" eval="[(6,0,[
-            ref('project.group_project_manager'),
+            ref('is_jura_energie_solaire_18.group_configuration_jes'),
         ])]"/>
     </record>
     <menuitem id="is_famille_menu"           name="Familles"               parent="is_crm_configuration_menu" action="is_famille_action"           sequence="10"/>

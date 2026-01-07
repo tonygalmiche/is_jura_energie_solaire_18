@@ -48,6 +48,19 @@
         <field name="parent_id" ref="module_category_jes"/>
     </record>
 
+    <!-- Sous-catégorie Configuration -->
+    <record id="module_category_jes_configuration" model="ir.module.category">
+        <field name="name">Configuration</field>
+        <field name="sequence">20</field>
+        <field name="parent_id" ref="module_category_jes"/>
+    </record>
+
+    <!-- Groupe Configuration JES -->
+    <record id="group_configuration_jes" model="res.groups">
+        <field name="name">Configuration JES</field>
+        <field name="category_id" ref="module_category_jes_configuration"/>
+    </record>
+
     <!-- Groupe Accès en lecture à la CRM -->
     <record id="group_crm_readonly" model="res.groups">
         <field name="name">Accès en lecture</field>
