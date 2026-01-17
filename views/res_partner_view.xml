@@ -32,6 +32,12 @@
                 <field name="parent_id" position="before">
                     <field name="is_client_a_risque"/>
                 </field>
+
+                <xpath expr="//field[@name='user_id']" position="after">
+                    <field name="is_attachment_content" string="Contenu pièces jointes"/>
+                </xpath>
+
+
             </field>
         </record>
 
