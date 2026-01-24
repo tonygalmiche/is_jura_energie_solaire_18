@@ -328,6 +328,22 @@
                                 <field name="contrat_signe_ids" widget="many2many_binary"/>
                              </group>
                         </page>
+                        <page string="Suivi maintenance" invisible="secteur != 'gp'">
+                            <field name="maintenance_ids" readonly="1" nolabel="1">
+                                <list>
+                                    <button name="action_open_maintenance" type="object" icon="fa-search" title="Ouvrir la fiche"/>
+                                    <field name="name"/>
+                                    <field name="date_prevue"/>
+                                    <field name="alerte_html"/>
+                                    <field name="etat" widget="badge" 
+                                        decoration-muted="etat == 'pas_commence'" 
+                                        decoration-info="etat == 'en_cours'" 
+                                        decoration-success="etat == 'termine'"/>
+                                    <field name="technicien_id"/>
+                                    <field name="date_termine"/>
+                                </list>
+                            </field>
+                        </page>
                     </notebook>
                  </sheet>
                 <chatter/>

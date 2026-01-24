@@ -14,3 +14,14 @@ class ResPartner(models.Model):
         tracking=True,
         default='non'
     )
+
+    def action_open_contact(self):
+        """Ouvrir la fiche du contact"""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'res.partner',
+            'res_id': self.id,
+            'view_mode': 'form',
+            'target': 'current',
+        }

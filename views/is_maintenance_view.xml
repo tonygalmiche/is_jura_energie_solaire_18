@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Séquence pour le N° chrono des maintenances -->
+    <record id="seq_is_maintenance" model="ir.sequence">
+        <field name="name">Maintenance</field>
+        <field name="code">is.maintenance</field>
+        <field name="prefix"></field>
+        <field name="padding">5</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <!-- Cron pour actualiser les couleurs d'alerte chaque nuit -->
+    <record id="ir_cron_update_maintenance_alerte" model="ir.cron">
+        <field name="name">Actualiser les alertes de maintenance</field>
+        <field name="model_id" ref="model_is_maintenance"/>
+        <field name="state">code</field>
+        <field name="code">model.cron_update_couleur_alerte()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="active" eval="True"/>
+    </record>
+
+    <!-- Vue Formulaire -->
+    <record id="view_is_maintenance_form" model="ir.ui.view">
+        <field name="name">is.maintenance.form</field>
+        <field name="model">is.maintenance</field>
+        <field name="arch" type="xml">
+            <form string="Maintenance">
+                <header>
+                    <field name="etat" widget="statusbar" options="{'clickable': '1'}"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_schedule_meeting" type="object" class="oe_stat_button" icon="fa-calendar" context="{'partner_id': client_id}">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text"><field name="meeting_display_label"/></span>
+                                <field name="meeting_display_date" class="o_stat_value" invisible="not meeting_display_date"/>
+                            </div>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="centrale_id" options="{'no_create': True}"/>
+                            <field name="date_prevue"/>
+                            <field name="annee" readonly="1"/>
+                            <field name="nb_jours_avant" readonly="1"/>
+                            <field name="couleur_alerte" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="technicien_id"/>
+                            <field name="date_pas_commence" readonly="1"/>
+                            <field name="date_en_cours" readonly="1"/>
+                            <field name="date_termine" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="operation_hors_charge"/>
+                            <field name="operation_en_charge"/>
+                            <field name="compte_rendu"/>
+                        </group>
+                        <group>
+                            <field name="pdf_signe_ids" widget="many2many_binary"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="information_maintenance" placeholder="Informations sur la maintenance..."/>
+                    </group>
+                    
+                    <notebook>
+                        <page string="Client">
+                            <group>
+                                <field name="client_id" readonly="1"/>
+                            </group>
+                            <field name="client_child_ids" readonly="1" nolabel="1">
+                                <list>
+                                    <button name="action_open_contact" type="object" icon="fa-search" title="Ouvrir la fiche"/>
+                                    <field name="name"/>
+                                    <field name="is_client_a_risque" widget="badge" 
+                                        decoration-danger="is_client_a_risque == 'oui'"
+                                        decoration-muted="is_client_a_risque == 'non'"/>
+                                    <field name="phone"/>
+                                    <field name="email"/>
+                                    <field name="city"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vue Liste -->
+    <record id="view_is_maintenance_tree" model="ir.ui.view">
+        <field name="name">is.maintenance.list</field>
+        <field name="model">is.maintenance</field>
+        <field name="arch" type="xml">
+            <!-- <list string="Maintenances" decoration-danger="couleur_alerte == 'rouge'" decoration-warning="couleur_alerte == 'orange'" decoration-info="couleur_alerte == 'jaune'" decoration-success="couleur_alerte == 'vert'"> -->
+            <list>
+                <field name="name"/>
+                <field name="centrale_id"/>
+                <field name="client_id" optional="show"/>
+                <field name="date_prevue" optional="show"/>
+                <field name="nb_jours_avant" optional="show"/>
+                <field name="nb_jours_retard" optional="hide"/>
+                <field name="alerte_html" optional="show"/>
+                <field name="couleur_alerte" optional="hide"/>
+                <field name="annee" optional="show"/>
+                <field name="technicien_id" optional="show"/>
+                <field name="operation_hors_charge" optional="show" widget="badge" 
+                    decoration-muted="operation_hors_charge == 'a_planifier'" 
+                    decoration-info="operation_hors_charge == 'planifie'" 
+                    decoration-success="operation_hors_charge == 'fait'"/>
+                <field name="operation_en_charge" optional="show" widget="badge" 
+                    decoration-muted="operation_en_charge == 'a_planifier'" 
+                    decoration-info="operation_en_charge == 'planifie'" 
+                    decoration-success="operation_en_charge == 'fait'"/>
+                <field name="compte_rendu" optional="show" widget="badge" 
+                    decoration-muted="compte_rendu == 'a_planifier'" 
+                    decoration-info="compte_rendu == 'planifie'" 
+                    decoration-warning="compte_rendu == 'fait'" 
+                    decoration-success="compte_rendu == 'envoye'"/>
+                <field name="date_pas_commence" optional="show"/>
+                <field name="date_en_cours" optional="show"/>
+                <field name="date_termine" optional="show"/>
+                <field name="information_maintenance" optional="hide"/>
+
+                <field name="etat" optional="show" widget="badge" 
+                    decoration-muted="etat == 'pas_commence'" 
+                    decoration-info="etat == 'en_cours'" 
+                    decoration-success="etat == 'termine'"/>
+
+
+            </list>
+        </field>
+    </record>
+
+    <!-- Vue Kanban -->
+    <record id="view_is_maintenance_kanban" model="ir.ui.view">
+        <field name="name">is.maintenance.kanban</field>
+        <field name="model">is.maintenance</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="etat" class="o_kanban_small_column" default_order="nb_jours_avant">
+                <field name="name"/>
+                <field name="centrale_id"/>
+                <field name="date_prevue"/>
+                <field name="couleur_alerte"/>
+                <field name="nb_jours_avant"/>
+                <field name="nb_jours_retard"/>
+                <field name="etat"/>
+                <field name="technicien_id"/>
+                <field name="client_id"/>
+                <templates>
+                    <t t-name="card" class="flex-row">
+                        <div t-attf-class="oe_kanban_card oe_kanban_global_click
+                            #{record.couleur_alerte.raw_value == 'vert' ? 'oe_kanban_color_3' : ''}
+                            #{record.couleur_alerte.raw_value == 'jaune' ? 'oe_kanban_color_4' : ''}
+                            #{record.couleur_alerte.raw_value == 'orange' ? 'oe_kanban_color_2' : ''}
+                            #{record.couleur_alerte.raw_value == 'rouge' ? 'oe_kanban_color_9' : ''}">
+                            <div class="oe_kanban_content">
+                                <div class="o_kanban_record_top">
+                                    <div class="o_kanban_record_headings">
+                                        <strong class="o_kanban_record_title">
+                                            <field name="name"/>
+                                        </strong>
+                                    </div>
+                                </div>
+                                <div class="o_kanban_record_body">
+                                    <div>
+                                        <i class="fa fa-building-o" title="Centrale"/> <field name="centrale_id"/>
+                                    </div>
+                                    <div t-if="record.date_prevue.raw_value">
+                                        <i class="fa fa-calendar" title="Date prévue"/> <field name="date_prevue"/>
+                                    </div>
+                                    <div>
+                                        <strong>
+                                            <t t-if="record.nb_jours_avant.raw_value &lt; 0">
+                                                <i class="fa fa-exclamation-triangle text-danger" title="En retard"/> 
+                                                En retard de <field name="nb_jours_retard"/> jours
+                                            </t>
+                                            <t t-elif="record.nb_jours_avant.raw_value &gt; 0">
+                                                <i class="fa fa-clock-o" title="Délai"/> 
+                                                Dans <field name="nb_jours_avant"/> jours
+                                            </t>
+                                            <t t-elif="record.nb_jours_avant.raw_value == 0 and record.date_prevue.raw_value">
+                                                <i class="fa fa-exclamation-circle text-warning" title="Aujourd'hui"/> 
+                                                Aujourd'hui
+                                            </t>
+                                        </strong>
+                                    </div>
+                                    <div t-if="record.client_id.raw_value">
+                                        <i class="fa fa-user" title="Client"/> <field name="client_id"/>
+                                    </div>
+                                    <div t-if="record.technicien_id.raw_value">
+                                        <i class="fa fa-wrench" title="Technicien"/> <field name="technicien_id"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Vue Recherche -->
+    <record id="view_is_maintenance_search" model="ir.ui.view">
+        <field name="name">is.maintenance.search</field>
+        <field name="model">is.maintenance</field>
+        <field name="arch" type="xml">
+            <search string="Recherche Maintenance">
+                <field name="name"/>
+                <field name="centrale_id"/>
+                <field name="client_id"/>
+                <field name="technicien_id"/>
+                <separator/>
+                <filter string="En retard" name="en_retard" domain="[('nb_jours_avant', '&lt;', 0)]"/>
+                <filter string="Cette semaine" name="cette_semaine" domain="[('nb_jours_avant', '&lt;=', 7), ('nb_jours_avant', '&gt;=', 0)]"/>
+                <filter string="Ce mois" name="ce_mois" domain="[('nb_jours_avant', '&lt;=', 30), ('nb_jours_avant', '&gt;=', 0)]"/>
+                <separator/>
+                <filter string="Pas commencé" name="pas_commence" domain="[('etat', '=', 'pas_commence')]"/>
+                <filter string="En cours" name="en_cours" domain="[('etat', '=', 'en_cours')]"/>
+                <filter string="Terminé" name="termine" domain="[('etat', '=', 'termine')]"/>
+                <separator/>
+                <group expand="0" string="Regrouper par">
+                    <filter string="État" name="group_etat" context="{'group_by': 'etat'}"/>
+                    <filter string="Centrale" name="group_centrale" context="{'group_by': 'centrale_id'}"/>
+                    <filter string="Technicien" name="group_technicien" context="{'group_by': 'technicien_id'}"/>
+                    <filter string="Année" name="group_annee" context="{'group_by': 'annee'}"/>
+                    <filter string="Client" name="group_client" context="{'group_by': 'client_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_is_maintenance" model="ir.actions.act_window">
+        <field name="name">Maintenances</field>
+        <field name="res_model">is.maintenance</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créer une nouvelle maintenance
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem id="menu_is_maintenance_main"
+        name="Maintenances"
+        parent="is_crm_root_menu"
+        sequence="25"/>
+    <menuitem id="menu_is_maintenance"
+        name="Maintenances"
+        parent="menu_is_maintenance_main"
+        action="action_is_maintenance"
+        sequence="10"/>
+
+</odoo>

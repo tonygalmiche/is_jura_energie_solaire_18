@@ -37,3 +37,26 @@
     --fieldWidget-margin-bottom: 1px;
 }
 
+
+// Styles pour les couleurs d'alerte de maintenance dans le kanban
+.o_kanban_view .oe_kanban_card {
+    &.oe_kanban_color_3 {
+        // Vert - Plus d'un mois
+        border-left: 4px solid #28a745 !important;
+    }
+    &.oe_kanban_color_4 {
+        // Jaune - Moins d'un mois
+        border-left: 4px solid #ffc107 !important;
+    }
+    &.oe_kanban_color_2 {
+        // Orange - 1 semaine
+        border-left: 4px solid #fd7e14 !important;
+    }
+    &.oe_kanban_color_9 {
+        // Rouge - En retard
+        border-left: 4px solid #dc3545 !important;
+        background-color: #fff5f5 !important;
+    }
+}
+
+

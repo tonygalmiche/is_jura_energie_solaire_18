@@ -8,9 +8,32 @@
         <field name="user_id" position="after">
                 <field name="opportunity_id"/>
                 <field name="is_sav_id"/>
+                <field name="is_maintenance_id"/>
             </field> 
         </field>
-    </record> 
-</odoo>
+    </record>
 
-    
+    <record id="is_view_calendar_event_tree" model="ir.ui.view">
+        <field name="name">is_view_calendar_event_tree</field>
+        <field name="model">calendar.event</field>
+        <field name="inherit_id" ref="calendar.view_calendar_event_tree"/>
+        <field name="arch" type="xml">
+            <field name="location" position="after">
+                <field name="is_sav_id" optional="show" widget="many2one_clickable"/>
+                <field name="is_maintenance_id" optional="show" widget="many2one_clickable"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="is_view_calendar_event_search" model="ir.ui.view">
+        <field name="name">is_view_calendar_event_search</field>
+        <field name="model">calendar.event</field>
+        <field name="inherit_id" ref="calendar.view_calendar_event_search"/>
+        <field name="arch" type="xml">
+            <field name="location" position="after">
+                <field name="is_sav_id"/>
+                <field name="is_maintenance_id"/>
+            </field>
+        </field>
+    </record>
+</odoo>

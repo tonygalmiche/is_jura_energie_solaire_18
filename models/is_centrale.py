@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from odoo import api, fields, models  
+from odoo import api, fields, models
+from dateutil.relativedelta import relativedelta
 
 # Liste partagée des secteurs
 SECTEUR_SELECTION = [
@@ -214,6 +215,7 @@ class IsCentrale(models.Model):
 
     maintenance_date_signature = fields.Date("Date de Signature", tracking=True)
     contrat_signe_ids = fields.Many2many('ir.attachment', 'is_centrale_contrat_signe_rel', 'centrale_id', 'attachment_id', string="Contrat de maintenance signé")
+    maintenance_ids = fields.One2many('is.maintenance', 'centrale_id', string="Maintenances")
     projet_id                = fields.Many2one('project.project', string="Projet")
     localisation             = fields.Char("Localisation", tracking=True)
     adresse                  = fields.Char("Adresse", size=60, tracking=True)
@@ -440,6 +442,25 @@ class IsCentrale(models.Model):
             record.puissance_panneau_totale = sum(
                 panneau.puissance_totale for panneau in record.panneau_ids
             )
+
+    def write(self, vals):
+        res = super(IsCentrale, self).write(vals)
+        # Si maintenance_date_signature est renseignée, créer une fiche de maintenance
+        if 'maintenance_date_signature' in vals and vals['maintenance_date_signature']:
+            for record in self:
+                # Vérifier qu'il n'existe pas déjà une maintenance pour cette centrale
+                existing_maintenance = self.env['is.maintenance'].search([
+                    ('centrale_id', '=', record.id),
+                ], limit=1)
+                if not existing_maintenance:
+                    date_signature = fields.Date.from_string(vals['maintenance_date_signature'])
+                    date_prevue = date_signature + relativedelta(years=1)
+                    self.env['is.maintenance'].create({
+                        'centrale_id': record.id,
+                        'date_prevue': date_prevue,
+                        'technicien_id': self.env.user.id,
+                    })
+        return res
 
     @api.model
     def _read_group_dp_etat(self, stages, domain):
