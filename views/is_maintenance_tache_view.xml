@@ -7,6 +7,14 @@
         <field name="arch" type="xml">
             <form string="Type de tâche de maintenance">
                 <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_taches" type="object" class="oe_stat_button" icon="fa-tasks">
+                            <div class="o_stat_info">
+                                <field name="tache_count" class="o_stat_value"/>
+                                <span class="o_stat_text">Tâches</span>
+                            </div>
+                        </button>
+                    </div>
                     <group>
                         <group>
                             <field name="name"/>
@@ -117,6 +125,50 @@
                     <filter string="Maintenance" name="group_maintenance" context="{'group_by': 'maintenance_id'}"/>
                 </group>
             </search>
+        </field>
+    </record>
+
+    <!-- Vue Liste des tâches (is.maintenance.tache) -->
+    <record id="view_is_maintenance_tache_tree" model="ir.ui.view">
+        <field name="name">is.maintenance.tache.list</field>
+        <field name="model">is.maintenance.tache</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle"/>
+                <field name="type_tache_id" optional="show"/>
+                <field name="name" optional="show"/>
+                <field name="etat_actuel" optional="show"/>
+                <field name="validation_etat" optional="show"/>
+                <field name="mesure_correction" optional="show"/>
+                <field name="validation_mesure" optional="show"/>
+                <field name="date" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Vue Formulaire des tâches (is.maintenance.tache) -->
+    <record id="view_is_maintenance_tache_form" model="ir.ui.view">
+        <field name="name">is.maintenance.tache.form</field>
+        <field name="model">is.maintenance.tache</field>
+        <field name="arch" type="xml">
+            <form string="Tâche de maintenance">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="type_tache_id"/>
+                            <field name="name"/>
+                            <field name="sequence"/>
+                        </group>
+                        <group>
+                            <field name="etat_actuel"/>
+                            <field name="validation_etat"/>
+                            <field name="mesure_correction"/>
+                            <field name="validation_mesure"/>
+                            <field name="date"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
         </field>
     </record>
 

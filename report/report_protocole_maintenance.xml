@@ -46,7 +46,6 @@
         <t t-set="o" t-value="o.with_context(lang=o.client_id.lang or 'fr_FR')"/>
         <t t-set="company" t-value="o.env.company"/>
         <t t-set="centrale" t-value="o.centrale_id"/>
-        <t t-set="nb_maintenances" t-value="len(centrale.maintenance_ids.filtered(lambda m: m.date_prevue and m.date_prevue &lt;= o.date_prevue))"/>
         
         <style>
             @page {
@@ -211,8 +210,10 @@
                         Protocole de maintenance pour l'installation photovoltaïque:
                     </td>
                     <td class="header-type" rowspan="2" style="border-right: none; border-top: none; border-bottom: none;">
-                        <t t-if="nb_maintenances == 1">1ère (Initial)</t>
-                        <t t-else=""><t t-esc="nb_maintenances"/>ème</t>
+                        <t t-if="o.numero_maintenance == 1">1ère (Initial)</t>
+                        <t t-else=""><t t-esc="o.numero_maintenance"/>ème</t>
+                        <br/>
+                        <t t-if="o.date_prevue" t-esc="o.date_prevue.year"/>
                     </td>
                 </tr>
                 <tr>
@@ -295,8 +296,10 @@
                             Protocole de maintenance pour l'installation photovoltaïque:
                         </td>
                         <td class="header-type" rowspan="2" style="border-right: none; border-top: none; border-bottom: none;">
-                            <t t-if="nb_maintenances == 1">1ère (Initial)</t>
-                            <t t-else=""><t t-esc="nb_maintenances"/>ème</t>
+                            <t t-if="o.numero_maintenance == 1">1ère (Initial)</t>
+                            <t t-else=""><t t-esc="o.numero_maintenance"/>ème</t>
+                            <br/>
+                            <t t-if="o.date_prevue" t-esc="o.date_prevue.year"/>
                         </td>
                     </tr>
                     <tr>
@@ -341,21 +344,21 @@
                     <t t-foreach="type_tache.tache_ids" t-as="tache">
                         <tr>
                             <td class="tache-name" style="border-left: none;"><t t-esc="tache.name"/></td>
-                            <td t-att-class="'tache-etat highlight-orange' if tache.etat_actuel else 'tache-etat'">
+                            <td class="tache-etat">
                                 <t t-esc="tache.etat_actuel or ''"/>
                             </td>
                             <td class="tache-validation">
                                 <t t-if="tache.validation_etat == 'oui'">V</t>
                                 <t t-elif="tache.validation_etat == 'non'">X</t>
                             </td>
-                            <td t-att-class="'tache-mesure highlight-orange' if tache.mesure_correction else 'tache-mesure'">
+                            <td class="tache-mesure">
                                 <t t-esc="tache.mesure_correction or ''"/>
                             </td>
                             <td class="tache-validation">
                                 <t t-if="tache.validation_mesure == 'oui'">V</t>
                                 <t t-elif="tache.validation_mesure == 'non'">X</t>
                             </td>
-                            <td t-att-class="'tache-date highlight-orange' if tache.date else 'tache-date'" style="border-right: none;">
+                            <td class="tache-date" style="border-right: none;">
                                 <t t-if="tache.date" t-esc="tache.date" t-options='{"widget": "date"}'/>
                             </td>
                         </tr>

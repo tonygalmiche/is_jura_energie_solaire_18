@@ -2,6 +2,14 @@
 from odoo import api, fields, models
 from datetime import date
 from dateutil.relativedelta import relativedelta
+import base64
+import io
+
+try:
+    from PyPDF2 import PdfMerger, PdfReader
+except ImportError:
+    PdfMerger = None
+    PdfReader = None
 
 
 class IsMaintenance(models.Model):
@@ -11,6 +19,7 @@ class IsMaintenance(models.Model):
     _order = 'date_prevue desc, id desc'
 
     name = fields.Char("N° chrono", required=True, copy=False, readonly=True, default='Nouveau', tracking=True)
+    numero_maintenance = fields.Integer("N° de maintenance", copy=False, readonly=True, tracking=True)
     centrale_id = fields.Many2one('is.centrale', string="Centrale", required=True, tracking=True)
     date_prevue = fields.Date("Date prévue", tracking=True, copy=False, required=True, default=fields.Date.today)
     couleur_alerte = fields.Selection(
@@ -210,6 +219,12 @@ class IsMaintenance(models.Model):
         for vals in vals_list:
             if vals.get('name', 'Nouveau') == 'Nouveau':
                 vals['name'] = self.env['ir.sequence'].next_by_code('is.maintenance') or 'Nouveau'
+            # Calculer le numéro de maintenance pour cette centrale
+            if vals.get('centrale_id') and not vals.get('numero_maintenance'):
+                max_numero = self.search([
+                    ('centrale_id', '=', vals['centrale_id']),
+                ], order='numero_maintenance desc', limit=1).numero_maintenance or 0
+                vals['numero_maintenance'] = max_numero + 1
         return super(IsMaintenance, self).create(vals_list)
 
     def write(self, vals):
@@ -410,4 +425,69 @@ class IsMaintenance(models.Model):
             ],
             'domain': [('maintenance_id', '=', self.id)],
             'context': {'default_maintenance_id': self.id},
+        }
+
+    def action_generer_pdf_complet(self):
+        """Générer le PDF du protocole, le fusionner avec les annexes et l'ouvrir"""
+        self.ensure_one()
+        
+        # Générer le PDF du protocole de maintenance
+        report = self.env.ref('is_jura_energie_solaire_18.action_report_protocole_maintenance')
+        pdf_content, _ = report._render_qweb_pdf(report.id, [self.id])
+        
+        # Liste des PDFs à fusionner
+        pdf_files = [io.BytesIO(pdf_content)]
+        
+        # Ajouter les annexes qui sont des PDFs
+        for annexe in self.annexe_ids:
+            if annexe.mimetype == 'application/pdf':
+                pdf_files.append(io.BytesIO(base64.b64decode(annexe.datas)))
+        
+        # Fusionner les PDFs si PyPDF2 est disponible
+        if PdfMerger and len(pdf_files) > 1:
+            merger = PdfMerger()
+            for pdf_file in pdf_files:
+                try:
+                    merger.append(PdfReader(pdf_file))
+                except Exception:
+                    pass
+            output = io.BytesIO()
+            merger.write(output)
+            merger.close()
+            final_pdf = output.getvalue()
+        else:
+            final_pdf = pdf_content
+        
+        # Créer le nom du fichier
+        filename = "Protocole_Maintenance_%s_%s.pdf" % (
+            self.name.replace('/', '-'),
+            self.centrale_id.name.replace('/', '-').replace(' ', '_') if self.centrale_id else ''
+        )
+        
+        # Créer ou mettre à jour la pièce jointe
+        attachment = self.env['ir.attachment'].search([
+            ('res_model', '=', 'is.maintenance'),
+            ('res_id', '=', self.id),
+            ('name', '=', filename),
+        ], limit=1)
+        
+        attachment_vals = {
+            'name': filename,
+            'type': 'binary',
+            'datas': base64.b64encode(final_pdf),
+            'res_model': 'is.maintenance',
+            'res_id': self.id,
+            'mimetype': 'application/pdf',
+        }
+        
+        if attachment:
+            attachment.write(attachment_vals)
+        else:
+            attachment = self.env['ir.attachment'].create(attachment_vals)
+        
+        # Retourner l'action pour ouvrir le PDF
+        return {
+            'type': 'ir.actions.act_url',
+            'url': '/web/content/%s?download=false' % attachment.id,
+            'target': 'new',
         }

@@ -21,6 +21,28 @@ class IsMaintenanceTypeTache(models.Model):
     # Champs pour le numéro d'ordre et lien onduleur
     numero_ordre = fields.Integer("Numéro d'ordre", default=1)
     onduleur_id = fields.Many2one('is.centrale.onduleur', string="Onduleur")
+    tache_count = fields.Integer("Nombre de tâches", compute='_compute_tache_count')
+
+    @api.depends('tache_ids')
+    def _compute_tache_count(self):
+        for record in self:
+            record.tache_count = len(record.tache_ids)
+
+    def action_view_taches(self):
+        """Ouvrir la liste des tâches de ce type"""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Tâches - %s' % self.name,
+            'res_model': 'is.maintenance.tache',
+            'view_mode': 'list,form',
+            'views': [
+                (self.env.ref('is_jura_energie_solaire_18.view_is_maintenance_tache_tree').id, 'list'),
+                (self.env.ref('is_jura_energie_solaire_18.view_is_maintenance_tache_form').id, 'form'),
+            ],
+            'domain': [('type_tache_id', '=', self.id)],
+            'context': {'default_type_tache_id': self.id},
+        }
 
     def copy(self, default=None):
         default = dict(default or {})

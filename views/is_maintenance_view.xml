@@ -28,6 +28,7 @@
             <form string="Maintenance">
                 <header>
                     <button name="action_creer_taches_depuis_modeles" string="Créer les tâches depuis les modèles" type="object" class="oe_highlight" invisible="type_tache_ids"/>
+                    <button name="action_generer_pdf_complet" string="Générer PDF avec annexes" type="object" class="btn-primary" icon="fa-file-pdf-o"/>
                     <field name="etat" widget="statusbar" options="{'clickable': '1'}"/>
                 </header>
                 <sheet>
@@ -53,6 +54,7 @@
                     <group>
                         <group>
                             <field name="centrale_id" options="{'no_create': True}"/>
+                            <field name="numero_maintenance" readonly="1"/>
                             <field name="date_prevue"/>
                             <field name="annee" readonly="1"/>
                             <field name="nb_jours_avant" readonly="1"/>
@@ -118,6 +120,7 @@
             <list>
                 <field name="name"/>
                 <field name="centrale_id"/>
+                <field name="numero_maintenance" optional="show"/>
                 <field name="client_id" optional="show"/>
                 <field name="date_prevue" optional="show"/>
                 <field name="nb_jours_avant" optional="show"/>
@@ -162,6 +165,7 @@
             <kanban default_group_by="etat" class="o_kanban_small_column" default_order="nb_jours_avant">
                 <field name="name"/>
                 <field name="centrale_id"/>
+                <field name="numero_maintenance"/>
                 <field name="date_prevue"/>
                 <field name="couleur_alerte"/>
                 <field name="nb_jours_avant"/>
@@ -186,7 +190,7 @@
                                 </div>
                                 <div class="o_kanban_record_body">
                                     <div>
-                                        <i class="fa fa-building-o" title="Centrale"/> <field name="centrale_id"/>
+                                        <i class="fa fa-building-o" title="Centrale"/> <field name="centrale_id"/> (<field name="numero_maintenance"/>)
                                     </div>
                                     <div t-if="record.date_prevue.raw_value">
                                         <i class="fa fa-calendar" title="Date prévue"/> <field name="date_prevue"/>

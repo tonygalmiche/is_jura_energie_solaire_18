@@ -336,6 +336,8 @@
                             <field name="maintenance_ids" readonly="1" nolabel="1">
                                 <list>
                                     <button name="action_open_maintenance" type="object" icon="fa-search" title="Ouvrir la fiche"/>
+                                    <field name="numero_maintenance"/>
+                                    <field name="annee"/>
                                     <field name="name"/>
                                     <field name="date_prevue"/>
                                     <field name="alerte_html"/>
