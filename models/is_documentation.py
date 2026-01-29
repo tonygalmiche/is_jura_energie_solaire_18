@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 from odoo import fields, models, api
 
 
@@ -40,6 +41,23 @@ class IsDocumentation(models.Model):
     def _compute_attachment_count(self):
         for record in self:
             record.attachment_count = len(record.attachment_ids)
+
+    @api.onchange('attachment_ids')
+    def _onchange_attachment_ids(self):
+        """Si le nom est vide, utilise le nom de la dernière pièce jointe sans extension."""
+        if not self.name and self.attachment_ids:
+            # Filtre les enregistrements existants (avec ID réel) et les trie
+            existing_attachments = self.attachment_ids.filtered(lambda a: a.id)
+            if existing_attachments:
+                last_attachment = existing_attachments.sorted('id', reverse=True)[0]
+            else:
+                # Si tous les attachements sont nouveaux, prend le dernier de la liste
+                last_attachment = self.attachment_ids[-1]
+            
+            filename = last_attachment.name or ''
+            name_without_ext = os.path.splitext(filename)[0]
+            if name_without_ext:
+                self.name = name_without_ext
 
     def _link_attachments(self):
         """Lie les pièces jointes au modèle pour qu'elles apparaissent dans le chatter."""
