@@ -46,3 +46,6 @@ access_is_maintenance_type_tache_manager,access_is_maintenance_type_tache_manage
 
 access_is_maintenance_tache,access_is_maintenance_tache,model_is_maintenance_tache,base.group_user,1,0,0,0
 access_is_maintenance_tache_manager,access_is_maintenance_tache_manager,model_is_maintenance_tache,group_centrale_gestion,1,1,1,1
+
+access_is_documentation,access_is_documentation,model_is_documentation,base.group_user,1,1,1,1
+access_is_documentation_tag,access_is_documentation_tag,model_is_documentation_tag,base.group_user,1,1,1,1

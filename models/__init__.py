@@ -11,4 +11,5 @@ from . import is_maintenance_tache
 from . import calendar
 from . import crm_lead
 from . import is_suivi_temps
+from . import is_documentation
 

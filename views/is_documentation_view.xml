@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ===================== -->
+    <!-- Documentation Tag     -->
+    <!-- ===================== -->
+
+    <record id="is_documentation_tag_tree_view" model="ir.ui.view">
+        <field name="name">is.documentation.tag.tree</field>
+        <field name="model">is.documentation.tag</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="name"/>
+                <field name="color" widget="color_picker"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="is_documentation_tag_form_view" model="ir.ui.view">
+        <field name="name">is.documentation.tag.form</field>
+        <field name="model">is.documentation.tag</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="color" widget="color_picker"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="is_documentation_tag_action" model="ir.actions.act_window">
+        <field name="name">Tags de documentation</field>
+        <field name="res_model">is.documentation.tag</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+
+    <!-- ===================== -->
+    <!-- Documentation         -->
+    <!-- ===================== -->
+
+    <record id="is_documentation_tree_view" model="ir.ui.view">
+        <field name="name">is.documentation.tree</field>
+        <field name="model">is.documentation</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                <field name="attachment_count"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="is_documentation_form_view" model="ir.ui.view">
+        <field name="name">is.documentation.form</field>
+        <field name="model">is.documentation</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Nom de la documentation"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="description"/>
+                        </group>
+                        <group>
+                            <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                        </group>
+                    </group>
+                    <group string="Pièces jointes">
+                        <field name="attachment_ids" widget="many2many_binary" nolabel="1"/>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="is_documentation_search_view" model="ir.ui.view">
+        <field name="name">is.documentation.search</field>
+        <field name="model">is.documentation</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="description"/>
+                <field name="tag_ids"/>
+                <field name="is_attachment_content" string="Contenu pièces jointes"/>
+                <filter string="Mes documents" name="my_documents" domain="[('create_uid', '=', uid)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="is_documentation_action" model="ir.actions.act_window">
+        <field name="name">Documentation JES</field>
+        <field name="res_model">is.documentation</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="is_documentation_search_view"/>
+    </record>
+
+</odoo>
