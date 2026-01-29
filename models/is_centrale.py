@@ -125,6 +125,7 @@ class IsCentraleOnduleur(models.Model):
     _name='is.centrale.onduleur'
     _description = "Onduleurs des centrales"
     _order='sequence,id'
+    _rec_name = "onduleur_id"
 
     centrale_id        = fields.Many2one('is.centrale', 'Centrale', required=True, ondelete='cascade')
     sequence           = fields.Integer("Ordre")

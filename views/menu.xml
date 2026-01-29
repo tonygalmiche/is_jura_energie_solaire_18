@@ -39,6 +39,34 @@
     <menuitem id="is_sav_menu"        name="SAV"        parent="is_sav_main_menu" action="is_sav_action"        sequence="10"/>
     <menuitem id="is_sav_kanban_menu" name="Vue Kanban" parent="is_sav_main_menu" action="is_sav_kanban_action" sequence="20"/>
 
+
+
+
+    <!-- JES / Maintenances -->
+    <menuitem id="menu_is_maintenance_main"
+        name="Maintenances"
+        parent="is_crm_root_menu"
+        sequence="25"/>
+    <menuitem id="menu_is_maintenance"
+        name="Maintenances"
+        parent="menu_is_maintenance_main"
+        action="action_is_maintenance"
+        sequence="10"/>
+    <menuitem id="menu_is_maintenance_type_tache"
+        name="Types de tâches"
+        parent="menu_is_maintenance_main"
+        action="action_is_maintenance_type_tache"
+        sequence="20"/>
+    <menuitem id="menu_is_maintenance_type_tache_config"
+        name="Configuration des types de tâches"
+        parent="menu_is_maintenance_main"
+        action="action_is_maintenance_type_tache_config"
+        sequence="30"/>
+
+
+
+
+
     <!-- JES / Produits -->
     <menuitem id="is_produit_menu"  name="Produits"  parent="is_crm_root_menu" action="is_produit_action" groups="sales_team.group_sale_salesman_all_leads,product.group_product_manager" sequence="40"/>
     

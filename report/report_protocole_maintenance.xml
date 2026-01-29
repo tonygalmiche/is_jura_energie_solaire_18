@@ -1,0 +1,372 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Format papier paysage -->
+    <record id="paperformat_protocole_maintenance" model="report.paperformat">
+        <field name="name">Protocole Maintenance Paysage</field>
+        <field name="default" eval="False"/>
+        <field name="format">A4</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">5</field>
+        <field name="margin_bottom">5</field>
+        <field name="margin_left">5</field>
+        <field name="margin_right">5</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">0</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <!-- Définition du rapport -->
+    <record id="action_report_protocole_maintenance" model="ir.actions.report">
+        <field name="name">Protocole de maintenance</field>
+        <field name="model">is.maintenance</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">is_jura_energie_solaire_18.report_protocole_maintenance</field>
+        <field name="report_file">is_jura_energie_solaire_18.report_protocole_maintenance</field>
+        <field name="binding_model_id" ref="model_is_maintenance"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="paperformat_protocole_maintenance"/>
+    </record>
+
+    <!-- Template principal -->
+    <template id="report_protocole_maintenance">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="is_jura_energie_solaire_18.report_protocole_maintenance_document"/>
+            </t>
+        </t>
+    </template>
+
+    <!-- Document du rapport -->
+    <template id="report_protocole_maintenance_document">
+        <head>
+            <meta charset="UTF-8"/>
+            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        </head>
+        <t t-set="o" t-value="o.with_context(lang=o.client_id.lang or 'fr_FR')"/>
+        <t t-set="company" t-value="o.env.company"/>
+        <t t-set="centrale" t-value="o.centrale_id"/>
+        <t t-set="nb_maintenances" t-value="len(centrale.maintenance_ids.filtered(lambda m: m.date_prevue and m.date_prevue &lt;= o.date_prevue))"/>
+        
+        <style>
+            @page {
+                size: A4 landscape;
+                margin: 5mm;
+            }
+            body, html {
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            .page-wrapper {
+                font-family: Arial, sans-serif;
+                font-size: 10pt;
+                margin: 0;
+                padding: 0;
+            }
+            .page-break {
+                page-break-after: always;
+            }
+            .main-table {
+                border-collapse: collapse;
+                width: 100%;
+                border: 2px solid #000;
+            }
+            .main-table > tbody > tr > td {
+                padding: 0;
+                vertical-align: top;
+            }
+            table.inner {
+                border-collapse: collapse;
+                width: 100%;
+            }
+            table.inner td, table.inner th {
+                border: 1px solid #000;
+                padding: 4px 6px;
+                vertical-align: middle;
+            }
+            .no-border-top td {
+                border-top: none !important;
+            }
+            .header-logo {
+                width: 120px;
+                text-align: center;
+                background-color: #fff;
+            }
+            .header-title {
+                text-align: center;
+                font-size: 12pt;
+                font-weight: bold;
+            }
+            .header-centrale {
+                text-align: center;
+                font-weight: bold;
+            }
+            .header-type {
+                text-align: center;
+                font-size: 11pt;
+                font-weight: bold;
+                width: 100px;
+            }
+            .info-label {
+                background-color: #fff;
+                font-size: 9pt;
+            }
+            .info-value {
+                background-color: #fff;
+                text-align: center;
+                font-size: 9pt;
+            }
+            .info-label-red {
+                background-color: #FFCCCC;
+                font-size: 9pt;
+            }
+            .section-title-green {
+                background-color: #90EE90;
+                text-align: center;
+                font-size: 13pt;
+                font-weight: bold;
+                padding: 8px;
+            }
+            .tache-header {
+                background-color: #FFFF00;
+                font-weight: bold;
+                text-align: center;
+                font-size: 10pt;
+            }
+            .tache-name {
+                width: 28%;
+                text-align: left;
+            }
+            .tache-etat {
+                width: 18%;
+                text-align: left;
+            }
+            .tache-validation {
+                width: 8%;
+                text-align: center;
+            }
+            .tache-mesure {
+                width: 22%;
+                text-align: left;
+            }
+            .tache-date {
+                width: 10%;
+                text-align: center;
+            }
+            .signature-label {
+                font-weight: bold;
+                width: 18%;
+                background-color: #fff;
+            }
+            .signature-value {
+                width: 32%;
+                background-color: #fff;
+            }
+            .toc-section {
+                padding: 10px 20px;
+                border-left: 2px solid #000;
+                border-right: 2px solid #000;
+            }
+            .toc-title {
+                text-align: center;
+                font-size: 16pt;
+                font-weight: bold;
+                margin: 10px 0;
+            }
+            .toc-list {
+                margin: 10px 30px;
+                font-size: 10pt;
+            }
+            .toc-list li {
+                margin: 4px 0;
+            }
+            .page-footer {
+                text-align: right;
+                font-size: 9pt;
+                padding: 5px 10px;
+                border-left: 2px solid #000;
+                border-right: 2px solid #000;
+                border-bottom: 2px solid #000;
+            }
+            .highlight-orange {
+                background-color: #FFA500;
+            }
+            .content-section {
+                padding: 10px;
+                border-left: 2px solid #000;
+                border-right: 2px solid #000;
+            }
+        </style>
+
+        <!-- ==================== PAGE 1 : Table des matières + Signature ==================== -->
+        <div class="page-wrapper" data-oe-model="is.maintenance" t-att-data-oe-id="o.id">
+            <!-- En-tête -->
+            <table class="inner" style="border: 2px solid #000; border-bottom: 1px solid #000;">
+                <tr>
+                    <td class="header-logo" rowspan="2" style="border-left: none; border-top: none; border-bottom: none;">
+                        <img t-if="company.logo" t-att-src="image_data_uri(company.logo)" style="max-height: 50px; max-width: 110px;" alt="Logo"/>
+                        <span t-else="">Logo</span>
+                    </td>
+                    <td class="header-title" colspan="2" style="border-top: none;">
+                        Protocole de maintenance pour l'installation photovoltaïque:
+                    </td>
+                    <td class="header-type" rowspan="2" style="border-right: none; border-top: none; border-bottom: none;">
+                        <t t-if="nb_maintenances == 1">1ère (Initial)</t>
+                        <t t-else=""><t t-esc="nb_maintenances"/>ème</t>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="header-centrale" style="border-bottom: none;">Central:</td>
+                    <td class="header-centrale" style="border-bottom: none;"><t t-esc="centrale.name"/></td>
+                </tr>
+            </table>
+
+            <!-- Informations de la centrale -->
+            <table class="inner" style="border-left: 2px solid #000; border-right: 2px solid #000; border-bottom: 1px solid #000;">
+                <tr>
+                    <td class="info-label" style="width: 18%; border-left: none;">Nombre de Champs Photovoltaïque</td>
+                    <td class="info-value" style="width: 7%;"><t t-esc="centrale.nb_champs_solaire or ''"/></td>
+                    <td class="info-label" style="width: 12%;">Nombre de Chaînes</td>
+                    <td class="info-value" style="width: 7%;"></td>
+                    <td class="info-label-red" style="width: 10%;">Exploitant:</td>
+                    <td class="info-value" style="width: 20%;"><t t-esc="centrale.client_id.name or ''"/></td>
+                    <td class="info-label" style="width: 14%;">Date Mise en service:</td>
+                    <td class="info-value" style="width: 12%; border-right: none;"></td>
+                </tr>
+            </table>
+
+            <!-- Titre Table des matières -->
+            <div class="toc-section">
+                <div class="toc-title">
+                    Table des matières
+                </div>
+
+                <!-- Liste des types de tâches -->
+                <div class="toc-list">
+                    <ol>
+                        <t t-foreach="o.type_tache_ids" t-as="type_tache">
+                            <li><t t-esc="type_tache.name"/></li>
+                        </t>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- Section signature -->
+            <table class="inner" style="border-left: 2px solid #000; border-right: 2px solid #000;">
+                <tr>
+                    <td class="signature-label" style="border-left: none;">Nom de L'exploitant</td>
+                    <td class="signature-value"></td>
+                    <td class="signature-label">Nom du technicien</td>
+                    <td class="signature-value" style="border-right: none;"><t t-esc="o.technicien_id.name or ''"/></td>
+                </tr>
+                <tr>
+                    <td class="signature-label" style="border-left: none;">Signature de l'exploitant</td>
+                    <td class="signature-value" style="height: 50px;"></td>
+                    <td class="signature-label">Signature du technicien</td>
+                    <td class="signature-value" style="height: 50px; border-right: none;">
+                        <img t-if="o.technicien_id.is_signature" t-att-src="image_data_uri(o.technicien_id.is_signature)" style="max-height: 45px;" alt="Signature"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="signature-label" style="border-left: none;">Date</td>
+                    <td class="signature-value"></td>
+                    <td class="signature-label">Date</td>
+                    <td class="signature-value" style="border-right: none;"><t t-esc="o.date_prevue" t-options='{"widget": "date"}'/></td>
+                </tr>
+            </table>
+
+            <div class="page-footer">
+                Page 1 / <t t-esc="len(o.type_tache_ids) + 1"/>
+            </div>
+        </div>
+
+        <!-- ==================== PAGES SUIVANTES : Une page par type de tâche ==================== -->
+        <t t-foreach="o.type_tache_ids" t-as="type_tache">
+            <div class="page-break"/>
+            <div class="page-wrapper">
+                <!-- En-tête -->
+                <table class="inner" style="border: 2px solid #000; border-bottom: 1px solid #000;">
+                    <tr>
+                        <td class="header-logo" rowspan="2" style="border-left: none; border-top: none; border-bottom: none;">
+                            <img t-if="company.logo" t-att-src="image_data_uri(company.logo)" style="max-height: 50px; max-width: 110px;" alt="Logo"/>
+                            <span t-else="">Logo</span>
+                        </td>
+                        <td class="header-title" colspan="2" style="border-top: none;">
+                            Protocole de maintenance pour l'installation photovoltaïque:
+                        </td>
+                        <td class="header-type" rowspan="2" style="border-right: none; border-top: none; border-bottom: none;">
+                            <t t-if="nb_maintenances == 1">1ère (Initial)</t>
+                            <t t-else=""><t t-esc="nb_maintenances"/>ème</t>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="header-centrale" style="border-bottom: none;">Central:</td>
+                        <td class="header-centrale" style="border-bottom: none;"><t t-esc="centrale.name"/></td>
+                    </tr>
+                </table>
+
+                <!-- Informations de la centrale -->
+                <table class="inner" style="border-left: 2px solid #000; border-right: 2px solid #000; border-bottom: 1px solid #000;">
+                    <tr>
+                        <td class="info-label" style="width: 18%; border-left: none;">Nombre de Champs Photovoltaïque</td>
+                        <td class="info-value" style="width: 7%;"><t t-esc="centrale.nb_champs_solaire or ''"/></td>
+                        <td class="info-label" style="width: 12%;">Nombre de Chaînes</td>
+                        <td class="info-value" style="width: 7%;"></td>
+                        <td class="info-label-red" style="width: 10%;">Exploitant:</td>
+                        <td class="info-value" style="width: 20%;"><t t-esc="centrale.client_id.name or ''"/></td>
+                        <td class="info-label" style="width: 14%;">Date Mise en service:</td>
+                        <td class="info-value" style="width: 12%; border-right: none;"></td>
+                    </tr>
+                </table>
+
+                <!-- Titre de la section -->
+                <table class="inner" style="border-left: 2px solid #000; border-right: 2px solid #000; border-bottom: 1px solid #000;">
+                    <tr>
+                        <td class="section-title-green" style="border-left: none; border-right: none;">
+                            <t t-esc="type_tache.name"/>
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- Tableau des tâches -->
+                <table class="inner" style="border-left: 2px solid #000; border-right: 2px solid #000;">
+                    <tr>
+                        <th class="tache-header tache-name" style="border-left: none;">Description des Tâches</th>
+                        <th class="tache-header tache-etat">État Actuel</th>
+                        <th class="tache-header tache-validation">Validation</th>
+                        <th class="tache-header tache-mesure">Mesure de correction de défauts</th>
+                        <th class="tache-header tache-validation">Validation</th>
+                        <th class="tache-header tache-date" style="border-right: none;">Date</th>
+                    </tr>
+                    <t t-foreach="type_tache.tache_ids" t-as="tache">
+                        <tr>
+                            <td class="tache-name" style="border-left: none;"><t t-esc="tache.name"/></td>
+                            <td t-att-class="'tache-etat highlight-orange' if tache.etat_actuel else 'tache-etat'">
+                                <t t-esc="tache.etat_actuel or ''"/>
+                            </td>
+                            <td class="tache-validation">
+                                <t t-if="tache.validation_etat == 'oui'">V</t>
+                                <t t-elif="tache.validation_etat == 'non'">X</t>
+                            </td>
+                            <td t-att-class="'tache-mesure highlight-orange' if tache.mesure_correction else 'tache-mesure'">
+                                <t t-esc="tache.mesure_correction or ''"/>
+                            </td>
+                            <td class="tache-validation">
+                                <t t-if="tache.validation_mesure == 'oui'">V</t>
+                                <t t-elif="tache.validation_mesure == 'non'">X</t>
+                            </td>
+                            <td t-att-class="'tache-date highlight-orange' if tache.date else 'tache-date'" style="border-right: none;">
+                                <t t-if="tache.date" t-esc="tache.date" t-options='{"widget": "date"}'/>
+                            </td>
+                        </tr>
+                    </t>
+                </table>
+
+                <div class="page-footer">
+                    Page <t t-esc="type_tache_index + 2"/> / <t t-esc="len(o.type_tache_ids) + 1"/>
+                </div>
+            </div>
+        </t>
+    </template>
+
+</odoo>

@@ -27,6 +27,7 @@
         <field name="arch" type="xml">
             <form string="Maintenance">
                 <header>
+                    <button name="action_creer_taches_depuis_modeles" string="Créer les tâches depuis les modèles" type="object" class="oe_highlight" invisible="type_tache_ids"/>
                     <field name="etat" widget="statusbar" options="{'clickable': '1'}"/>
                 </header>
                 <sheet>
@@ -35,6 +36,12 @@
                             <div class="o_stat_info">
                                 <span class="o_stat_text"><field name="meeting_display_label"/></span>
                                 <field name="meeting_display_date" class="o_stat_value" invisible="not meeting_display_date"/>
+                            </div>
+                        </button>
+                        <button name="action_view_taches" type="object" class="oe_stat_button" icon="fa-tasks">
+                            <div class="o_stat_info">
+                                <field name="type_tache_count" class="o_stat_value"/>
+                                <span class="o_stat_text">Tâches</span>
                             </div>
                         </button>
                     </div>
@@ -257,16 +264,5 @@
             </p>
         </field>
     </record>
-
-    <!-- Menu -->
-    <menuitem id="menu_is_maintenance_main"
-        name="Maintenances"
-        parent="is_crm_root_menu"
-        sequence="25"/>
-    <menuitem id="menu_is_maintenance"
-        name="Maintenances"
-        parent="menu_is_maintenance_main"
-        action="action_is_maintenance"
-        sequence="10"/>
 
 </odoo>

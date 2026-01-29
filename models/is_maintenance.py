@@ -115,6 +115,10 @@ class IsMaintenance(models.Model):
         string="Annexes",
     )
 
+    # Champs pour les types de tâches
+    type_tache_ids = fields.One2many('is.maintenance.type.tache', 'maintenance_id', string="Types de tâches")
+    type_tache_count = fields.Integer("Nombre de tâches", compute='_compute_type_tache_count')
+
     # Champs pour les réunions
     calendar_event_ids = fields.One2many('calendar.event', 'is_maintenance_id', string='Réunions')
     meeting_display_date = fields.Date(compute="_compute_meeting_display")
@@ -320,3 +324,90 @@ class IsMaintenance(models.Model):
         maintenances = self.search([])
         maintenances._compute_couleur_alerte()
         maintenances._compute_nb_jours_avant()
+
+    def action_creer_taches_depuis_modeles(self):
+        """Créer les types de tâches pour cette maintenance à partir des modèles"""
+        self.ensure_one()
+        centrale = self.centrale_id
+        # Récupérer tous les modèles (types de tâches sans maintenance associée)
+        modeles = self.env['is.maintenance.type.tache'].search([('maintenance_id', '=', False)])
+        for modele in modeles:
+            # Vérifier si c'est un type Coffret DC
+            if modele.is_type_coffret_dc:
+                # Ne créer que si coffret_dc est coché sur la centrale
+                if not centrale.coffret_dc:
+                    continue
+            
+            # Vérifier si c'est un type Onduleur
+            if modele.is_type_onduleur:
+                # Créer un type de tâche par onduleur de la centrale
+                for numero, onduleur in enumerate(centrale.onduleur_ids, start=1):
+                    nouveau_type = self.env['is.maintenance.type.tache'].create({
+                        'name': "%s %s" % (modele.name, numero),
+                        'sequence': modele.sequence,
+                        'maintenance_id': self.id,
+                        'numero_ordre': numero,
+                        'onduleur_id': onduleur.id,
+                    })
+                    # Copier les tâches associées
+                    for tache in modele.tache_ids:
+                        self.env['is.maintenance.tache'].create({
+                            'type_tache_id': nouveau_type.id,
+                            'sequence': tache.sequence,
+                            'name': tache.name,
+                        })
+                continue
+            
+            # Vérifier si c'est un type Champs photovoltaïque
+            if modele.is_type_champs_photovoltaique:
+                # Créer autant de types de tâches que nb_champs_solaire
+                nb_champs = centrale.nb_champs_solaire or 0
+                for numero in range(1, nb_champs + 1):
+                    nouveau_type = self.env['is.maintenance.type.tache'].create({
+                        'name': "%s %s" % (modele.name, numero),
+                        'sequence': modele.sequence,
+                        'maintenance_id': self.id,
+                        'numero_ordre': numero,
+                    })
+                    # Copier les tâches associées
+                    for tache in modele.tache_ids:
+                        self.env['is.maintenance.tache'].create({
+                            'type_tache_id': nouveau_type.id,
+                            'sequence': tache.sequence,
+                            'name': tache.name,
+                        })
+            else:
+                # Copier le type de tâche normalement
+                nouveau_type = self.env['is.maintenance.type.tache'].create({
+                    'name': modele.name,
+                    'sequence': modele.sequence,
+                    'maintenance_id': self.id,
+                })
+                # Copier les tâches associées
+                for tache in modele.tache_ids:
+                    self.env['is.maintenance.tache'].create({
+                        'type_tache_id': nouveau_type.id,
+                        'sequence': tache.sequence,
+                        'name': tache.name,
+                    })
+        return True
+
+    def _compute_type_tache_count(self):
+        for record in self:
+            record.type_tache_count = len(record.type_tache_ids)
+
+    def action_view_taches(self):
+        """Ouvrir la liste des types de tâches liées à cette maintenance"""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Tâches de maintenance',
+            'res_model': 'is.maintenance.type.tache',
+            'view_mode': 'list,form',
+            'views': [
+                (self.env.ref('is_jura_energie_solaire_18.view_is_maintenance_type_tache_tree').id, 'list'),
+                (self.env.ref('is_jura_energie_solaire_18.view_is_maintenance_type_tache_form').id, 'form'),
+            ],
+            'domain': [('maintenance_id', '=', self.id)],
+            'context': {'default_maintenance_id': self.id},
+        }
