@@ -107,6 +107,13 @@ class IsMaintenance(models.Model):
         string="PDF signé par le client",
         tracking=True,
     )
+    annexe_ids = fields.Many2many(
+        'ir.attachment',
+        'is_maintenance_annexe_rel',
+        'maintenance_id',
+        'attachment_id',
+        string="Annexes",
+    )
 
     # Champs pour les réunions
     calendar_event_ids = fields.One2many('calendar.event', 'is_maintenance_id', string='Réunions')

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from . import res_company
 from . import res_partner
+from . import res_users
 from . import product
 from . import project
 from . import is_sav

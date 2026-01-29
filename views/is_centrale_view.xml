@@ -75,6 +75,8 @@
 
                 <field name="type_communication" optional="hide"/>
                 <field name="nature_entrale" optional="hide"/>
+                <field name="coffret_dc" optional="hide"/>
+                <field name="nb_champs_solaire" optional="hide"/>
 
             </list>
         </field>
@@ -245,6 +247,8 @@
                                     <field name="nature_entrale"/>
                                     <field name="prm"/>
                                     <field name="loget"/>
+                                    <field name="coffret_dc"/>
+                                    <field name="nb_champs_solaire"/>
                                 </group>
                             </group>
                             <group string="Onduleurs">

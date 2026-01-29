@@ -90,6 +90,11 @@
                                 </list>
                             </field>
                         </page>
+                        <page string="Annexes">
+                            <group>
+                                <field name="annexe_ids" widget="many2many_binary" nolabel="1"/>
+                            </group>
+                        </page>
                     </notebook>
                 </sheet>
                 <chatter/>

@@ -405,6 +405,8 @@ class IsCentrale(models.Model):
         string="Loget",
         tracking=True,
     )
+    coffret_dc = fields.Boolean("Coffret DC", default=False, tracking=True)
+    nb_champs_solaire = fields.Integer("Nombre de champs solaire", tracking=True)
 
 
     @api.onchange('secteur')
