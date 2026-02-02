@@ -2,6 +2,14 @@
 from odoo import api, fields, models
 
 
+class IsFormeJuridique(models.Model):
+    _name = 'is.forme.juridique'
+    _description = 'Forme juridique'
+    _order = 'name'
+
+    name = fields.Char(string='Nom', required=True)
+
+
 class ResPartner(models.Model):
     _inherit = 'res.partner'
 
@@ -14,6 +22,11 @@ class ResPartner(models.Model):
         tracking=True,
         default='non'
     )
+    is_centrale_ids = fields.One2many('is.centrale', 'client_id', string="Centrales")
+    is_forme_juridique_id = fields.Many2one('is.forme.juridique', string="Forme juridique")
+    is_capital_social = fields.Float(string="Capital social (€)")
+    is_lieu_rcs = fields.Char(string="Lieu d'immatriculation RCS")
+    is_code_naf = fields.Char(string="Code NAF")
 
     def action_open_contact(self):
         """Ouvrir la fiche du contact"""

@@ -11,6 +11,71 @@ SECTEUR_SELECTION = [
     ('irve', 'IRVE'),
 ]
 
+
+class IsCentraleTypeInstallation(models.Model):
+    _name = 'is.centrale.type.installation'
+    _description = "Type d'installation"
+    _order = 'name'
+
+    name = fields.Char("Nom", required=True)
+
+
+class IsCentraleTypeCapteur(models.Model):
+    _name = 'is.centrale.type.capteur'
+    _description = "Type de capteur"
+    _order = 'name'
+
+    name = fields.Char("Nom", required=True)
+
+
+class IsCentraleTypeBallonSanitaire(models.Model):
+    _name = 'is.centrale.type.ballon.sanitaire'
+    _description = "Type de ballon sanitaire"
+    _order = 'name'
+
+    name = fields.Char("Nom", required=True)
+
+
+class IsCentraleTypeBallonTampon(models.Model):
+    _name = 'is.centrale.type.ballon.tampon'
+    _description = "Type de ballon tampon"
+    _order = 'name'
+
+    name = fields.Char("Nom", required=True)
+
+
+class IsCentraleArbreHydraulique(models.Model):
+    _name = 'is.centrale.arbre.hydraulique'
+    _description = "Arbre hydraulique"
+    _order = 'name'
+
+    name = fields.Char("Nom", required=True)
+
+
+class IsCentraleRegulation(models.Model):
+    _name = 'is.centrale.regulation'
+    _description = "Régulation"
+    _order = 'name'
+
+    name = fields.Char("Nom", required=True)
+
+
+class IsCentraleAppoint(models.Model):
+    _name = 'is.centrale.appoint'
+    _description = "Appoint"
+    _order = 'name'
+
+    name = fields.Char("Nom", required=True)
+
+
+class IsCentraleMarque(models.Model):
+    _name = 'is.centrale.marque'
+    _description = "Marque"
+    _order = 'name'
+
+    name = fields.Char("Nom", required=True)
+
+
 class IsCentraleAffaire(models.Model):
     _name='is.centrale.affaire'
     _description = "Affaire des centrales"
@@ -183,6 +248,88 @@ class IsCentrale(models.Model):
         string="Secteur",
         tracking=True,
     )
+    type_installation_ids = fields.Many2many(
+        'is.centrale.type.installation',
+        'is_centrale_type_installation_rel',
+        'centrale_id',
+        'type_installation_id',
+        string="Type d'installation",
+        tracking=True,
+    )
+
+    # Champs Capteur (secteur TH)
+    type_capteur_ids = fields.Many2many(
+        'is.centrale.type.capteur',
+        'is_centrale_type_capteur_rel',
+        'centrale_id',
+        'type_capteur_id',
+        string="Type de capteur",
+    )
+    surface_capteur = fields.Float("Surface capteur (m²)", digits=(10, 2))
+
+    # Champs Système hydraulique (secteur TH)
+    type_ballon_sanitaire_ids = fields.Many2many(
+        'is.centrale.type.ballon.sanitaire',
+        'is_centrale_type_ballon_sanitaire_rel',
+        'centrale_id',
+        'type_ballon_sanitaire_id',
+        string="Type ballon sanitaire",
+    )
+    volume_ballon_sanitaire = fields.Float("Volume ballon sanitaire", digits=(10, 2))
+    type_ballon_tampon_ids = fields.Many2many(
+        'is.centrale.type.ballon.tampon',
+        'is_centrale_type_ballon_tampon_rel',
+        'centrale_id',
+        'type_ballon_tampon_id',
+        string="Type ballon tampon",
+    )
+    volume_ballon_tampon = fields.Float("Volume ballon tampon", digits=(10, 2))
+    arbre_hydraulique_ids = fields.Many2many(
+        'is.centrale.arbre.hydraulique',
+        'is_centrale_arbre_hydraulique_rel',
+        'centrale_id',
+        'arbre_hydraulique_id',
+        string="Arbre hydraulique",
+    )
+    regulation_ids = fields.Many2many(
+        'is.centrale.regulation',
+        'is_centrale_regulation_rel',
+        'centrale_id',
+        'regulation_id',
+        string="Régulation",
+    )
+
+    # Champs Appoint (secteur TH)
+    appoint_ids = fields.Many2many(
+        'is.centrale.appoint',
+        'is_centrale_appoint_rel',
+        'centrale_id',
+        'appoint_id',
+        string="Appoint",
+    )
+    marque_ids = fields.Many2many(
+        'is.centrale.marque',
+        'is_centrale_marque_rel',
+        'centrale_id',
+        'marque_id',
+        string="Marque",
+    )
+    appoint_modele = fields.Char("Modèle")
+    appoint_numero_serie = fields.Char("Numéro de série")
+    appoint_puissance_kw = fields.Float("Puissance (kW)", digits=(10, 2))
+    appoint_commentaire = fields.Text("Commentaire")
+    appoint_photo = fields.Binary("Photo appoint")
+
+    # Champs PV de réception (secteur TH)
+    pv_date = fields.Date("Date PV")
+    pv_attachment_ids = fields.Many2many(
+        'ir.attachment',
+        'is_centrale_pv_attachment_rel',
+        'centrale_id',
+        'attachment_id',
+        string="Pièces jointes PV",
+    )
+
     das = fields.Selection(
         [
             ('gp_agri'        , 'Agri'),
@@ -222,6 +369,7 @@ class IsCentrale(models.Model):
     adresse                  = fields.Char("Adresse", size=60, tracking=True)
     client_id                = fields.Many2one('res.partner', string="Client", tracking=True)
     client_child_ids = fields.One2many(related="client_id.child_ids")
+    lead_ids = fields.One2many('crm.lead', 'is_centrale_id', string="Opportunités")
     sav_ids = fields.One2many('is.sav', 'centrale_id', string="SAVs", tracking=True)
     puissance_onduleur_demandee = fields.Float(string="Puissance onduleurs demandée (kVA)")
     puissance_panneau_demandee  = fields.Float(string="Puissance panneaux demandée (kWc)")
@@ -254,6 +402,13 @@ class IsCentrale(models.Model):
     dp_depose       = fields.Date("DP Déposé", tracking=True)
     dp_obtention    = fields.Date("DP Obtention", tracking=True)
     dp_informations = fields.Text("DP/PC Informations", tracking=True)
+    dp_attachment_ids = fields.Many2many(
+        'ir.attachment',
+        'is_centrale_dp_attachment_rel',
+        'centrale_id',
+        'attachment_id',
+        string="Pièces jointes DP",
+    )
 
     # Onglet "PTF"
     ptf_etat = fields.Selection(

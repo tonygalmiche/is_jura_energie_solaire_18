@@ -7,6 +7,11 @@
             <list>
                 <field name="name"/>
                 <field name="secteur" optional="show"/>
+
+                <field name="type_installation_ids" widget="many2many_tags" optional="hide"/>
+
+
+
                 <field name="das" invisible="secteur!='gp'" optional="show"/>
                 <field name="adresse" optional="hide"/>
                 <field name="localisation" optional="hide"/>
@@ -100,15 +105,16 @@
                         <group>
                             <field name="name"/>
                             <field name="secteur"/>
+                            <field name="type_installation_ids" widget="many2many_tags" invisible="secteur != 'th'"/>
                             <field name="das" invisible="secteur!='gp'"/>
                             <field name="adresse"/>
                             <field name="localisation"/>
                         </group>
                         <group>
-                            <field name="puissance_panneau_demandee"/>
-                            <field name="puissance_onduleur_demandee"/>
-                            <field name="puissance_panneau_totale"/>
-                            <field name="puissance_onduleur_totale"/>
+                            <field name="puissance_panneau_demandee"  invisible="secteur in ['th']"/>
+                            <field name="puissance_onduleur_demandee" invisible="secteur in ['th']"/>
+                            <field name="puissance_panneau_totale"    invisible="secteur in ['th']"/>
+                            <field name="puissance_onduleur_totale"   invisible="secteur in ['th']"/>
                         </group>
                     </group>
                     <notebook>
@@ -131,6 +137,22 @@
                             </group>
 
                         </page>
+                        <page string="CRM">
+                            <field name="lead_ids" nolabel="1">
+                                <list>
+                                    <button name="action_open_lead" type="object" icon="fa-search" title="Ouvrir l'opportunité"/>
+                                    <field name="name" optional="show"/>
+                                    <field name="is_devis_signe_ids" optional="show" widget="many2many_binary"/>
+                                    <field name="is_memoire_technique_ids" optional="show" widget="many2many_binary"/>
+                                    <field name="is_etude_ids" optional="show" widget="many2many_binary"/>
+                                    <field name="partner_id" optional="hide"/>
+                                    <field name="user_id" optional="hide" widget="many2one_avatar_user"/>
+                                    <field name="expected_revenue" optional="hide"/>
+                                    <field name="is_date_changement_etat" optional="hide"/>
+                                    <field name="stage_id" optional="show" widget="badge"/>
+                                </list>
+                            </field>
+                        </page>
                         <page string="DP/PC">
                             <group>
                                 <group>
@@ -142,8 +164,11 @@
                             <group>
                                 <field name="dp_informations"/>                            
                             </group>
+                            <group>
+                                <field name="dp_attachment_ids" widget="many2many_binary"/>
+                            </group>
                         </page>
-                        <page string="PTF">
+                        <page string="PTF" invisible="secteur in ['th']">
                             <group>
                                 <group>
                                     <field name="ptf_etat"/>
@@ -156,7 +181,7 @@
                                 <field name="ptf_informations"/>                            
                             </group>
                         </page>
-                        <page string="CRD" invisible="secteur == 're'">
+                        <page string="CRD" invisible="secteur in ['re','th']">
                             <group>
                                 <group>
                                     <field name="crd_etat"/>
@@ -168,7 +193,7 @@
                                 <field name="crd_informations"/>                            
                             </group>
                         </page>
-                        <page string="CARD-I" invisible="secteur == 're' or loget == 'tarif_bleu'">
+                        <page string="CARD-I" invisible="secteur in ['re', 'rh'] or loget == 'tarif_bleu'">
                             <group>
                                 <group>
                                     <field name="cardi_etat"/>
@@ -180,7 +205,7 @@
                                 <field name="cardi_informations"/>                            
                             </group>
                         </page>
-                        <page string="Socotec" invisible="secteur == 're'">
+                        <page string="Socotec" invisible="secteur in ['re', 'th']">
                             <group>
                                 <group>
                                     <field name="socotec_etat"/>
@@ -191,7 +216,7 @@
                                 <field name="socotec_informations"/>                            
                             </group>
                         </page>
-                        <page string="Consuel">
+                        <page string="Consuel" invisible="secteur in ['th']">
                             <group>
                                 <group>
                                     <field name="consuel_etat"/>
@@ -203,7 +228,7 @@
                                 <field name="consuel_informations"/>                            
                             </group>
                         </page>
-                        <page string="Mise en service">
+                        <page string="Mise en service" invisible="secteur in ['th']">
                             <group>
                                 <group>
                                     <field name="mes_demande"/>
@@ -214,7 +239,7 @@
                                 <field name="mes_informations"/>                            
                             </group>
                         </page>
-                        <page string="S21" invisible="secteur == 're'">
+                        <page string="S21" invisible="secteur in ['re','th']">
                             <group>
                                 <group>
                                     <field name="s21_etat"/>
@@ -223,10 +248,10 @@
                                 </group>
                             </group>
                             <group>
-                                <field name="s21_informations"/>                            
+                                <field name="s21_informations"/> 
                             </group>
                         </page>
-                        <page string="EDF AO">
+                        <page string="EDF AO" invisible="secteur in ['th']">
                             <group>
                                 <group>
                                     <field name="edf_identifiant"/>
@@ -240,7 +265,7 @@
                                 <field name="edf_informations"/>                            
                             </group>
                         </page>
-                        <page string="Informations techniques">
+                        <page string="Informations techniques" invisible="secteur in ['th']">
                             <group string="Informations techniques">
                                 <group>
                                     <field name="type_communication"/>
@@ -251,7 +276,7 @@
                                     <field name="nb_champs_solaire"/>
                                 </group>
                             </group>
-                            <group string="Onduleurs">
+                            <group string="Onduleurs" invisible="secteur in ['th']">
                                 <field name="onduleur_ids" nolabel="1">
                                     <list>
                                         <field name="sequence" widget="handle"/>
@@ -268,7 +293,7 @@
                                     <field name="bridage_onduleur"/>
                                 </group>
                             </group>
-                            <group string="Panneaux">
+                            <group string="Panneaux" invisible="secteur in ['th']">
                                 <group>
                                     <field name="panneau_ids" nolabel="1">
                                         <list editable="bottom">
@@ -281,7 +306,7 @@
                                     </field>
                                 </group>
                             </group>
-                            <group string="Coffrets">
+                            <group string="Coffrets" invisible="secteur in ['th']">
                                 <group>
                                     <field name="coffret_ids" nolabel="1">
                                         <list editable="bottom">
@@ -350,6 +375,53 @@
                                 </list>
                             </field>
                         </page>
+                        <page string="Capteur" invisible="secteur != 'th'">
+                            <group>
+                                <group>
+                                    <field name="type_capteur_ids" widget="many2many_tags"/>
+                                    <field name="surface_capteur"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Système hydraulique" invisible="secteur != 'th'">
+                            <group>
+                                <group>
+                                    <field name="type_ballon_sanitaire_ids" widget="many2many_tags"/>
+                                    <field name="volume_ballon_sanitaire"/>
+                                    <field name="type_ballon_tampon_ids" widget="many2many_tags"/>
+                                    <field name="volume_ballon_tampon"/>
+                                    <field name="arbre_hydraulique_ids" widget="many2many_tags"/>
+                                    <field name="regulation_ids" widget="many2many_tags"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Appoint" invisible="secteur != 'th'">
+                            <group>
+                                <group>
+                                    <field name="appoint_ids" widget="many2many_tags"/>
+                                    <field name="marque_ids" widget="many2many_tags"/>
+                                    <field name="appoint_modele"/>
+                                    <field name="appoint_numero_serie"/>
+                                    <field name="appoint_puissance_kw"/>
+                                </group>
+                                <group>
+                                    <field name="appoint_photo" widget="image"/>
+                                </group>
+                            </group>
+                            <group>
+                                <field name="appoint_commentaire"/>
+                            </group>
+                        </page>
+                        <page string="PV de réception">
+                            <group>
+                                <group>
+                                    <field name="pv_date"/>
+                                </group>
+                            </group>
+                            <group>
+                                <field name="pv_attachment_ids" widget="many2many_binary"/>
+                            </group>
+                        </page>
                     </notebook>
                  </sheet>
                 <chatter/>
@@ -395,6 +467,7 @@
             <search>
                 <field name="name"/>
                 <field name="secteur"/>
+                <field name="type_installation_ids"/>
                 <field name="das"/>
                 <field name="adresse"/>
                 <field name="client_id"/>
@@ -732,6 +805,294 @@
         <field name="res_model">is.centrale.formule</field>
         <field name="view_mode">list,form</field>
         <field name="view_id" ref="view_is_centrale_formule_list"/>
+        <field name="domain">[]</field>
+    </record>
+
+
+    <!-- Type d'installation -->
+    <record id="view_is_centrale_type_installation_list" model="ir.ui.view">
+        <field name="name">is.centrale.type.installation.list</field>
+        <field name="model">is.centrale.type.installation</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_is_centrale_type_installation_form" model="ir.ui.view">
+        <field name="name">is.centrale.type.installation.form</field>
+        <field name="model">is.centrale.type.installation</field>
+        <field name="arch" type="xml">
+            <form string="Type d'installation">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="is_centrale_type_installation_action" model="ir.actions.act_window">
+        <field name="name">Types d'installation</field>
+        <field name="res_model">is.centrale.type.installation</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_is_centrale_type_installation_list"/>
+        <field name="domain">[]</field>
+    </record>
+
+
+    <!-- Type de capteur -->
+    <record id="view_is_centrale_type_capteur_list" model="ir.ui.view">
+        <field name="name">is.centrale.type.capteur.list</field>
+        <field name="model">is.centrale.type.capteur</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_is_centrale_type_capteur_form" model="ir.ui.view">
+        <field name="name">is.centrale.type.capteur.form</field>
+        <field name="model">is.centrale.type.capteur</field>
+        <field name="arch" type="xml">
+            <form string="Type de capteur">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="is_centrale_type_capteur_action" model="ir.actions.act_window">
+        <field name="name">Types de capteur</field>
+        <field name="res_model">is.centrale.type.capteur</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_is_centrale_type_capteur_list"/>
+        <field name="domain">[]</field>
+    </record>
+
+
+    <!-- Type de ballon sanitaire -->
+    <record id="view_is_centrale_type_ballon_sanitaire_list" model="ir.ui.view">
+        <field name="name">is.centrale.type.ballon.sanitaire.list</field>
+        <field name="model">is.centrale.type.ballon.sanitaire</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_is_centrale_type_ballon_sanitaire_form" model="ir.ui.view">
+        <field name="name">is.centrale.type.ballon.sanitaire.form</field>
+        <field name="model">is.centrale.type.ballon.sanitaire</field>
+        <field name="arch" type="xml">
+            <form string="Type de ballon sanitaire">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="is_centrale_type_ballon_sanitaire_action" model="ir.actions.act_window">
+        <field name="name">Types de ballon sanitaire</field>
+        <field name="res_model">is.centrale.type.ballon.sanitaire</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_is_centrale_type_ballon_sanitaire_list"/>
+        <field name="domain">[]</field>
+    </record>
+
+
+    <!-- Type de ballon tampon -->
+    <record id="view_is_centrale_type_ballon_tampon_list" model="ir.ui.view">
+        <field name="name">is.centrale.type.ballon.tampon.list</field>
+        <field name="model">is.centrale.type.ballon.tampon</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_is_centrale_type_ballon_tampon_form" model="ir.ui.view">
+        <field name="name">is.centrale.type.ballon.tampon.form</field>
+        <field name="model">is.centrale.type.ballon.tampon</field>
+        <field name="arch" type="xml">
+            <form string="Type de ballon tampon">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="is_centrale_type_ballon_tampon_action" model="ir.actions.act_window">
+        <field name="name">Types de ballon tampon</field>
+        <field name="res_model">is.centrale.type.ballon.tampon</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_is_centrale_type_ballon_tampon_list"/>
+        <field name="domain">[]</field>
+    </record>
+
+
+    <!-- Arbre hydraulique -->
+    <record id="view_is_centrale_arbre_hydraulique_list" model="ir.ui.view">
+        <field name="name">is.centrale.arbre.hydraulique.list</field>
+        <field name="model">is.centrale.arbre.hydraulique</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_is_centrale_arbre_hydraulique_form" model="ir.ui.view">
+        <field name="name">is.centrale.arbre.hydraulique.form</field>
+        <field name="model">is.centrale.arbre.hydraulique</field>
+        <field name="arch" type="xml">
+            <form string="Arbre hydraulique">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="is_centrale_arbre_hydraulique_action" model="ir.actions.act_window">
+        <field name="name">Arbres hydrauliques</field>
+        <field name="res_model">is.centrale.arbre.hydraulique</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_is_centrale_arbre_hydraulique_list"/>
+        <field name="domain">[]</field>
+    </record>
+
+
+    <!-- Régulation -->
+    <record id="view_is_centrale_regulation_list" model="ir.ui.view">
+        <field name="name">is.centrale.regulation.list</field>
+        <field name="model">is.centrale.regulation</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_is_centrale_regulation_form" model="ir.ui.view">
+        <field name="name">is.centrale.regulation.form</field>
+        <field name="model">is.centrale.regulation</field>
+        <field name="arch" type="xml">
+            <form string="Régulation">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="is_centrale_regulation_action" model="ir.actions.act_window">
+        <field name="name">Régulations</field>
+        <field name="res_model">is.centrale.regulation</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_is_centrale_regulation_list"/>
+        <field name="domain">[]</field>
+    </record>
+
+
+    <!-- Appoint -->
+    <record id="view_is_centrale_appoint_list" model="ir.ui.view">
+        <field name="name">is.centrale.appoint.list</field>
+        <field name="model">is.centrale.appoint</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_is_centrale_appoint_form" model="ir.ui.view">
+        <field name="name">is.centrale.appoint.form</field>
+        <field name="model">is.centrale.appoint</field>
+        <field name="arch" type="xml">
+            <form string="Appoint">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="is_centrale_appoint_action" model="ir.actions.act_window">
+        <field name="name">Appoints</field>
+        <field name="res_model">is.centrale.appoint</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_is_centrale_appoint_list"/>
+        <field name="domain">[]</field>
+    </record>
+
+
+    <!-- Marque -->
+    <record id="view_is_centrale_marque_list" model="ir.ui.view">
+        <field name="name">is.centrale.marque.list</field>
+        <field name="model">is.centrale.marque</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_is_centrale_marque_form" model="ir.ui.view">
+        <field name="name">is.centrale.marque.form</field>
+        <field name="model">is.centrale.marque</field>
+        <field name="arch" type="xml">
+            <form string="Marque">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="is_centrale_marque_action" model="ir.actions.act_window">
+        <field name="name">Marques</field>
+        <field name="res_model">is.centrale.marque</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_is_centrale_marque_list"/>
         <field name="domain">[]</field>
     </record>
 

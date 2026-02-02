@@ -21,6 +21,27 @@ class crm_lead(models.Model):
     is_localisation = fields.Char("Localisation", tracking=True)
     is_centrale_id  = fields.Many2one('is.centrale', string="Centrale", tracking=True)
     is_date_changement_etat = fields.Datetime("Date de dernier changement d'état", readonly=False, tracking=True)
+    is_devis_signe_ids = fields.Many2many(
+        'ir.attachment',
+        'crm_lead_devis_signe_rel',
+        'lead_id',
+        'attachment_id',
+        string="Devis signé",
+    )
+    is_memoire_technique_ids = fields.Many2many(
+        'ir.attachment',
+        'crm_lead_memoire_technique_rel',
+        'lead_id',
+        'attachment_id',
+        string="Mémoire technique",
+    )
+    is_etude_ids = fields.Many2many(
+        'ir.attachment',
+        'crm_lead_etude_rel',
+        'lead_id',
+        'attachment_id',
+        string="Etude",
+    )
 
     def write(self, vals):
         # Mettre à jour la date de changement d'état si stage_id est modifié
@@ -71,6 +92,16 @@ class crm_lead(models.Model):
             'type': 'ir.actions.act_window',
             'res_model': 'is.centrale',
             'res_id': centrale.id,
+            'view_mode': 'form',
+            'views': [(False, 'form')],
+        }
+
+    def action_open_lead(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'crm.lead',
+            'res_id': self.id,
             'view_mode': 'form',
             'views': [(False, 'form')],
         }

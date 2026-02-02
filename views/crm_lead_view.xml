@@ -25,6 +25,15 @@
                     <field name="is_date_changement_etat"/>
                 </group>
             </xpath>
+            <xpath expr="//page[@name='internal_notes']" position="after">
+                <page string="Pièces jointes" name="is_pieces_jointes">
+                    <group>
+                        <field name="is_devis_signe_ids" widget="many2many_binary"/>
+                        <field name="is_memoire_technique_ids" widget="many2many_binary"/>
+                        <field name="is_etude_ids" widget="many2many_binary"/>
+                    </group>
+                </page>
+            </xpath>
         </field>
     </record> 
     <record id="is_crm_case_tree_view_oppor" model="ir.ui.view">

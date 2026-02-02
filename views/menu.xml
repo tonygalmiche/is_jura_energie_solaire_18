@@ -93,16 +93,34 @@
         <field name="sequence">90</field>
         <field name="parent_id" eval="ref('is_crm_root_menu')"/>
         <field name="groups_id" eval="[(6,0,[
-            ref('is_jura_energie_solaire_18.group_configuration_jes'),
+            ref('is_jura_energie_solaire_18.group_configuration_thermique'),
         ])]"/>
     </record>
-    <menuitem id="is_famille_menu"           name="Familles"               parent="is_crm_configuration_menu" action="is_famille_action"           sequence="10"/>
-    <menuitem id="is_centrale_panneau_menu"  name="Panneaux de centrales"  parent="is_crm_configuration_menu" action="is_centrale_panneau_action"  sequence="20"/>
-    <menuitem id="is_centrale_onduleur_menu" name="Onduleurs de centrales" parent="is_crm_configuration_menu" action="is_centrale_onduleur_action" sequence="30"/>
-    <menuitem id="is_centrale_coffret_menu"  name="Coffrets de centrales"  parent="is_crm_configuration_menu" action="is_centrale_coffret_action"  sequence="40"/>
-    <menuitem id="is_provenance_client_menu" name="Provenance client"      parent="is_crm_configuration_menu" action="is_provenance_client_action" sequence="50"/>
-    <menuitem id="is_centrale_affaire_menu"  name="Affaires"               parent="is_crm_configuration_menu" action="is_centrale_affaire_action"  sequence="60"/>
-    <menuitem id="is_centrale_formule_menu"  name="Formules"               parent="is_crm_configuration_menu" action="is_centrale_formule_action"  sequence="70"/>
+
+
+    <menuitem id="is_famille_menu"           name="Familles"               parent="is_crm_configuration_menu" action="is_famille_action"           sequence="10" groups="is_jura_energie_solaire_18.group_configuration_jes"/>
+    <menuitem id="is_centrale_panneau_menu"  name="Panneaux de centrales"  parent="is_crm_configuration_menu" action="is_centrale_panneau_action"  sequence="20" groups="is_jura_energie_solaire_18.group_configuration_jes"/>
+    <menuitem id="is_centrale_onduleur_menu" name="Onduleurs de centrales" parent="is_crm_configuration_menu" action="is_centrale_onduleur_action" sequence="30" groups="is_jura_energie_solaire_18.group_configuration_jes"/>
+    <menuitem id="is_centrale_coffret_menu"  name="Coffrets de centrales"  parent="is_crm_configuration_menu" action="is_centrale_coffret_action"  sequence="40" groups="is_jura_energie_solaire_18.group_configuration_jes"/>
+    <menuitem id="is_provenance_client_menu" name="Provenance client"      parent="is_crm_configuration_menu" action="is_provenance_client_action" sequence="50" groups="is_jura_energie_solaire_18.group_configuration_jes"/>
+    <menuitem id="is_centrale_affaire_menu"  name="Affaires"               parent="is_crm_configuration_menu" action="is_centrale_affaire_action"  sequence="60" groups="is_jura_energie_solaire_18.group_configuration_jes"/>
+    <menuitem id="is_centrale_formule_menu"  name="Formules"               parent="is_crm_configuration_menu" action="is_centrale_formule_action"  sequence="70" groups="is_jura_energie_solaire_18.group_configuration_jes"/>
+
+
+
+
+    <menuitem id="is_centrale_type_installation_menu" name="Types d'installation" parent="is_crm_configuration_menu" action="is_centrale_type_installation_action" sequence="80"/>
+    <menuitem id="is_centrale_type_capteur_menu" name="Types de capteur" parent="is_crm_configuration_menu" action="is_centrale_type_capteur_action" sequence="81"/>
+    <menuitem id="is_centrale_type_ballon_sanitaire_menu" name="Types de ballon sanitaire" parent="is_crm_configuration_menu" action="is_centrale_type_ballon_sanitaire_action" sequence="82"/>
+    <menuitem id="is_centrale_type_ballon_tampon_menu" name="Types de ballon tampon" parent="is_crm_configuration_menu" action="is_centrale_type_ballon_tampon_action" sequence="83"/>
+    <menuitem id="is_centrale_arbre_hydraulique_menu" name="Arbres hydrauliques" parent="is_crm_configuration_menu" action="is_centrale_arbre_hydraulique_action" sequence="84"/>
+    <menuitem id="is_centrale_regulation_menu" name="Régulations" parent="is_crm_configuration_menu" action="is_centrale_regulation_action" sequence="85"/>
+    <menuitem id="is_centrale_appoint_menu" name="Appoints" parent="is_crm_configuration_menu" action="is_centrale_appoint_action" sequence="86"/>
+    <menuitem id="is_centrale_marque_menu" name="Marques" parent="is_crm_configuration_menu" action="is_centrale_marque_action" sequence="87"/>
+
+
+ 
+    <menuitem id="is_forme_juridique_menu" name="Formes juridiques" parent="is_crm_configuration_menu" action="is_forme_juridique_action" sequence="88" groups="is_jura_energie_solaire_18.group_configuration_jes"/>
 
 
     <!-- Masquer les menus de base inutilisés -->

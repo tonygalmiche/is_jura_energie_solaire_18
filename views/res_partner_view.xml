@@ -1,6 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
+
+    <!-- Forme juridique -->
+        <record model="ir.ui.view" id="is_forme_juridique_tree">
+            <field name="name">is.forme.juridique.tree</field>
+            <field name="model">is.forme.juridique</field>
+            <field name="arch" type="xml">
+                <list editable="bottom">
+                    <field name="name"/>
+                </list>
+            </field>
+        </record>
+        <record model="ir.ui.view" id="is_forme_juridique_form">
+            <field name="name">is.forme.juridique.form</field>
+            <field name="model">is.forme.juridique</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <field name="name"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        <record model="ir.actions.act_window" id="is_forme_juridique_action">
+            <field name="name">Formes juridiques</field>
+            <field name="res_model">is.forme.juridique</field>
+            <field name="view_mode">list,form</field>
+            <field name="groups_id" eval="[(6,0,[
+                ref('is_jura_energie_solaire_18.group_configuration_jes'),
+            ])]"/>
+        </record>
+
+
+        <!-- Masquer le champ siret de l10n_fr -->
+        <record model="ir.ui.view" id="is_view_partner_form_hide_siret">
+            <field name="name">is_view_partner_form_hide_siret</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="l10n_fr.res_partner_form_l10n_fr"/>
+            <field name="arch" type="xml">
+                <!-- <field name="siret" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </field>
+ -->
+                <field name="siret" position="after">
+                    <field name="is_forme_juridique_id"/>
+                    <field name="is_capital_social"/>
+                    <field name="is_lieu_rcs"/>
+                    <field name="is_code_naf"/>
+                </field>
+
+
+            </field>
+        </record>
+
         <!-- res.partner -->
         <record model="ir.ui.view" id="is_view_partner_form">
             <field name="name">is_view_partner_form</field>
@@ -10,6 +65,44 @@
                 <field name="function" position="before">
                     <field name="is_client_a_risque"/>
                 </field>
+                <!-- Masquer le champ vat et son label de sa position d'origine -->
+                <!-- <field name="vat" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </field> -->
+
+                <!-- <field name="vat" position="replace"/> -->
+
+
+                <xpath expr="//page[@name='contact_addresses']" position="after">
+<!-- 
+                    <page string="Informations légales" name="is_infos_legales" invisible="not is_company">
+                        <group>
+                            <group string="Identification">
+                                <field name="siret"/>
+                                <field name="vat" string="TVA"/>
+                                <field name="is_forme_juridique_id"/>
+                            </group>
+                            <group string="Informations">
+                                <field name="is_capital_social"/>
+                                <field name="is_lieu_rcs"/>
+                                <field name="is_code_naf"/>
+                            </group>
+                        </group>
+                    </page>
+                     -->
+                    <page string="Centrales" name="is_centrales">
+                        <field name="is_centrale_ids" nolabel="1">
+                            <list>
+                                <button name="action_view_centrale" type="object" icon="fa-search" title="Ouvrir la centrale"/>
+                                <field name="name" optional="show"/>
+                                <field name="secteur" optional="show" widget="badge"/>
+                                <field name="adresse" optional="hide"/>
+                                <field name="localisation" optional="hide"/>
+                                <field name="dp_etat" optional="show" widget="badge" decoration-success="dp_etat == 'obtenu'"/>
+                             </list>
+                        </field>
+                    </page>
+                </xpath>
             </field>
         </record> 
         <record id="is_view_partner_tree" model="ir.ui.view">
@@ -21,6 +114,10 @@
                     <field name="is_client_a_risque" optional="show"  widget="badge"
                         decoration-danger="is_client_a_risque == 'oui'"
                     />
+                    <field name="is_forme_juridique_id" optional="hide"/>
+                    <field name="is_capital_social" optional="hide"/>
+                    <field name="is_lieu_rcs" optional="hide"/>
+                    <field name="is_code_naf" optional="hide"/>
                 </field>
             </field>
         </record>
