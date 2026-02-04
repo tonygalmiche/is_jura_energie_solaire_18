@@ -137,7 +137,7 @@
                             </group>
 
                         </page>
-                        <page string="CRM">
+                        <page string="CRM" groups="is_jura_energie_solaire_18.group_crm_readonly,sales_team.group_sale_salesman">
                             <field name="lead_ids" nolabel="1">
                                 <list>
                                     <button name="action_open_lead" type="object" icon="fa-search" title="Ouvrir l'opportunité"/>
