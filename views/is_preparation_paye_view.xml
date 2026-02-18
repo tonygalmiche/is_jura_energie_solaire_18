@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- is.preparation.paye -->
+    <record id="seq_is_preparation_paye" model="ir.sequence">
+        <field name="name">Préparation Paye</field>
+        <field name="code">is.preparation.paye</field>
+        <field name="prefix"></field>
+        <field name="padding">4</field>
+    </record>
+    <record id="is_preparation_paye_form_view" model="ir.ui.view">
+        <field name="name">is.preparation.paye.form</field>
+        <field name="model">is.preparation.paye</field>
+        <field name="arch" type="xml">
+            <form string="Préparation Paye">
+                <header>
+                    <button name="action_generer"
+                            type="object"
+                            string="Générer"
+                            class="btn-primary"
+                            confirm="Cela va recalculer toutes les lignes. Continuer ?"/>
+                    <button name="action_voir_toutes_lignes"
+                            type="object"
+                            string="Toutes les lignes"
+                            class="btn-secondary"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="date_debut"/>
+                            <field name="date_fin"/>
+                        </group>
+                    </group>
+                    <group string="Employés">
+                        <field name="employe_ids" nolabel="1" colspan="2" readonly="1">
+                            <list>
+                                <button name="action_voir_lignes_employe"
+                                        type="object"
+                                        icon="fa-search"
+                                        title="Voir les semaines de cet employé"
+                                        width="24px"/>
+                                <field name="utilisateur_id"/>
+                            </list>
+                        </field>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- is.preparation.paye.ligne : list view for popup -->
+    <record id="is_preparation_paye_ligne_tree_view" model="ir.ui.view">
+        <field name="name">is.preparation.paye.ligne.tree</field>
+        <field name="model">is.preparation.paye.ligne</field>
+        <field name="arch" type="xml">
+            <list string="Lignes de préparation paye" editable="bottom">
+                <button name="action_voir_suivi_temps"
+                        type="object"
+                        icon="fa-search"
+                        title="Voir le détail du suivi temps"/>
+                <field name="utilisateur_id"/>
+                <field name="semaine"/>
+                <field name="nb_jour_travaille" sum="Total"/>
+                <field name="nb_heure_prevue" sum="Total" widget="float_time"/>
+                <field name="nb_heure_travaille" sum="Total" widget="float_time"/>
+                <field name="heures_supplementaire" sum="Total" widget="float_time"/>
+                <field name="hs_25" sum="Total" widget="float_time"/>
+                <field name="hs_50" sum="Total" widget="float_time"/>
+                <field name="nb_heure_dimanche" sum="Total" widget="float_time"/>
+                <field name="conge_cp" sum="Total"/>
+                <field name="conge_evenement" sum="Total"/>
+                <field name="recuperation" sum="Total" widget="float_time"/>
+                <field name="heure_sup_a_payer" sum="Total" widget="float_time"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="is_preparation_paye_tree_view" model="ir.ui.view">
+        <field name="name">is.preparation.paye.tree</field>
+        <field name="model">is.preparation.paye</field>
+        <field name="arch" type="xml">
+            <list string="Préparation Paye">
+                <field name="name"/>
+                <field name="date_debut"/>
+                <field name="date_fin"/>
+            </list>
+        </field>
+    </record>
+    <record id="is_preparation_paye_search_view" model="ir.ui.view">
+        <field name="name">is.preparation.paye.search</field>
+        <field name="model">is.preparation.paye</field>
+        <field name="arch" type="xml">
+            <search string="Rechercher">
+                <field name="name"/>
+                <field name="date_debut"/>
+                <field name="date_fin"/>
+            </search>
+        </field>
+    </record>
+    <record id="is_preparation_paye_action" model="ir.actions.act_window">
+        <field name="name">Préparation Paye</field>
+        <field name="res_model">is.preparation.paye</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créer une nouvelle préparation paye
+            </p>
+        </field>
+    </record>
+</odoo>
