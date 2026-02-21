@@ -48,6 +48,9 @@
                 <field name="is_localisation"         optional="show" />
                 <field name="is_centrale_id"          optional="show"  widget="many2one_clickable"/>
                 <field name="is_date_changement_etat" optional="show" />
+            </field>
+            <field name="stage_id" position="after">
+                <field name="active"      optional="hide" />
                 <field name="create_date" optional="hide" />
                 <field name="create_uid"  optional="hide" />
                 <field name="write_date"  optional="hide" />
@@ -66,6 +69,7 @@
             </xpath>
             <xpath expr="//filter[@name='filter_lost']" position="after">
                 <separator/>
+                <filter string="Archivé" name="archive" domain="[('active', '=', False)]"/>
                 <filter string="Créé depuis 30 jours" name="created_last_30_days" domain="[('create_date', '&gt;=', (context_today() - datetime.timedelta(days=30)).strftime('%Y-%m-%d'))]"/>
                 <filter string="Changement d'état depuis 30 jours" name="state_change_last_30_days" domain="[('is_date_changement_etat', '&gt;=', (context_today() - datetime.timedelta(days=30)).strftime('%Y-%m-%d'))]"/>
             </xpath>
