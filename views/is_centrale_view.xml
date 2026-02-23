@@ -422,7 +422,7 @@
                                 <field name="pv_attachment_ids" widget="many2many_binary"/>
                             </group>
                         </page>
-                        <page string="Achats" invisible="not purchase_line_ids">
+                        <page string="Achats" invisible="not purchase_line_ids"  groups="purchase.group_purchase_user" >
                             <field name="purchase_line_ids" nolabel="1" readonly="1">
                                 <list>
                                     <field name="order_id" widget="many2one_clickable"/>
