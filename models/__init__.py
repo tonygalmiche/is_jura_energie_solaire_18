@@ -13,4 +13,5 @@ from . import crm_lead
 from . import is_suivi_temps
 from . import is_preparation_paye
 from . import is_documentation
+from . import purchase_order
 

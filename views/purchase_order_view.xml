@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Ajout du champ Centrale dans l'entête de la commande d'achat -->
+    <record id="view_purchase_order_form_inherit" model="ir.ui.view">
+        <field name="name">purchase.order.form.inherit.is_jura</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Utilise section_and_note_one2many pour séparer les colonnes articles et description -->
+            <!-- tout en gardant le bon affichage des sections et notes -->
+            <xpath expr="//field[@name='order_line']" position="attributes">
+                <attribute name="widget">section_and_note_one2many</attribute>
+            </xpath>
+            <xpath expr="//page[@name='products']/field[@name='order_line']/list/field[@name='product_id']" position="attributes">
+                <attribute name="widget"></attribute>
+            </xpath>
+            <xpath expr="//page[@name='products']/field[@name='order_line']/list/field[@name='name']" position="attributes">
+                <attribute name="widget">section_and_note_text</attribute>
+            </xpath>
+
+
+
+
+            <!-- Champ Centrale dans l'entête -->
+            <xpath expr="//field[@name='partner_ref']" position="after">
+                <field name="is_centrale_id"/>
+            </xpath>
+            <!-- Champ Centrale dans les lignes -->
+            <xpath expr="//field[@name='order_line']/list/field[@name='product_qty']" position="before">
+                <field name="is_centrale_id" optional="show" widget="many2one_clickable"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

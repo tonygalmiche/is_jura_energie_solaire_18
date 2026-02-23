@@ -422,6 +422,21 @@
                                 <field name="pv_attachment_ids" widget="many2many_binary"/>
                             </group>
                         </page>
+                        <page string="Achats" invisible="not purchase_line_ids">
+                            <field name="purchase_line_ids" nolabel="1" readonly="1">
+                                <list>
+                                    <field name="order_id" widget="many2one_clickable"/>
+                                    <field name="date_order" string="Date"/>
+                                    <field name="product_id"/>
+                                    <field name="date_planned" string="Date prévue"/>
+                                    <field name="product_qty" string="Quantité"/>
+                                    <field name="price_unit" string="Prix"/>
+                                    <field name="price_subtotal" string="Montant" sum="Total"/>
+                                    <field name="state"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                </list>
+                            </field>
+                        </page>
                     </notebook>
                  </sheet>
                 <chatter/>

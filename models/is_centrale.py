@@ -371,6 +371,7 @@ class IsCentrale(models.Model):
     client_child_ids = fields.One2many(related="client_id.child_ids")
     lead_ids = fields.One2many('crm.lead', 'is_centrale_id', string="Opportunités")
     sav_ids = fields.One2many('is.sav', 'centrale_id', string="SAVs", tracking=True)
+    purchase_line_ids = fields.One2many('purchase.order.line', 'is_centrale_id', string="Lignes d'achats")
     puissance_onduleur_demandee = fields.Float(string="Puissance onduleurs demandée (kVA)")
     puissance_panneau_demandee  = fields.Float(string="Puissance panneaux demandée (kWc)")
     puissance_onduleur_totale = fields.Float(
