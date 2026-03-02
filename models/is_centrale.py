@@ -375,6 +375,7 @@ class IsCentrale(models.Model):
     maintenance_ids = fields.One2many('is.maintenance', 'centrale_id', string="Maintenances")
     projet_id                = fields.Many2one('project.project', string="Projet")
     localisation             = fields.Char("Localisation", tracking=True)
+    localisation_google_maps_url = fields.Char("URL Google Maps", compute='_compute_localisation_google_maps_url', readonly=True)
     adresse                  = fields.Char("Adresse", size=60, tracking=True)
     client_id                = fields.Many2one('res.partner', string="Client", tracking=True)
     client_child_ids = fields.One2many(related="client_id.child_ids")
@@ -617,6 +618,15 @@ class IsCentrale(models.Model):
                 panneau.puissance_totale for panneau in record.panneau_ids
             )
 
+    @api.depends('localisation')
+    def _compute_localisation_google_maps_url(self):
+        for record in self:
+            if record.localisation:
+                # Format attendu : "latitude,longitude" (exemple: "46.918792,5.741772")
+                record.localisation_google_maps_url = f"https://www.google.com/maps/search/?api=1&query={record.localisation}"
+            else:
+                record.localisation_google_maps_url = False
+
     def write(self, vals):
         res = super(IsCentrale, self).write(vals)
         # Si maintenance_date_signature est renseignée, créer une fiche de maintenance
@@ -705,6 +715,31 @@ class IsCentrale(models.Model):
             'target': 'current',
         }
 
+    def action_open_google_maps_multiple(self):
+        """Ouvre une carte OpenStreetMap avec toutes les centrales ayant une localisation"""
+        # Récupérer toutes les centrales avec une localisation valide
+        centrales_with_location = self.filtered(lambda c: c.localisation)
+        
+        if not centrales_with_location:
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': 'Aucune localisation',
+                    'message': 'Aucune centrale sélectionnée ne possède de coordonnées GPS.',
+                    'type': 'warning',
+                }
+            }
+        
+        # Construire l'URL du contrôleur avec les IDs des centrales
+        centrale_ids = ','.join(str(c.id) for c in centrales_with_location)
+        url = f'/centrale/map?centrale_ids={centrale_ids}'
+        
+        return {
+            'type': 'ir.actions.act_url',
+            'url': url,
+            'target': 'new',
+        }
 
 
     # @api.model

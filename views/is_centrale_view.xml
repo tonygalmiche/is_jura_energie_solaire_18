@@ -5,6 +5,9 @@
         <field name="model">is.centrale</field>
         <field name="arch" type="xml">
             <list>
+                <header>
+                    <button name="action_open_google_maps_multiple" string="📍 Voir sur OpenStreetMap" type="object" class="btn-primary"/>
+                </header>
                 <field name="name"/>
                 <field name="secteur" optional="show"/>
 
@@ -109,6 +112,7 @@
                             <field name="das" invisible="secteur!='gp'"/>
                             <field name="adresse"/>
                             <field name="localisation"/>
+                            <field name="localisation_google_maps_url" widget="url" string="📍 Voir sur Google Maps" invisible="not localisation"/>
                         </group>
                         <group>
                             <field name="puissance_panneau_demandee"  invisible="secteur in ['th']"/>
@@ -535,6 +539,16 @@
         <field name="res_model">is.centrale</field>
         <field name="view_mode">list,form,kanban</field>
         <field name="search_view_id" ref="view_is_centrale_search"/>
+    </record>
+
+    <!-- Action serveur pour afficher les centrales sur Google Maps -->
+    <record id="action_server_google_maps" model="ir.actions.server">
+        <field name="name">📍 Voir sur OpenStreetMap</field>
+        <field name="model_id" ref="model_is_centrale"/>
+        <field name="binding_model_id" ref="model_is_centrale"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">action = records.action_open_google_maps_multiple()</field>
     </record>
 
 
