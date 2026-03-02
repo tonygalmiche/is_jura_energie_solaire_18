@@ -73,6 +73,11 @@
                 <field name="is_puissance_kva"/>
                 <field name="is_puissance_w"/>
             </field> 
+            <group name="internal_notes" position="before">
+                <group>
+                    <field name="is_fiche_technique_ids"  widget="many2many_binary"/>
+                </group>
+            </group>
         </field>
     </record> 
     <record id="is_product_template_tree_view" model="ir.ui.view">

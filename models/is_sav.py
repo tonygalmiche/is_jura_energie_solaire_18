@@ -12,7 +12,9 @@ class IsSav(models.Model):
     _order='name'
 
     name             = fields.Char(string="Nom", size=40, required=True, tracking=True)
-    secteur          = fields.Selection(SECTEUR_SELECTION, string="Secteur", tracking=True)
+    secteur          = fields.Selection(related="centrale_id.secteur", string="Secteur", tracking=True, store=True, readonly=True)
+    adresse          = fields.Char(related="centrale_id.adresse", string="Adresse", tracking=True, store=True, readonly=True)
+    localisation     = fields.Char(related="centrale_id.localisation", string="Localisation", tracking=True, store=True, readonly=True)
     centrale_id      = fields.Many2one('is.centrale', string="Centrale", tracking=True)
     client_id        = fields.Many2one(related="centrale_id.client_id")
     client_child_ids = fields.One2many(related="centrale_id.client_id.child_ids")
@@ -50,7 +52,20 @@ class IsSav(models.Model):
     calendar_event_ids    = fields.One2many('calendar.event', 'is_sav_id', string='Réunion')
     meeting_display_date  = fields.Date(compute="_compute_meeting_display")
     meeting_display_label = fields.Char(compute="_compute_meeting_display")
+    autres_sav_ids        = fields.One2many('is.sav', compute='_compute_autres_sav_ids', string='Autres SAV')
 
+
+    @api.depends('centrale_id')
+    def _compute_autres_sav_ids(self):
+        """Récupère les autres SAV liés à la même centrale"""
+        for record in self:
+            if record.centrale_id:
+                record.autres_sav_ids = self.env['is.sav'].search([
+                    ('centrale_id', '=', record.centrale_id.id),
+                    ('id', '!=', record.id)
+                ])
+            else:
+                record.autres_sav_ids = False
 
     @api.depends('calendar_event_ids', 'calendar_event_ids.start')
     def _compute_meeting_display(self):
@@ -181,11 +196,16 @@ class IsSav(models.Model):
                 return "month", earliest_start_dt.date()
 
 
-    @api.onchange('centrale_id')
-    def _onchange_centrale_id(self):
-        """Récupère le secteur de la centrale sélectionnée"""
-        if self.centrale_id and self.centrale_id.secteur:
-            self.secteur = self.centrale_id.secteur
+    def action_open_sav(self):
+        """Ouvre la fiche du SAV"""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'is.sav',
+            'res_id': self.id,
+            'view_mode': 'form',
+            'target': 'current',
+        }
 
     @api.model
     def _read_group_state(self, stages, domain):
@@ -193,4 +213,13 @@ class IsSav(models.Model):
         for line in self._fields['state'].selection:
             mylist.append(line[0])
         return mylist
-    
+
+    def write(self, vals):
+        """Surcharge de write pour mettre à jour date_resolution automatiquement"""
+        # Si le statut passe à 'termine' et que date_resolution est vide
+        if vals.get('state') == 'termine':
+            for record in self:
+                if not record.date_resolution and 'date_resolution' not in vals:
+                    vals['date_resolution'] = fields.Date.today()
+        return super(IsSav, self).write(vals)
+

@@ -192,8 +192,11 @@
                             <group>
                                 <field name="crd_informations"/>                            
                             </group>
+                            <group>
+                                <field name="crd_signe_ids" widget="many2many_binary"/>
+                            </group>
                         </page>
-                        <page string="CARD-I" invisible="secteur in ['re', 'rh'] or loget == 'tarif_bleu'">
+                        <page string="CARD-I" invisible="secteur in ['re', 'th'] or loget == 'tarif_bleu'">
                             <group>
                                 <group>
                                     <field name="cardi_etat"/>
@@ -204,6 +207,13 @@
                             <group>
                                 <field name="cardi_informations"/>                            
                             </group>
+
+                            <group>
+                                <field name="cardi_signe_ids" widget="many2many_binary"/>
+                            </group>
+
+
+
                         </page>
                         <page string="Socotec" invisible="secteur in ['re', 'th']">
                             <group>
@@ -273,9 +283,22 @@
                                     <field name="prm"/>
                                     <field name="loget"/>
                                     <field name="coffret_dc"/>
-                                    <field name="nb_champs_solaire"/>
+                                    <field name="presence_optimiseur"/>
                                 </group>
                             </group>
+
+                            <group string="Optimiseurs" invisible="presence_optimiseur==False">
+                                <group>
+                                    <field name="optimiseur_ids" nolabel="1">
+                                        <list editable="bottom">
+                                            <field name="sequence" widget="handle"/>
+                                            <field name="optimiseur_id" optional="show"/>
+                                            <field name="quantite"  optional="show" sum="Total"/>
+                                        </list>
+                                    </field>
+                                </group>
+                             </group>
+
                             <group string="Onduleurs" invisible="secteur in ['th']">
                                 <field name="onduleur_ids" nolabel="1">
                                     <list>
@@ -306,7 +329,7 @@
                                     </field>
                                 </group>
                             </group>
-                            <group string="Coffrets" invisible="secteur in ['th']">
+                            <group string="Protections électriques" invisible="secteur in ['th']">
                                 <group>
                                     <field name="coffret_ids" nolabel="1">
                                         <list editable="bottom">
@@ -317,6 +340,24 @@
                                     </field>
                                 </group>
                              </group>
+
+                            <group string="Coffrets" invisible="secteur in ['th']">
+                                <group>
+                                    <field name="coffret_ids" nolabel="1">
+                                        <list editable="bottom">
+                                            <field name="sequence" widget="handle"/>
+                                            <field name="coffret_id" optional="show"/>
+                                            <field name="quantite"   optional="show" sum="Total"/>
+                                        </list>
+                                    </field>
+                                </group>
+                            </group>
+
+
+
+
+
+
                         </page>
                         <page string="SAV">
                             <field name="sav_ids">

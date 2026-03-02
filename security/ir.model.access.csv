@@ -91,3 +91,10 @@ access_is_maintenance_tache_manager,access_is_maintenance_tache_manager,model_is
 
 access_is_documentation,access_is_documentation,model_is_documentation,base.group_user,1,1,1,1
 access_is_documentation_tag,access_is_documentation_tag,model_is_documentation_tag,base.group_user,1,1,1,1
+
+
+
+
+access_is_centrale_optimiseur,access_is_centrale_optimiseur,model_is_centrale_optimiseur,group_centrale_consultation,1,0,0,0
+access_is_centrale_optimiseur_gestion,access_is_centrale_optimiseur_gestion,model_is_centrale_optimiseur,group_centrale_gestion,1,1,1,1
+

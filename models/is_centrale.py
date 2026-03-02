@@ -196,8 +196,8 @@ class IsCentraleOnduleur(models.Model):
     sequence           = fields.Integer("Ordre")
     onduleur_id        = fields.Many2one('product.product', string="Onduleur")
     quantite           = fields.Integer("Quantité", default=1)
-    puissance_onduleur = fields.Integer('Puissance onduleur (kVA)', compute='_compute', store=True, readonly=True)
-    puissance_totale   = fields.Integer('Puissance totale (kVA)'  , compute='_compute', store=True, readonly=True)
+    puissance_onduleur = fields.Float('Puissance onduleur (kVA)', compute='_compute', store=True, readonly=True)
+    puissance_totale   = fields.Float('Puissance totale (kVA)'  , compute='_compute', store=True, readonly=True)
     numero_serie       = fields.Char("Numéro de série")
     date_debut_garantie = fields.Date("Date début garantie")
     annee_garantie     = fields.Char("Année de garantie", compute='_compute_annee_garantie', store=True, readonly=True)
@@ -221,8 +221,6 @@ class IsCentraleOnduleur(models.Model):
                 obj.annee_garantie = False 
 
 
-
-
 class IsCentraleCoffret(models.Model):
     _name='is.centrale.coffret'
     _description = "Coffrets des centrales"
@@ -230,10 +228,21 @@ class IsCentraleCoffret(models.Model):
 
     centrale_id        = fields.Many2one('is.centrale', 'Centrale', required=True, ondelete='cascade')
     sequence           = fields.Integer("Ordre")
-    coffret_id         = fields.Many2one('product.product', string="Coffret")
+    coffret_id         = fields.Many2one('product.product', string="Protection électrique")
+    quantite           = fields.Integer("Quantité")
+
+
+class IsCentraleOptimiseur(models.Model):
+    _name='is.centrale.optimiseur'
+    _description = "Optimiseurs des centrales"
+    _order='sequence,id'
+
+    centrale_id        = fields.Many2one('is.centrale', 'Centrale', required=True, ondelete='cascade')
+    sequence           = fields.Integer("Ordre")
+    optimiseur_id      = fields.Many2one('product.product', string="Optimiseur")
     quantite           = fields.Integer("Quantité")
  
-   
+
 class IsCentrale(models.Model):
     _name='is.centrale'
     _inherit = ['portal.mixin', 'mail.thread', 'mail.activity.mixin']
@@ -443,6 +452,8 @@ class IsCentrale(models.Model):
     crd_recu         = fields.Date("CRD Reçu", tracking=True)
     crd_signature    = fields.Date("CRD Signature", tracking=True)
     crd_informations = fields.Text("CRD Informations", tracking=True)
+    crd_signe_ids    = fields.Many2many('ir.attachment', 'is_centrale_crd_signe_rel', 'centrale_id', 'attachment_id', string="CRD signé")
+
 
     # Onglet "CARD-I"
     cardi_etat = fields.Selection(
@@ -460,6 +471,8 @@ class IsCentrale(models.Model):
     cardi_depose       = fields.Date("CARD-I Déposé", tracking=True)
     cardi_obtenu       = fields.Date("CARD-I Obtenu", tracking=True)
     cardi_informations = fields.Text("CARD-I Informations", tracking=True)
+    cardi_signe_ids    = fields.Many2many('ir.attachment', 'is_centrale_cardi_signe_rel', 'centrale_id', 'attachment_id', string="CARD-I signé")
+
 
     # Onglet "Socotec"
     socotec_etat = fields.Selection(
@@ -534,7 +547,7 @@ class IsCentrale(models.Model):
     panneau_ids  = fields.One2many('is.centrale.panneau' , 'centrale_id', 'Panneaux')
     onduleur_ids = fields.One2many('is.centrale.onduleur', 'centrale_id', 'Onduleurs')
     bridage_onduleur = fields.Integer("Bridage onduleur (kVA)", tracking=True)
-    coffret_ids  = fields.One2many('is.centrale.coffret' , 'centrale_id', 'Coffrets')
+    coffret_ids  = fields.One2many('is.centrale.coffret' , 'centrale_id', 'Protections électriques')
     type_communication = fields.Selection(
         [
             ('wifi'      , 'Wi-Fi'),
@@ -562,8 +575,10 @@ class IsCentrale(models.Model):
         string="Loget",
         tracking=True,
     )
-    coffret_dc = fields.Boolean("Coffret DC", default=False, tracking=True)
-    nb_champs_solaire = fields.Integer("Nombre de champs solaire", tracking=True)
+    coffret_dc          = fields.Boolean("Coffret DC", default=False, tracking=True)
+    nb_champs_solaire   = fields.Integer("Nombre de champs solaire", tracking=True)
+    presence_optimiseur = fields.Boolean("Présence d’optimiseur", default=False, tracking=True)
+    optimiseur_ids      = fields.One2many('is.centrale.optimiseur' , 'centrale_id', 'Optimiseurs')
 
 
     @api.onchange('secteur')

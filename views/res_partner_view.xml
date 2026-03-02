@@ -34,25 +34,17 @@
             ])]"/>
         </record>
 
-
         <!-- Masquer le champ siret de l10n_fr -->
         <record model="ir.ui.view" id="is_view_partner_form_hide_siret">
             <field name="name">is_view_partner_form_hide_siret</field>
             <field name="model">res.partner</field>
             <field name="inherit_id" ref="l10n_fr.res_partner_form_l10n_fr"/>
             <field name="arch" type="xml">
-                <!-- <field name="siret" position="attributes">
-                    <attribute name="invisible">1</attribute>
-                </field>
- -->
                 <field name="siret" position="after">
-                    <field name="is_forme_juridique_id"/>
                     <field name="is_capital_social"/>
                     <field name="is_lieu_rcs"/>
                     <field name="is_code_naf"/>
                 </field>
-
-
             </field>
         </record>
 
@@ -62,34 +54,21 @@
             <field name="model">res.partner</field>
             <field name="inherit_id" ref="base.view_partner_form"/>
             <field name="arch" type="xml">
+                <field name="name" position="before">
+                    <field name="is_forme_juridique_id" 
+                        invisible="not is_company" 
+                        placeholder="Forme juridique"
+                        class="oe_inline"
+                        style="font-size: 1.2em; font-weight: bold; width: 200px; max-width: 200px;"/>
+                </field>
+                <field name="name" position="attributes">
+                    <attribute name="class">oe_inline</attribute>
+                    <attribute name="style">font-size: 1.2em;</attribute>
+                </field>
                 <field name="function" position="before">
                     <field name="is_client_a_risque"/>
                 </field>
-                <!-- Masquer le champ vat et son label de sa position d'origine -->
-                <!-- <field name="vat" position="attributes">
-                    <attribute name="invisible">1</attribute>
-                </field> -->
-
-                <!-- <field name="vat" position="replace"/> -->
-
-
                 <xpath expr="//page[@name='contact_addresses']" position="after">
-<!-- 
-                    <page string="Informations légales" name="is_infos_legales" invisible="not is_company">
-                        <group>
-                            <group string="Identification">
-                                <field name="siret"/>
-                                <field name="vat" string="TVA"/>
-                                <field name="is_forme_juridique_id"/>
-                            </group>
-                            <group string="Informations">
-                                <field name="is_capital_social"/>
-                                <field name="is_lieu_rcs"/>
-                                <field name="is_code_naf"/>
-                            </group>
-                        </group>
-                    </page>
-                     -->
                     <page string="Centrales" name="is_centrales">
                         <field name="is_centrale_ids" nolabel="1">
                             <list>
@@ -110,11 +89,13 @@
             <field name="model">res.partner</field>
             <field name="inherit_id" ref="base.view_partner_tree"/>
             <field name="arch" type="xml">
+                <field name="complete_name" position="before">
+                    <field name="is_forme_juridique_id" optional="show"/>
+                </field>
                 <field name="complete_name" position="after">
                     <field name="is_client_a_risque" optional="show"  widget="badge"
                         decoration-danger="is_client_a_risque == 'oui'"
                     />
-                    <field name="is_forme_juridique_id" optional="hide"/>
                     <field name="is_capital_social" optional="hide"/>
                     <field name="is_lieu_rcs" optional="hide"/>
                     <field name="is_code_naf" optional="hide"/>
@@ -133,11 +114,7 @@
                 <xpath expr="//field[@name='user_id']" position="after">
                     <field name="is_attachment_content" string="Contenu pièces jointes"/>
                 </xpath>
-
-
             </field>
         </record>
-
-
     </data>
 </odoo>
