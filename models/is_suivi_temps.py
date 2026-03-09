@@ -18,7 +18,7 @@ class IsSuiviTemps(models.Model):
     _name = 'is.suivi.temps'
     _description = 'Suivi du temps'
     _rec_name = "name"
-    _order = 'date_debut desc'
+    _order = 'date_debut'
     _inherit = ['mail.thread', 'mail.activity.mixin']
 
     name = fields.Char(string='Nom', compute='_compute_name', store=True)

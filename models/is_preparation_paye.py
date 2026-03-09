@@ -5,7 +5,7 @@ from datetime import date, timedelta
 
 class IsPreparationPaye(models.Model):
     _name = 'is.preparation.paye'
-    _description = 'Préparation Paye'
+    _description = 'Préparation des Paies'
     _order = 'name desc'
     _rec_name = 'name'
 
@@ -32,28 +32,29 @@ class IsPreparationPaye(models.Model):
             return 0.0
 
         calendar = employee.resource_calendar_id
+        total = calendar.full_time_required_hours
 
-        # Parser la semaine "YYYY-SXX"
-        parts = semaine.split('-S')
-        year, week = int(parts[0]), int(parts[1])
+        # # Parser la semaine "YYYY-SXX"
+        # parts = semaine.split('-S')
+        # year, week = int(parts[0]), int(parts[1])
 
-        total = 0.0
-        for day_num in range(1, 8):  # 1=Lundi … 7=Dimanche
-            current_date = date.fromisocalendar(year, week, day_num)
+        # total = 0.0
+        # for day_num in range(1, 8):  # 1=Lundi … 7=Dimanche
+        #     current_date = date.fromisocalendar(year, week, day_num)
 
-            # Ne compter que les jours dans la période
-            if current_date < self.date_debut or current_date > self.date_fin:
-                continue
+        #     # Ne compter que les jours dans la période
+        #     if current_date < self.date_debut or current_date > self.date_fin:
+        #         continue
 
-            dayofweek = str(current_date.weekday())
-            attendances = calendar.attendance_ids.filtered(
-                lambda a, dow=dayofweek, d=current_date:
-                    a.dayofweek == dow and
-                    a.day_period != 'lunch' and
-                    (not a.date_from or a.date_from <= d) and
-                    (not a.date_to or a.date_to >= d)
-            )
-            total += sum(att.hour_to - att.hour_from for att in attendances)
+        #     dayofweek = str(current_date.weekday())
+        #     attendances = calendar.attendance_ids.filtered(
+        #         lambda a, dow=dayofweek, d=current_date:
+        #             a.dayofweek == dow and
+        #             a.day_period != 'lunch' and
+        #             (not a.date_from or a.date_from <= d) and
+        #             (not a.date_to or a.date_to >= d)
+        #     )
+        #     total += sum(att.hour_to - att.hour_from for att in attendances)
 
         return total
 
@@ -196,7 +197,7 @@ class IsPreparationPaye(models.Model):
 
 class IsPreparationPayeLigne(models.Model):
     _name = 'is.preparation.paye.ligne'
-    _description = 'Ligne de préparation paye'
+    _description = 'Ligne de préparation des Paies'
     _order = 'utilisateur_id, semaine'
 
     preparation_id = fields.Many2one(
@@ -243,7 +244,7 @@ class IsPreparationPayeLigne(models.Model):
 
 class IsPreparationPayeEmploye(models.Model):
     _name = 'is.preparation.paye.employe'
-    _description = 'Employé de préparation paye'
+    _description = 'Employé de préparation des Paies'
     _order = 'utilisateur_id'
 
     preparation_id = fields.Many2one(
