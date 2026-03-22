@@ -156,6 +156,13 @@ class IsPreparationPaye(models.Model):
                 # --- Heure supplémentaire à payer (heures sup + récup) ---
                 heure_sup_a_payer = heures_sup + recuperation
 
+                # --- Nombre de paniers (1 par jour si au moins 1 panier dans la journée) ---
+                dates_panier = set()
+                for s in week_suivis:
+                    if s.panier:
+                        dates_panier.add(s.date)
+                nb_panier = len(dates_panier)
+
                 lignes_vals.append({
                     'preparation_id': self.id,
                     'utilisateur_id': user.id,
@@ -171,6 +178,7 @@ class IsPreparationPaye(models.Model):
                     'conge_evenement': conge_evenement,
                     'recuperation': recuperation,
                     'heure_sup_a_payer': heure_sup_a_payer,
+                    'nb_panier': nb_panier,
                 })
 
         self.env['is.preparation.paye.ligne'].create(lignes_vals)
@@ -219,6 +227,7 @@ class IsPreparationPayeLigne(models.Model):
     conge_evenement = fields.Float(string='Congé événement (j)', digits=(10, 2))
     recuperation = fields.Float(string='Récupération', digits=(10, 2))
     heure_sup_a_payer = fields.Float(string='HS à payer', digits=(10, 2))
+    nb_panier = fields.Integer(string='Nb paniers')
 
     def action_voir_suivi_temps(self):
         """Ouvre les enregistrements IsSuiviTemps de l'employé pour cette semaine."""

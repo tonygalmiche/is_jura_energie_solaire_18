@@ -75,6 +75,7 @@
                 <field name="conge_evenement" sum="Total"/>
                 <field name="recuperation" sum="Total" widget="float_time"/>
                 <field name="heure_sup_a_payer" sum="Total" widget="float_time"/>
+                <field name="nb_panier" sum="Total"/>
             </list>
         </field>
     </record>

@@ -51,9 +51,9 @@
                 <field name="heure_fin" widget="float_time" optional="show"/>
                 <field name="date_debut" optional="hide"/>
                 <field name="date_fin" optional="hide"/>
-                <field name="duree" widget="float_time" optional="show"/>
-                <field name="heure_route" widget="float_time" optional="show"/>
-                <field name="duree_hors_deplacement" widget="float_time" optional="show"/>
+                <field name="duree" widget="float_time" optional="show" sum="Total"/>
+                <!-- <field name="heure_route" widget="float_time" optional="show"/> -->
+                <!-- <field name="duree_hors_deplacement" widget="float_time" optional="show"/> -->
                 <field name="type_travail" optional="show"/>
                 <field name="centrale_id" optional="show"/>
                 <field name="absence" optional="show"/>
@@ -250,6 +250,21 @@
             <p class="o_view_nocontent_smiling_face">
                 Créer une nouvelle saisie de temps
             </p>
+        </field>
+    </record>
+
+    <!-- Action serveur : générer les suivis de route manquants sur toutes les saisies -->
+    <record id="action_server_generer_suivis_route" model="ir.actions.server">
+        <field name="name">Générer les suivis de route manquants</field>
+        <field name="model_id" ref="is_jura_energie_solaire_18.model_is_suivi_temps_saisie"/>
+        <field name="binding_model_id" ref="is_jura_energie_solaire_18.model_is_suivi_temps_saisie"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+saisies = records if records else env['is.suivi.temps.saisie'].search([('heure_route', '>', 0), ('suivi_route_id', '=', False)])
+for saisie in saisies:
+    if saisie.heure_route and not saisie.suivi_route_id:
+        saisie._create_or_update_suivi_route()
         </field>
     </record>
 

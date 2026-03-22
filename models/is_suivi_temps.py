@@ -14,6 +14,13 @@ TYPE_TRAVAIL_SELECTION = [
 ]
 
 
+TYPE_TRAVAIL_AVEC_ROUTE = TYPE_TRAVAIL_SELECTION + [
+    ('route', 'Route'),
+]
+
+
+
+
 class IsSuiviTemps(models.Model):
     _name = 'is.suivi.temps'
     _description = 'Suivi du temps'
@@ -28,7 +35,7 @@ class IsSuiviTemps(models.Model):
     heure_fin = fields.Float(string='Heure fin', store=True, required=True, tracking=True)
     date_debut = fields.Datetime(string='Heure de début', compute='_compute_datetimes', store=True, readonly=False, tracking=True)
     date_fin = fields.Datetime(string='Heure de fin', compute='_compute_datetimes', store=True, readonly=False, tracking=True)
-    type_travail = fields.Selection(TYPE_TRAVAIL_SELECTION, string='Type de travail', default='bureau', required=True, index=True, tracking=True)
+    type_travail = fields.Selection(TYPE_TRAVAIL_AVEC_ROUTE, string='Type de travail', default='bureau', required=True, index=True, tracking=True)
     centrale_id = fields.Many2one('is.centrale', string='Centrale', index=True, tracking=True)
     absence = fields.Selection([('recup', 'Récup'), ('cp', 'CP'), ('sans_solde', 'Sans solde'), ('conge', 'Congé'), ('evenement', 'Evenement'), ('repos', 'Repos')], string='Absence', index=True, tracking=True)
     heure_route = fields.Float(string='Heure de route', help='Temps de route en heures et minutes', tracking=True)
@@ -192,6 +199,7 @@ class IsSuiviTempsSaisie(models.Model):
     panier = fields.Boolean(string='Panier', default=False, tracking=True)
     commentaire = fields.Text(string='Commentaire', tracking=True)
     ligne_ids = fields.One2many('is.suivi.temps.saisie.ligne', 'saisie_id', string='Lignes de saisie', copy=True)
+    suivi_route_id = fields.Many2one('is.suivi.temps', string='Suivi de route', readonly=True, copy=False)
     has_sav = fields.Boolean(string='Contient du SAV', compute='_compute_has_sav', store=False)
 
     def _get_horaires_from_calendar(self, user_id, date):
@@ -394,8 +402,8 @@ class IsSuiviTempsSaisie(models.Model):
         """Ouvre la liste des suivis du temps liés à cette saisie"""
         self.ensure_one()
         
-        # Récupérer les IDs des suivis du temps liés aux lignes
-        suivi_temps_ids = self.ligne_ids.mapped('suivi_temps_id').ids
+        # Récupérer les IDs des suivis du temps liés aux lignes et à la route
+        suivi_temps_ids = (self.ligne_ids.mapped('suivi_temps_id') | self.suivi_route_id).ids
         
         return {
             'name': 'Suivis du temps',
@@ -437,10 +445,35 @@ class IsSuiviTempsSaisie(models.Model):
         
         return new_record
 
+    def _create_or_update_suivi_route(self):
+        """Crée, met à jour ou supprime le suivi de route lié à cette saisie"""
+        self.ensure_one()
+        if self.heure_route:
+            heure_debut_route = self.heure_debut + sum(self.ligne_ids.mapped('duree'))
+            heure_fin_route = heure_debut_route + self.heure_route
+            vals = {
+                'utilisateur_id': self.utilisateur_id.id,
+                'date': self.date,
+                'heure_debut': heure_debut_route,
+                'heure_fin': heure_fin_route,
+                'type_travail': 'route',
+                'commentaire': self.commentaire,
+                'panier': self.panier,
+                'nuitee': self.nuitee,
+            }
+            if self.suivi_route_id:
+                self.suivi_route_id.sudo().write(vals)
+            else:
+                suivi = self.env['is.suivi.temps'].sudo().create(vals)
+                self.sudo().suivi_route_id = suivi.id
+        elif self.suivi_route_id:
+            self.suivi_route_id.sudo().unlink()
+            self.sudo().suivi_route_id = False
+
     def unlink(self):
         """Supprimer les IsSuiviTemps associés avant de supprimer la saisie"""
-        # Récupérer tous les suivis du temps liés aux lignes
-        suivis_to_delete = self.mapped('ligne_ids.suivi_temps_id')
+        # Récupérer tous les suivis du temps liés aux lignes et à la route
+        suivis_to_delete = self.mapped('ligne_ids.suivi_temps_id') | self.mapped('suivi_route_id')
         # Supprimer d'abord la saisie (cela supprimera les lignes en cascade)
         res = super(IsSuiviTempsSaisie, self).unlink()
         # Ensuite supprimer les suivis du temps avec sudo() pour avoir les droits
@@ -534,3 +567,6 @@ class IsSuiviTempsSaisieLigne(models.Model):
         else:
             suivi = self.env['is.suivi.temps'].sudo().create(vals)
             self.suivi_temps_id = suivi.id
+
+        # Créer/mettre à jour le suivi de route si heure_route est renseigné
+        self.saisie_id._create_or_update_suivi_route()
