@@ -118,14 +118,20 @@ class IsPreparationPaye(models.Model):
                 # --- Nombre d'heures travaillées (hors absences) ---
                 nb_heure_travaille = sum(s.duree for s in week_suivis if s.type_travail != 'absence')
 
+                # --- Nombre d'heures d'absence ---
+                nb_heure_absence = sum(s.duree for s in week_suivis if s.type_travail == 'absence')
+
+                # --- Nombre d'heures totales ---
+                nb_heure_total = nb_heure_travaille + nb_heure_absence
+
                 # --- Heures supplémentaires (> 35 h) ---
-                heures_sup = max(0.0, nb_heure_travaille - 35.0)
+                heures_sup = max(0.0, nb_heure_total - 35.0)
 
                 # --- HS 25 % (de 35 à 43 h) ---
                 hs_25 = min(heures_sup, 8.0)
 
                 # --- HS 50 % (> 43 h) ---
-                hs_50 = max(0.0, nb_heure_travaille - 43.0)
+                hs_50 = max(0.0, nb_heure_total - 43.0)
 
                 # --- Heures dimanche ---
                 nb_heure_dimanche = sum(
@@ -170,6 +176,8 @@ class IsPreparationPaye(models.Model):
                     'nb_jour_travaille': nb_jour_travaille,
                     'nb_heure_prevue': nb_heure_prevue,
                     'nb_heure_travaille': nb_heure_travaille,
+                    'nb_heure_absence': nb_heure_absence,
+                    'nb_heure_total': nb_heure_total,
                     'heures_supplementaire': heures_sup,
                     'hs_25': hs_25,
                     'hs_50': hs_50,
@@ -219,6 +227,8 @@ class IsPreparationPayeLigne(models.Model):
     nb_jour_travaille = fields.Integer(string='Nb jours travaillés')
     nb_heure_prevue = fields.Float(string="Nb heures prévues", digits=(10, 2))
     nb_heure_travaille = fields.Float(string="Nb heures travaillées", digits=(10, 2))
+    nb_heure_absence = fields.Float(string="Nb heures absence", digits=(10, 2))
+    nb_heure_total = fields.Float(string="Nb heures totales", digits=(10, 2))
     heures_supplementaire = fields.Float(string='Heures supplémentaires', digits=(10, 2))
     hs_25 = fields.Float(string='HS 25 % (35‑43H)', digits=(10, 2))
     hs_50 = fields.Float(string='HS 50 % (>43H)', digits=(10, 2))

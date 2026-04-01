@@ -67,6 +67,8 @@
                 <field name="nb_jour_travaille" sum="Total"/>
                 <field name="nb_heure_prevue" sum="Total" widget="float_time"/>
                 <field name="nb_heure_travaille" sum="Total" widget="float_time"/>
+                <field name="nb_heure_absence" sum="Total" widget="float_time"/>
+                <field name="nb_heure_total" sum="Total" widget="float_time"/>
                 <field name="heures_supplementaire" sum="Total" widget="float_time"/>
                 <field name="hs_25" sum="Total" widget="float_time"/>
                 <field name="hs_50" sum="Total" widget="float_time"/>

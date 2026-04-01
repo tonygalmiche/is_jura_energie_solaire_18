@@ -173,11 +173,11 @@ class IsSuiviTemps(models.Model):
                 if record.date_debut.date() != record.date_fin.date():
                     raise models.ValidationError("La date de début et la date de fin doivent être sur la même journée.")
 
-    @api.constrains('duree_hors_deplacement')
-    def _check_duree_hors_deplacement(self):
-        for record in self:
-            if record.duree_hors_deplacement and record.duree_hors_deplacement > 10.0:
-                raise models.ValidationError("La durée hors déplacement ne peut pas être supérieure à 10 heures.")
+    # @api.constrains('duree_hors_deplacement')
+    # def _check_duree_hors_deplacement(self):
+    #     for record in self:
+    #         if record.duree_hors_deplacement and record.duree_hors_deplacement > 10.0:
+    #             raise models.ValidationError("La durée hors déplacement ne peut pas être supérieure à 10 heures.")
 
 
 class IsSuiviTempsSaisie(models.Model):
@@ -360,6 +360,20 @@ class IsSuiviTempsSaisie(models.Model):
                 if record.heure_debut >= record.heure_fin:
                     raise models.ValidationError("L'heure de fin doit être postérieure à l'heure de début.")
 
+    @api.constrains('temps_travail', 'heure_route')
+    def _check_heure_route(self):
+        for record in self:
+            if record.temps_travail > 10:
+                if not record.heure_route:
+                    raise models.ValidationError(
+                        "Le temps de travail dépasse 10h. Vous devez renseigner les heures de route."
+                    )
+                if (record.temps_travail - record.heure_route) > 10:
+                    raise models.ValidationError(
+                        f"Le temps de travail hors route ({record.temps_travail - record.heure_route:.2f}h) "
+                        f"ne peut pas dépasser 10h. Augmentez les heures de route."
+                    )
+
     @api.constrains('ligne_ids', 'commentaire')
     def _check_sav_commentaire(self):
         for record in self:
@@ -379,18 +393,19 @@ class IsSuiviTempsSaisie(models.Model):
                 # Calculer la somme des durées des lignes
                 total_lignes = sum(record.ligne_ids.mapped('duree'))
                 # Ajouter temps_pose et heure_route
-                total_calcule = total_lignes + (record.temps_pose or 0.0) + (record.heure_route or 0.0)
+                #total_calcule = total_lignes + (record.temps_pose or 0.0) + (record.heure_route or 0.0)
+                total_calcule = total_lignes + (record.temps_pose or 0.0)
                 
+
                 # Vérifier l'égalité (avec une tolérance de 0.01h pour les erreurs d'arrondi)
                 if abs(total_calcule - record.temps_presence) > 0.01:
                     raise models.ValidationError(
                         f"Incohérence dans les durées :\n"
                         f"Total des activités : {total_lignes:.2f}h\n"
                         f"Temps de pose : {record.temps_pose or 0:.2f}h\n"
-                        f"Heure de route : {record.heure_route or 0:.2f}h\n"
                         f"Total calculé : {total_calcule:.2f}h\n"
                         f"Temps de présence : {record.temps_presence:.2f}h\n\n"
-                        f"Le total des durées des activités + temps de pose + heure de route doit être égal au temps de présence."
+                        f"Le total des durées des activités + temps de pose + doit être égal au temps de présence."
                     )
 
     _sql_constraints = [
@@ -445,30 +460,31 @@ class IsSuiviTempsSaisie(models.Model):
         
         return new_record
 
-    def _create_or_update_suivi_route(self):
-        """Crée, met à jour ou supprime le suivi de route lié à cette saisie"""
-        self.ensure_one()
-        if self.heure_route:
-            heure_debut_route = self.heure_debut + sum(self.ligne_ids.mapped('duree'))
-            heure_fin_route = heure_debut_route + self.heure_route
-            vals = {
-                'utilisateur_id': self.utilisateur_id.id,
-                'date': self.date,
-                'heure_debut': heure_debut_route,
-                'heure_fin': heure_fin_route,
-                'type_travail': 'route',
-                'commentaire': self.commentaire,
-                'panier': self.panier,
-                'nuitee': self.nuitee,
-            }
-            if self.suivi_route_id:
-                self.suivi_route_id.sudo().write(vals)
-            else:
-                suivi = self.env['is.suivi.temps'].sudo().create(vals)
-                self.sudo().suivi_route_id = suivi.id
-        elif self.suivi_route_id:
-            self.suivi_route_id.sudo().unlink()
-            self.sudo().suivi_route_id = False
+
+    # def _create_or_update_suivi_route(self):
+    #     """Crée, met à jour ou supprime le suivi de route lié à cette saisie"""
+    #     self.ensure_one()
+    #     if self.heure_route:
+    #         heure_debut_route = self.heure_debut + sum(self.ligne_ids.mapped('duree'))
+    #         heure_fin_route = heure_debut_route + self.heure_route
+    #         vals = {
+    #             'utilisateur_id': self.utilisateur_id.id,
+    #             'date': self.date,
+    #             'heure_debut': heure_debut_route,
+    #             'heure_fin': heure_fin_route,
+    #             'type_travail': 'route',
+    #             'commentaire': self.commentaire,
+    #             'panier': self.panier,
+    #             'nuitee': self.nuitee,
+    #         }
+    #         if self.suivi_route_id:
+    #             self.suivi_route_id.sudo().write(vals)
+    #         else:
+    #             suivi = self.env['is.suivi.temps'].sudo().create(vals)
+    #             self.sudo().suivi_route_id = suivi.id
+    #     elif self.suivi_route_id:
+    #         self.suivi_route_id.sudo().unlink()
+    #         self.sudo().suivi_route_id = False
 
     def unlink(self):
         """Supprimer les IsSuiviTemps associés avant de supprimer la saisie"""
@@ -569,4 +585,5 @@ class IsSuiviTempsSaisieLigne(models.Model):
             self.suivi_temps_id = suivi.id
 
         # Créer/mettre à jour le suivi de route si heure_route est renseigné
-        self.saisie_id._create_or_update_suivi_route()
+        # Désactivé le 01/04/2026
+        # self.saisie_id._create_or_update_suivi_route()

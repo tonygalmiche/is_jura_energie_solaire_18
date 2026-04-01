@@ -163,7 +163,7 @@
                             <field name="heure_fin"/>
                             <field name="temps_presence" readonly="1"/>
                             <field name="temps_pose" />
-                            <field name="heure_route"/>
+                            <field name="heure_route" invisible="temps_travail &lt;= 10"/>
                             <field name="temps_travail" readonly="1"/>
                             <field name="panier"/>
                             <field name="nuitee"/> 
@@ -216,8 +216,8 @@
                 <field name="heure_fin" widget="float_time" optional="show"/>
                 <field name="temps_presence" widget="float_time" optional="show"/>
                 <field name="temps_pose" widget="float_time" optional="show"/>
-                <field name="heure_route" widget="float_time" optional="show"/>
                 <field name="temps_travail" widget="float_time" optional="show"/>
+                <field name="heure_route" widget="float_time" optional="show"/>
                 <field name="panier" optional="show"/>
                 <field name="nuitee" optional="show"/>
                 <field name="commentaire" optional="show"/>
