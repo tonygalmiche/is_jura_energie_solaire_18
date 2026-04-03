@@ -245,6 +245,64 @@ class IsCentraleOptimiseur(models.Model):
     quantite           = fields.Integer("Quantité")
  
 
+class IsCentraleSystemeIntegration(models.Model):
+    _name='is.centrale.systeme.integration'
+    _description = "Système d'intégration des centrales"
+    _order='sequence,id'
+
+    centrale_id              = fields.Many2one('is.centrale', 'Centrale', required=True, ondelete='cascade')
+    sequence                 = fields.Integer("Ordre")
+    systeme_integration_id   = fields.Many2one('product.product', string="Système d'intégration")
+    quantite                 = fields.Integer("Quantité")
+
+
+class IsCentraleRaccordementElectrique(models.Model):
+    _name = 'is.centrale.raccordement.electrique'
+    _description = "Raccordement électrique"
+    _order = 'name'
+
+    name = fields.Char("Nom", required=True)
+
+
+class IsCentraleTypePose(models.Model):
+    _name = 'is.centrale.type.pose'
+    _description = "Type de pose"
+    _order = 'name'
+
+    name = fields.Char("Nom", required=True)
+
+
+class IsCentraleCableElectrique(models.Model):
+    _name = 'is.centrale.cable.electrique'
+    _description = "Câble électrique des centrales"
+    _order = 'sequence,id'
+
+    centrale_id      = fields.Many2one('is.centrale', 'Centrale', required=True, ondelete='cascade')
+    sequence         = fields.Integer("Ordre")
+    depart_id        = fields.Many2one('is.centrale.raccordement.electrique', string="Départ")
+    fin_id           = fields.Many2one('is.centrale.raccordement.electrique', string="Fin")
+    type_cable_id    = fields.Many2one('product.product', string="Type de câble")
+    longueur         = fields.Float("Longueur (m)", digits=(10, 1))
+    type_pose_ids    = fields.Many2many(
+        'is.centrale.type.pose',
+        'is_centrale_cable_type_pose_rel',
+        'cable_id',
+        'type_pose_id',
+        string="Type de pose",
+    )
+
+
+class IsCentraleAutre(models.Model):
+    _name = 'is.centrale.autre'
+    _description = "Autres équipements des centrales"
+    _order = 'sequence,id'
+
+    centrale_id  = fields.Many2one('is.centrale', 'Centrale', required=True, ondelete='cascade')
+    sequence     = fields.Integer("Ordre")
+    produit_id   = fields.Many2one('product.product', string="Produit")
+    quantite     = fields.Integer("Quantité")
+
+
 class IsCentrale(models.Model):
     _name='is.centrale'
     _inherit = ['portal.mixin', 'mail.thread', 'mail.activity.mixin']
@@ -384,6 +442,7 @@ class IsCentrale(models.Model):
     lead_ids = fields.One2many('crm.lead', 'is_centrale_id', string="Opportunités")
     sav_ids = fields.One2many('is.sav', 'centrale_id', string="SAVs", tracking=True)
     purchase_line_ids = fields.One2many('purchase.order.line', 'is_centrale_id', string="Lignes d'achats")
+    purchase_order_count  = fields.Integer(compute='_compute_purchase_order_count')
     calendar_event_ids    = fields.One2many('calendar.event', 'is_centrale_id', string='Réunion')
     meeting_display_date  = fields.Date(compute="_compute_meeting_display")
     meeting_display_label = fields.Char(compute="_compute_meeting_display")
@@ -404,6 +463,7 @@ class IsCentrale(models.Model):
     )
 
     # Onglet "DP/PC"
+    is_afficher_administratif = fields.Boolean("Afficher l'administratif", default=True)
     dp_etat = fields.Selection(
         [
             ('a_faire'   , 'A faire'),
@@ -455,7 +515,7 @@ class IsCentrale(models.Model):
         tracking=True,
         group_expand='_read_group_crd_etat',
     )
-    crd_recu         = fields.Date("CRD Reçu", tracking=True)
+    crd_recu         = fields.Date("Date limite CRD", tracking=True)
     crd_signature    = fields.Date("CRD Signature", tracking=True)
     crd_informations = fields.Text("CRD Informations", tracking=True)
     crd_signe_ids    = fields.Many2many('ir.attachment', 'is_centrale_crd_signe_rel', 'centrale_id', 'attachment_id', string="CRD signé")
@@ -493,6 +553,7 @@ class IsCentrale(models.Model):
     )
     socotec_controle     = fields.Date("Socotec Contrôle", tracking=True)
     socotec_informations = fields.Text("Socotec Informations", tracking=True)
+    socotec_conformite_electrique_ids = fields.Many2many('ir.attachment', 'is_centrale_socotec_conformite_rel', 'centrale_id', 'attachment_id', string="Conformité électrique")
 
     # Onglet "Consuel"
     consuel_etat = fields.Selection(
@@ -509,6 +570,7 @@ class IsCentrale(models.Model):
     consuel_depose       = fields.Date("Consuel Déposé", tracking=True)
     consuel_obtention    = fields.Date("Consuel Obtention", tracking=True)
     consuel_informations = fields.Text("Consuel Informations", tracking=True)
+    consuel_attachment_ids = fields.Many2many('ir.attachment', 'is_centrale_consuel_attachment_rel', 'centrale_id', 'attachment_id', string="Consuel")
 
     # Onglet "Mise en service"
     mes_demande      = fields.Date("MES Demandé", tracking=True)
@@ -530,6 +592,7 @@ class IsCentrale(models.Model):
     s21_envoye       = fields.Date("S21 Envoyé", tracking=True)
     s21_obtenu       = fields.Date("S21 Obtenu", tracking=True)
     s21_informations = fields.Text("S21 Informations", tracking=True)
+    s21_attestation_conformite_ids = fields.Many2many('ir.attachment', 'is_centrale_s21_attestation_rel', 'centrale_id', 'attachment_id', string="Attestation de conformité")
 
     # Onglet "EDF AO"
     edf_identifiant  = fields.Char("Identifiant client", tracking=True)
@@ -585,6 +648,20 @@ class IsCentrale(models.Model):
     nb_champs_solaire   = fields.Integer("Nombre de champs solaire", tracking=True)
     presence_optimiseur = fields.Boolean("Présence d’optimiseur", default=False, tracking=True)
     optimiseur_ids      = fields.One2many('is.centrale.optimiseur' , 'centrale_id', 'Optimiseurs')
+    systeme_integration_ids = fields.One2many('is.centrale.systeme.integration', 'centrale_id', "Système d'intégration")
+    cable_electrique_ids    = fields.One2many('is.centrale.cable.electrique', 'centrale_id', "Câbles électriques")
+    autre_ids               = fields.One2many('is.centrale.autre', 'centrale_id', "Autres")
+
+    # Onglet "Plans d'exécution"
+    plan_calepinage_ids          = fields.Many2many('ir.attachment', 'is_centrale_plan_calepinage_rel',       'centrale_id', 'attachment_id', string="Plan de calepinage")
+    plan_chaines_ids             = fields.Many2many('ir.attachment', 'is_centrale_plan_chaines_rel',          'centrale_id', 'attachment_id', string="Plan des chaînes")
+    plan_dimensionnement_ids     = fields.Many2many('ir.attachment', 'is_centrale_plan_dimensionnement_rel',  'centrale_id', 'attachment_id', string="Dimensionnement onduleur")
+    plan_raccordement_ids        = fields.Many2many('ir.attachment', 'is_centrale_plan_raccordement_rel',     'centrale_id', 'attachment_id', string="Raccordement Électrique")
+    plan_schema_unifilaire_ids   = fields.Many2many('ir.attachment', 'is_centrale_plan_schema_unifilaire_rel','centrale_id', 'attachment_id', string="Schéma Unifilaire")
+    plan_securite_ids            = fields.Many2many('ir.attachment', 'is_centrale_plan_securite_rel',        'centrale_id', 'attachment_id', string="Plan de sécurité")
+    plan_masse_ids               = fields.Many2many('ir.attachment', 'is_centrale_plan_masse_rel',           'centrale_id', 'attachment_id', string="Plan de masse")
+    plan_note_calculs_ids        = fields.Many2many('ir.attachment', 'is_centrale_plan_note_calculs_rel',    'centrale_id', 'attachment_id', string="Note de calculs Électrique")
+    plan_autres_ids              = fields.Many2many('ir.attachment', 'is_centrale_plan_autres_rel',          'centrale_id', 'attachment_id', string="Autres")
 
 
     @api.onchange('secteur')
@@ -871,6 +948,159 @@ class IsCentrale(models.Model):
             mode, initial_date = self._get_centrale_meeting_view_parameters()
             action['context'].update({'default_mode': mode, 'initial_date': initial_date})
         return action
+
+    def _compute_purchase_order_count(self):
+        for rec in self:
+            rec.purchase_order_count = len(rec.purchase_line_ids.mapped('order_id'))
+
+    def action_view_purchase_orders(self):
+        self.ensure_one()
+        order_ids = self.purchase_line_ids.mapped('order_id').ids
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'purchase.order',
+            'name': 'Commandes d\'achat',
+            'view_mode': 'list,form',
+            'domain': [('id', 'in', order_ids)],
+            'context': {'default_is_centrale_id': self.id},
+        }
+
+    def action_create_purchase_from_it(self):
+        """Crée une commande d'achat avec tous les articles de l'onglet Informations techniques."""
+        self.ensure_one()
+        PurchaseOrder = self.env['purchase.order']
+        partner = self.env.company.partner_id
+
+        order = PurchaseOrder.create({
+            'partner_id': partner.id,
+            'is_centrale_id': self.id,
+            'is_objet': "Matériel - %s" % (self.name or ''),
+        })
+
+        lines = []
+
+        # Section Panneaux
+        if self.panneau_ids.filtered(lambda l: l.panneau_id and l.quantite):
+            lines.append({'order_id': order.id, 'display_type': 'line_section', 'name': 'Panneaux', 'product_qty': 0})
+
+        # Panneaux
+        for line in self.panneau_ids:
+            if line.panneau_id and line.quantite:
+                lines.append({
+                    'order_id': order.id,
+                    'product_id': line.panneau_id.id,
+                    'name': line.panneau_id.display_name,
+                    'product_qty': line.quantite,
+                    'price_unit': 0,
+                    'is_centrale_id': self.id,
+                })
+
+        # Section Système d'intégration
+        if self.systeme_integration_ids.filtered(lambda l: l.systeme_integration_id and l.quantite):
+            lines.append({'order_id': order.id, 'display_type': 'line_section', 'name': "Système d'intégration", 'product_qty': 0})
+
+        # Système d'intégration
+        for line in self.systeme_integration_ids:
+            if line.systeme_integration_id and line.quantite:
+                lines.append({
+                    'order_id': order.id,
+                    'product_id': line.systeme_integration_id.id,
+                    'name': line.systeme_integration_id.display_name,
+                    'product_qty': line.quantite,
+                    'price_unit': 0,
+                    'is_centrale_id': self.id,
+                })
+
+        # Section Onduleurs
+        if self.onduleur_ids.filtered(lambda l: l.onduleur_id and l.quantite):
+            lines.append({'order_id': order.id, 'display_type': 'line_section', 'name': 'Onduleurs', 'product_qty': 0})
+
+        # Onduleurs
+        for line in self.onduleur_ids:
+            if line.onduleur_id and line.quantite:
+                lines.append({
+                    'order_id': order.id,
+                    'product_id': line.onduleur_id.id,
+                    'name': line.onduleur_id.display_name,
+                    'product_qty': line.quantite,
+                    'price_unit': 0,
+                    'is_centrale_id': self.id,
+                })
+
+        # Section Optimiseurs
+        if self.optimiseur_ids.filtered(lambda l: l.optimiseur_id and l.quantite):
+            lines.append({'order_id': order.id, 'display_type': 'line_section', 'name': 'Optimiseurs', 'product_qty': 0})
+
+        # Optimiseurs
+        for line in self.optimiseur_ids:
+            if line.optimiseur_id and line.quantite:
+                lines.append({
+                    'order_id': order.id,
+                    'product_id': line.optimiseur_id.id,
+                    'name': line.optimiseur_id.display_name,
+                    'product_qty': line.quantite,
+                    'price_unit': 0,
+                    'is_centrale_id': self.id,
+                })
+
+        # Section Protections électriques
+        if self.coffret_ids.filtered(lambda l: l.coffret_id and l.quantite):
+            lines.append({'order_id': order.id, 'display_type': 'line_section', 'name': 'Protections électriques', 'product_qty': 0})
+
+        # Protections électriques
+        for line in self.coffret_ids:
+            if line.coffret_id and line.quantite:
+                lines.append({
+                    'order_id': order.id,
+                    'product_id': line.coffret_id.id,
+                    'name': line.coffret_id.display_name,
+                    'product_qty': line.quantite,
+                    'price_unit': 0,
+                    'is_centrale_id': self.id,
+                })
+
+        # Section Câbles électriques
+        if self.cable_electrique_ids.filtered(lambda l: l.type_cable_id and l.longueur):
+            lines.append({'order_id': order.id, 'display_type': 'line_section', 'name': 'Câbles électriques', 'product_qty': 0})
+
+        # Câbles électriques (longueur en mètres comme quantité)
+        for line in self.cable_electrique_ids:
+            if line.type_cable_id and line.longueur:
+                lines.append({
+                    'order_id': order.id,
+                    'product_id': line.type_cable_id.id,
+                    'name': line.type_cable_id.display_name,
+                    'product_qty': line.longueur,
+                    'price_unit': 0,
+                    'is_centrale_id': self.id,
+                })
+
+        # Section Autres
+        if self.autre_ids.filtered(lambda l: l.produit_id and l.quantite):
+            lines.append({'order_id': order.id, 'display_type': 'line_section', 'name': 'Autres', 'product_qty': 0})
+
+        # Autres
+        for line in self.autre_ids:
+            if line.produit_id and line.quantite:
+                lines.append({
+                    'order_id': order.id,
+                    'product_id': line.produit_id.id,
+                    'name': line.produit_id.display_name,
+                    'product_qty': line.quantite,
+                    'price_unit': 0,
+                    'is_centrale_id': self.id,
+                })
+
+        if lines:
+            self.env['purchase.order.line'].create(lines)
+
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'purchase.order',
+            'res_id': order.id,
+            'view_mode': 'form',
+            'target': 'current',
+        }
 
     def _get_centrale_meeting_view_parameters(self):
         self.ensure_one()

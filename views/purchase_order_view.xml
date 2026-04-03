@@ -23,6 +23,11 @@
 
 
 
+            <!-- Champ is_objet présenté comme les champs du groupe (avec label) -->
+            <xpath expr="//field[@name='partner_ref']" position="after">
+                <field name="is_objet"/>
+            </xpath>
+
             <!-- Champ Centrale dans l'entête -->
             <xpath expr="//field[@name='partner_ref']" position="after">
                 <field name="is_centrale_id"/>
@@ -31,6 +36,66 @@
             <xpath expr="//field[@name='order_line']/list/field[@name='product_qty']" position="before">
                 <field name="is_centrale_id" optional="show" widget="many2one_clickable"/>
             </xpath>
+        </field>
+    </record>
+
+    <!-- Ajout de la Centrale et Objet dans la vue liste (purchase_order_tree) -->
+    <record id="view_purchase_order_tree_inherit" model="ir.ui.view">
+        <field name="name">purchase.order.list.inherit.is_jura</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_tree"/>
+        <field name="arch" type="xml">
+            <field name="name" position="after">
+                <field name="is_objet" optional="show"/>
+            </field>
+            <field name="partner_id" position="after">
+                <field name="is_centrale_id" optional="show" widget="many2one_clickable"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- Ajout de la Centrale et Objet dans la vue liste KPIs (purchase_order_kpis_tree) -->
+    <record id="view_purchase_order_kpis_tree_inherit" model="ir.ui.view">
+        <field name="name">purchase.order.kpis.list.inherit.is_jura</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_kpis_tree"/>
+        <field name="arch" type="xml">
+            <field name="name" position="after">
+                <field name="is_objet" optional="show"/>
+            </field>
+            <field name="partner_id" position="after">
+                <field name="is_centrale_id" optional="show" widget="many2one_clickable"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- Ajout de la Centrale et Objet dans la vue liste principale (purchase_order_view_tree) -->
+    <record id="view_purchase_order_view_tree_inherit" model="ir.ui.view">
+        <field name="name">purchase.order.view.list.inherit.is_jura</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_view_tree"/>
+        <field name="arch" type="xml">
+            <field name="name" position="after">
+                <field name="is_objet" optional="show"/>
+            </field>
+            <field name="partner_id" position="after">
+                <field name="is_centrale_id" optional="show" widget="many2one_clickable"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- Ajout de la Centrale dans la vue search -->
+    <record id="view_purchase_order_search_inherit" model="ir.ui.view">
+        <field name="name">purchase.order.search.inherit.is_jura</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_view_search"/>
+        <field name="arch" type="xml">
+            <field name="product_id" position="after">
+                <field name="is_centrale_id"/>
+            </field>
+            <filter name="vendor" position="before">
+                <filter string="Centrale" name="group_by_centrale" domain="[]" context="{'group_by': 'is_centrale_id'}"/>
+            </filter>
         </field>
     </record>
 

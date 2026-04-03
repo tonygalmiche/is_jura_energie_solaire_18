@@ -76,6 +76,8 @@
             <group name="internal_notes" position="before">
                 <group>
                     <field name="is_fiche_technique_ids"  widget="many2many_binary"/>
+                    <field name="is_certification_ids"    widget="many2many_binary"/>
+                    <field name="is_notice_ids"           widget="many2many_binary"/>
                 </group>
             </group>
         </field>

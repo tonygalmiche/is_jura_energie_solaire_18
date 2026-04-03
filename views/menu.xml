@@ -129,6 +129,8 @@
     <menuitem id="is_centrale_appoint_menu" name="Appoints" parent="is_crm_configuration_menu" action="is_centrale_appoint_action" sequence="86"/>
     <menuitem id="is_centrale_marque_menu" name="Marques" parent="is_crm_configuration_menu" action="is_centrale_marque_action" sequence="87"/>
     <menuitem id="is_calendrier_equipe_menu" name="Équipes" parent="is_crm_configuration_menu" action="is_calendrier_equipe_action" sequence="88"/>
+    <menuitem id="is_centrale_raccordement_electrique_menu" name="Raccordement électrique" parent="is_crm_configuration_menu" action="is_centrale_raccordement_electrique_action" sequence="89" groups="is_jura_energie_solaire_18.group_configuration_jes"/>
+    <menuitem id="is_centrale_type_pose_menu" name="Types de pose" parent="is_crm_configuration_menu" action="is_centrale_type_pose_action" sequence="90" groups="is_jura_energie_solaire_18.group_configuration_jes"/>
 
 
  

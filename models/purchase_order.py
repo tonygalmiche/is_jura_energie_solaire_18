@@ -6,6 +6,7 @@ class PurchaseOrder(models.Model):
     _inherit = "purchase.order"
 
     is_centrale_id = fields.Many2one("is.centrale", string="Centrale", index=True)
+    is_objet = fields.Char(string="Objet de la commande")
 
 
 class PurchaseOrderLine(models.Model):

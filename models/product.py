@@ -23,6 +23,8 @@ class product_template(models.Model):
     is_puissance_kva       = fields.Float('Puissance (kVA)', tracking=True, help="Pour les onduleurs")
     is_puissance_w         = fields.Integer('Puissance (W)'  , tracking=True, help="Pour les panneaux")
     is_fiche_technique_ids = fields.Many2many('ir.attachment', 'product_template_is_fiche_technique_rel', 'product_id', 'attachment_id', string="Fiche technique")
+    is_certification_ids   = fields.Many2many('ir.attachment', 'product_template_is_certification_rel',   'product_id', 'attachment_id', string="Certifications")
+    is_notice_ids          = fields.Many2many('ir.attachment', 'product_template_is_notice_rel',           'product_id', 'attachment_id', string="Notice")
 
 
     @api.onchange('is_famille_id')
