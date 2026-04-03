@@ -17,6 +17,7 @@ class crm_lead(models.Model):
     
     is_provenance_client_id = fields.Many2one('is.provenance.client', string="Provenance client", tracking=True)
     is_secteur      = fields.Selection(SECTEUR_SELECTION,string="Secteur",tracking=True)
+    is_sous_secteur = fields.Selection([('chantier', 'Chantier'), ('sav', 'SAV')], string="Sous secteur", default='chantier', tracking=True)
     is_adresse      = fields.Char("Adresse", size=60, tracking=True, required=False)
     is_localisation = fields.Char("Localisation", tracking=True)
     is_centrale_id  = fields.Many2one('is.centrale', string="Centrale", tracking=True)

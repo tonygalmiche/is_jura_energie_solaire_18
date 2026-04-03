@@ -39,6 +39,7 @@ Module Odoo 18 pour Jura Energie Solaire
         "views/is_suivi_temps_view.xml",
         "views/is_preparation_paye_view.xml",
         "views/calendar_view.xml",
+        "views/is_calendrier_equipe_view.xml",
         "views/crm_lead_view.xml",
         "views/is_documentation_view.xml",
         "views/purchase_order_view.xml",

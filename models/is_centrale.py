@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from odoo import api, fields, models
 from dateutil.relativedelta import relativedelta
+from datetime import datetime, timedelta
+import pytz
 
 # Liste partagée des secteurs
 SECTEUR_SELECTION = [
@@ -382,6 +384,9 @@ class IsCentrale(models.Model):
     lead_ids = fields.One2many('crm.lead', 'is_centrale_id', string="Opportunités")
     sav_ids = fields.One2many('is.sav', 'centrale_id', string="SAVs", tracking=True)
     purchase_line_ids = fields.One2many('purchase.order.line', 'is_centrale_id', string="Lignes d'achats")
+    calendar_event_ids    = fields.One2many('calendar.event', 'is_centrale_id', string='Réunion')
+    meeting_display_date  = fields.Date(compute="_compute_meeting_display")
+    meeting_display_label = fields.Char(compute="_compute_meeting_display")
     puissance_onduleur_demandee = fields.Float(string="Puissance onduleurs demandée (kVA)")
     puissance_panneau_demandee  = fields.Float(string="Puissance panneaux demandée (kWc)")
     puissance_onduleur_totale = fields.Float(
@@ -823,4 +828,79 @@ class IsCentrale(models.Model):
             'url': f'/web/content/{attachment.id}?download=true',
             'target': 'self',
         }
+
+    @api.depends('calendar_event_ids', 'calendar_event_ids.start')
+    def _compute_meeting_display(self):
+        now = fields.Datetime.now()
+        meeting_data = self.env['calendar.event'].sudo()._read_group([
+            ('is_centrale_id', 'in', self.ids),
+        ], ['is_centrale_id'], ['start:array_agg', 'start:max'])
+        mapped_data = {
+            centrale: {
+                'last_meeting_date': last_meeting_date,
+                'next_meeting_date': min([dt for dt in meeting_start_dates if dt > now] or [False]),
+            } for centrale, meeting_start_dates, last_meeting_date in meeting_data
+        }
+        for centrale in self:
+            centrale_meeting_info = mapped_data.get(centrale)
+            if not centrale_meeting_info:
+                centrale.meeting_display_date = False
+                centrale.meeting_display_label = 'Pas de réunion'
+            elif centrale_meeting_info['next_meeting_date']:
+                centrale.meeting_display_date = centrale_meeting_info['next_meeting_date']
+                centrale.meeting_display_label = 'Prochaine réunion'
+            else:
+                centrale.meeting_display_date = centrale_meeting_info['last_meeting_date']
+                centrale.meeting_display_label = 'Dernière réunion'
+
+    def action_schedule_meeting(self, smart_calendar=True):
+        self.ensure_one()
+        action = self.env["ir.actions.actions"]._for_xml_id("calendar.action_calendar_event")
+        partner_ids = self.env.user.partner_id.ids
+        if self.client_id:
+            partner_ids.append(self.client_id.id)
+        current_centrale_id = self.id
+        action['context'] = {
+            'search_default_is_centrale_id': current_centrale_id,
+            'default_is_centrale_id': current_centrale_id,
+            'default_partner_id': self.client_id.id if self.client_id else False,
+            'default_partner_ids': partner_ids,
+            'default_name': self.name,
+        }
+        if smart_calendar:
+            mode, initial_date = self._get_centrale_meeting_view_parameters()
+            action['context'].update({'default_mode': mode, 'initial_date': initial_date})
+        return action
+
+    def _get_centrale_meeting_view_parameters(self):
+        self.ensure_one()
+        meeting_results = self.env["calendar.event"].search_read([('is_centrale_id', '=', self.id)], ['start', 'stop', 'allday'])
+        if not meeting_results:
+            return "week", False
+
+        user_tz = self.env.user.tz or self.env.context.get('tz')
+        user_pytz = pytz.timezone(user_tz) if user_tz else pytz.utc
+        meeting_dts = []
+        now_dt = datetime.now().astimezone(user_pytz).replace(tzinfo=None)
+        for meeting in meeting_results:
+            if meeting.get('allday'):
+                meeting_dts.append((meeting.get('start'), meeting.get('stop')))
+            else:
+                meeting_dts.append((
+                    meeting.get('start').astimezone(user_pytz).replace(tzinfo=None),
+                    meeting.get('stop').astimezone(user_pytz).replace(tzinfo=None),
+                ))
+        unfinished_meeting_dts = [m for m in meeting_dts if m[1] >= now_dt]
+        relevant_meeting_dts = unfinished_meeting_dts if unfinished_meeting_dts else meeting_dts
+        if len(relevant_meeting_dts) == 1:
+            return "week", relevant_meeting_dts[0][0].date()
+        earliest_start_dt = min(m[0] for m in relevant_meeting_dts)
+        latest_stop_dt = max(m[1] for m in relevant_meeting_dts)
+        lang_week_start = self.env["res.lang"].search_read([('code', '=', self.env.user.lang)], ['week_start'])
+        week_start_index = int(lang_week_start[0].get('week_start', '1')) - 1 if lang_week_start else 0
+        earliest_start_week_index = earliest_start_dt.weekday() - week_start_index
+        latest_stop_week_index = latest_stop_dt.weekday() - week_start_index
+        if (latest_stop_dt - earliest_start_dt).days < 7 and earliest_start_week_index <= latest_stop_week_index:
+            return "week", earliest_start_dt.date()
+        return "month", earliest_start_dt.date()
 

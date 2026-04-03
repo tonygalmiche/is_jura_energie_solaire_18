@@ -9,6 +9,9 @@
                 <field name="opportunity_id"/>
                 <field name="is_sav_id"/>
                 <field name="is_maintenance_id"/>
+                <field name="is_centrale_id"/>
+                <field name="is_centrale_secteur"/>
+                <field name="is_equipe_id"/>
             </field> 
         </field>
     </record>
@@ -21,6 +24,9 @@
             <field name="location" position="after">
                 <field name="is_sav_id" optional="show" widget="many2one_clickable"/>
                 <field name="is_maintenance_id" optional="show" widget="many2one_clickable"/>
+                <field name="is_centrale_id" optional="show" widget="many2one_clickable"/>
+                <field name="is_centrale_secteur" optional="show" widget="badge"/>
+                <field name="is_equipe_id" optional="show" widget="many2one_clickable"/>
             </field>
         </field>
     </record>
@@ -33,7 +39,125 @@
             <field name="location" position="after">
                 <field name="is_sav_id"/>
                 <field name="is_maintenance_id"/>
+                <field name="is_centrale_id"/>
+                <field name="is_centrale_secteur"/>
+                <field name="is_equipe_id"/>
+                <separator/>
+                <filter string="Centrales GP"   name="filter_centrale_gp"   domain="[('is_centrale_secteur','=','gp')]"/>
+                <filter string="Centrales RE"   name="filter_centrale_re"   domain="[('is_centrale_secteur','=','re')]"/>
+                <filter string="Centrales TH"   name="filter_centrale_th"   domain="[('is_centrale_secteur','=','th')]"/>
+                <filter string="Centrales SI"   name="filter_centrale_si"   domain="[('is_centrale_secteur','=','si')]"/>
+                <filter string="Centrales IRVE" name="filter_centrale_irve" domain="[('is_centrale_secteur','=','irve')]"/>
+                <filter string="SAV"         name="filter_sav"         domain="[('is_sav_id','!=',False)]"/>
+                <filter string="Maintenance" name="filter_maintenance" domain="[('is_maintenance_id','!=',False)]"/>
             </field>
         </field>
     </record>
+
+    <record id="is_view_calendar_event_calendar" model="ir.ui.view">
+        <field name="name">is_view_calendar_event_calendar</field>
+        <field name="model">calendar.event</field>
+        <field name="inherit_id" ref="calendar.view_calendar_event_calendar"/>
+        <field name="arch" type="xml">
+            <field name="location" position="after">
+                <field name="is_sav_id" invisible="not is_sav_id" options="{'icon': 'fa fa-wrench'}"/>
+                <field name="is_centrale_id" invisible="not is_centrale_id" options="{'icon': 'fa fa-bolt'}"/>
+                <field name="is_centrale_secteur" invisible="not is_centrale_secteur"/>
+                <field name="is_equipe_id" invisible="not is_equipe_id" options="{'icon': 'fa fa-users'}"/>
+            </field>
+            <field name="res_model_name" position="attributes">
+                <attribute name="invisible">not res_model_name or is_centrale_id or is_sav_id</attribute>
+            </field>
+        </field>
+    </record>
+
+    <!-- Vue calendrier dédiée aux centrales : couleur par équipe, filtre équipes -->
+    <record id="is_view_calendar_centrale" model="ir.ui.view">
+        <field name="name">is.view.calendar.centrale</field>
+        <field name="model">calendar.event</field>
+        <field name="mode">primary</field>
+        <field name="inherit_id" ref="is_view_calendar_event_calendar"/>
+        <field name="arch" type="xml">
+            <!-- Passer en js_class standard pour ne plus forcer la sidebar participants -->
+            <xpath expr="//calendar" position="attributes">
+                <attribute name="js_class">calendar</attribute>
+                <attribute name="color">is_equipe_id</attribute>
+            </xpath>
+            <!-- Supprimer le filtre sidebar sur partner_ids -->
+            <xpath expr="//field[@name='partner_ids']" position="attributes">
+                <attribute name="filters">0</attribute>
+            </xpath>
+            <!-- Activer le filtre sidebar sur is_equipe_id -->
+            <xpath expr="//field[@name='is_equipe_id']" position="attributes">
+                <attribute name="filters">1</attribute>
+                <attribute name="options">{'block': True, 'icon': 'fa fa-users'}</attribute>
+                <attribute name="invisible">0</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Actions calendrier filtrées par secteur centrale -->
+    <record id="is_calendar_centrale_gp_action" model="ir.actions.act_window">
+        <field name="name">Calendrier Centrales GP</field>
+        <field name="res_model">calendar.event</field>
+        <field name="view_mode">calendar,list,form</field>
+        <field name="view_id" ref="is_view_calendar_centrale"/>
+        <field name="search_view_id" ref="is_view_calendar_event_search"/>
+        <field name="context">{'search_default_filter_centrale_gp': 1}</field>
+    </record>
+
+    <record id="is_calendar_centrale_re_action" model="ir.actions.act_window">
+        <field name="name">Calendrier Centrales RE</field>
+        <field name="res_model">calendar.event</field>
+        <field name="view_mode">calendar,list,form</field>
+        <field name="view_id" ref="is_view_calendar_centrale"/>
+        <field name="search_view_id" ref="is_view_calendar_event_search"/>
+        <field name="context">{'search_default_filter_centrale_re': 1}</field>
+    </record>
+
+    <record id="is_calendar_centrale_th_action" model="ir.actions.act_window">
+        <field name="name">Calendrier Centrales TH</field>
+        <field name="res_model">calendar.event</field>
+        <field name="view_mode">calendar,list,form</field>
+        <field name="view_id" ref="is_view_calendar_centrale"/>
+        <field name="search_view_id" ref="is_view_calendar_event_search"/>
+        <field name="context">{'search_default_filter_centrale_th': 1}</field>
+    </record>
+
+    <record id="is_calendar_centrale_si_action" model="ir.actions.act_window">
+        <field name="name">Calendrier Centrales SI</field>
+        <field name="res_model">calendar.event</field>
+        <field name="view_mode">calendar,list,form</field>
+        <field name="view_id" ref="is_view_calendar_centrale"/>
+        <field name="search_view_id" ref="is_view_calendar_event_search"/>
+        <field name="context">{'search_default_filter_centrale_si': 1}</field>
+    </record>
+
+    <record id="is_calendar_centrale_irve_action" model="ir.actions.act_window">
+        <field name="name">Calendrier Centrales IRVE</field>
+        <field name="res_model">calendar.event</field>
+        <field name="view_mode">calendar,list,form</field>
+        <field name="view_id" ref="is_view_calendar_centrale"/>
+        <field name="search_view_id" ref="is_view_calendar_event_search"/>
+        <field name="context">{'search_default_filter_centrale_irve': 1}</field>
+    </record>
+
+    <record id="is_calendar_sav_action" model="ir.actions.act_window">
+        <field name="name">Calendrier SAV</field>
+        <field name="res_model">calendar.event</field>
+        <field name="view_mode">calendar,list,form</field>
+        <field name="view_id" ref="calendar.view_calendar_event_calendar"/>
+        <field name="search_view_id" ref="is_view_calendar_event_search"/>
+        <field name="context">{'search_default_filter_sav': 1}</field>
+    </record>
+
+    <record id="is_calendar_maintenance_action" model="ir.actions.act_window">
+        <field name="name">Calendrier Maintenance</field>
+        <field name="res_model">calendar.event</field>
+        <field name="view_mode">calendar,list,form</field>
+        <field name="view_id" ref="calendar.view_calendar_event_calendar"/>
+        <field name="search_view_id" ref="is_view_calendar_event_search"/>
+        <field name="context">{'search_default_filter_maintenance': 1}</field>
+    </record>
+
 </odoo>

@@ -104,6 +104,14 @@
                     }
                 </style>
                 <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_schedule_meeting" type="object" class="oe_stat_button" icon="fa-calendar" context="{'partner_id': client_id}">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text"><field name="meeting_display_label"/></span>
+                                <field name="meeting_display_date" class="o_stat_value" invisible="not meeting_display_date"/>
+                            </div>
+                        </button>
+                    </div>
                     <group>
                         <group>
                             <field name="name"/>

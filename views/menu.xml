@@ -35,6 +35,16 @@
     <menuitem id="is_centrale_kanban_edf_menu"     name="Kanban EDF AO"  parent="is_centrale_main_menu" action="is_centrale_kanban_edf_action"     sequence="37"/>
     <menuitem id="is_centrale_kanban_maintenance_menu" name="Kanban Maintenance" parent="is_centrale_main_menu" action="is_centrale_kanban_maintenance_action" sequence="38"/>
 
+    <!-- JES / Calendriers -->
+    <menuitem id="is_calendrier_main_menu" name="Calendriers" parent="is_crm_root_menu" sequence="15"/>
+    <menuitem id="is_calendrier_gp_menu"          name="Centrales GP"   parent="is_calendrier_main_menu" action="is_calendar_centrale_gp_action"   sequence="10"/>
+    <menuitem id="is_calendrier_re_menu"          name="Centrales RE"   parent="is_calendrier_main_menu" action="is_calendar_centrale_re_action"   sequence="20"/>
+    <menuitem id="is_calendrier_th_menu"          name="Centrales TH"   parent="is_calendrier_main_menu" action="is_calendar_centrale_th_action"   sequence="30"/>
+    <menuitem id="is_calendrier_si_menu"          name="Centrales SI"   parent="is_calendrier_main_menu" action="is_calendar_centrale_si_action"   sequence="40"/>
+    <menuitem id="is_calendrier_irve_menu"        name="Centrales IRVE" parent="is_calendrier_main_menu" action="is_calendar_centrale_irve_action" sequence="50"/>
+    <menuitem id="is_calendrier_sav_menu"         name="SAV"            parent="is_calendrier_main_menu" action="is_calendar_sav_action"           sequence="60"/>
+    <menuitem id="is_calendrier_maintenance_menu" name="Maintenance"    parent="is_calendrier_main_menu" action="is_calendar_maintenance_action"   sequence="70"/>
+
     <!-- JES / SAV -->
     <menuitem id="is_sav_main_menu"   name="SAV"        parent="is_crm_root_menu" sequence="20"/>
     <menuitem id="is_sav_menu"        name="SAV"        parent="is_sav_main_menu" action="is_sav_action"        sequence="10"/>
@@ -118,6 +128,7 @@
     <menuitem id="is_centrale_regulation_menu" name="Régulations" parent="is_crm_configuration_menu" action="is_centrale_regulation_action" sequence="85"/>
     <menuitem id="is_centrale_appoint_menu" name="Appoints" parent="is_crm_configuration_menu" action="is_centrale_appoint_action" sequence="86"/>
     <menuitem id="is_centrale_marque_menu" name="Marques" parent="is_crm_configuration_menu" action="is_centrale_marque_action" sequence="87"/>
+    <menuitem id="is_calendrier_equipe_menu" name="Équipes" parent="is_crm_configuration_menu" action="is_calendrier_equipe_action" sequence="88"/>
 
 
  

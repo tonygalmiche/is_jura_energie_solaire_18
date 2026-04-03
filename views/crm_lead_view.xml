@@ -19,6 +19,7 @@
                 <group>
                     <field name="is_provenance_client_id"/>
                     <field name="is_secteur" required="1"/>
+                    <field name="is_sous_secteur"/>
                     <field name="is_adresse" required="1"/>
                     <field name="is_localisation"/>
                     <field name="is_centrale_id"/>
@@ -44,6 +45,7 @@
            <field name="contact_name" position="after">
                 <field name="is_provenance_client_id" optional="show"/>
                 <field name="is_secteur"              optional="show" widget="badge"/>
+                <field name="is_sous_secteur"         optional="show" widget="badge"/>
                 <field name="is_adresse"              optional="show"/>
                 <field name="is_localisation"         optional="show" />
                 <field name="is_centrale_id"          optional="show"  widget="many2one_clickable"/>
@@ -66,6 +68,7 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='name']" position="after">
                 <field name="is_secteur"/>
+                <field name="is_sous_secteur"/>
             </xpath>
             <xpath expr="//filter[@name='filter_lost']" position="after">
                 <separator/>
