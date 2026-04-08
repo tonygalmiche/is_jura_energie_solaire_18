@@ -435,6 +435,7 @@
                         <page string="SAV">
                             <field name="sav_ids">
                                 <list>
+                                    <button name="action_open_sav" type="object" icon="fa-search" title="Ouvrir le SAV"/>
                                     <field name="name"             optional="show"/>
                                     <field name="date_demande"     optional="show"/>
                                     <field name="degre_urgence"    optional="show"/>

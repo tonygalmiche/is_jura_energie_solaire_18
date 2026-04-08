@@ -8,6 +8,7 @@
                 <field name="name"            optional="show"/>
                 <field name="secteur"         optional="show"/>
                 <field name="centrale_id"     optional="show" widget="many2one_clickable"/>
+                <field name="maintenance_date_signature" optional="hide" string="Date signature maintenance ⭐"/>
                 <field name="is_client_a_risque" optional="show" widget="badge" decoration-danger="is_client_a_risque == 'oui'"/>
                 <field name="date_demande"    optional="show"/>
                 <field name="degre_urgence"   optional="show"  widget="badge"
@@ -51,6 +52,7 @@
                         <group>
                             <field name="name"/>
                             <field name="centrale_id"/>
+                            <field name="maintenance_date_signature" string="Date signature maintenance ⭐" invisible="not maintenance_date_signature"/>
                             <field name="secteur"/>
                             <field name="adresse"/>
                             <field name="localisation"/>
@@ -118,8 +120,12 @@
         <field name="name">view_is_sav_kanban</field>
         <field name="model">is.sav</field>
         <field name="arch" type="xml">
-            <kanban class="o_kanban_small_column">
+            <kanban class="o_kanban_small_column" draggable="1">
                 <field name="is_client_a_risque"/>
+                <field name="maintenance_date_signature"/>
+                <header>
+                    <button name="action_retrier_sequence" string="Trier par urgence et maintenance signée" type="object" display="always"/>
+                </header>
                 <templates>
                     <t t-name="card">
                         <div class="oe_kanban_global_click">
@@ -137,8 +143,13 @@
                             <div t-if="record.is_client_a_risque.raw_value == 'oui'" style="background-color: #dc3545; color: white; padding: 3px 6px; border-radius: 3px; font-size: 12px; text-align: center; margin: 2px 0; font-weight: bold;">
                                 Client à risque
                             </div>
-                            <div style="font-style: italic; color: #6c757d;">
-                                <field name="date_demande"/>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div style="font-style: italic; color: #6c757d;" title="Date de demande du SAV">
+                                    <field name="date_demande"/>
+                                </div>
+                                <div t-if="record.maintenance_date_signature.raw_value" title="Date de signature du contrat de maintenance">
+                                    <field name="maintenance_date_signature"/> ⭐
+                                </div>
                             </div>
                             <div style="display: flex; justify-content: space-between; align-items: center;">
                                 <field name="secteur" widget="badge"/>
@@ -182,6 +193,15 @@
                 </group>
             </search>
         </field>
+    </record>
+
+    <record id="action_server_retrier_sav" model="ir.actions.server">
+        <field name="name">Retrier (Urgents → Maintenance → Autres)</field>
+        <field name="model_id" ref="model_is_sav"/>
+        <field name="binding_model_id" ref="model_is_sav"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">model.action_retrier_sequence()</field>
     </record>
 
     <record id="is_sav_action" model="ir.actions.act_window">

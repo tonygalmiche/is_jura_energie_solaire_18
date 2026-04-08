@@ -9,13 +9,15 @@ class IsSav(models.Model):
     _name='is.sav'
     _inherit = ['portal.mixin', 'mail.thread', 'mail.activity.mixin']
     _description = "SAV"
-    _order='name'
+    _order='sequence,name'
 
+    sequence         = fields.Integer(string="Séquence", default=10)
     name             = fields.Char(string="Nom", size=40, required=True, tracking=True)
     secteur          = fields.Selection(related="centrale_id.secteur", string="Secteur", tracking=True, store=True, readonly=True)
     adresse          = fields.Char(related="centrale_id.adresse", string="Adresse", tracking=True, store=True, readonly=True)
     localisation     = fields.Char(related="centrale_id.localisation", string="Localisation", tracking=True, store=True, readonly=True)
-    centrale_id      = fields.Many2one('is.centrale', string="Centrale", tracking=True)
+    centrale_id                  = fields.Many2one('is.centrale', string="Centrale", tracking=True)
+    maintenance_date_signature   = fields.Date(related="centrale_id.maintenance_date_signature", string="Date signature maintenance", store=True, readonly=True)
     client_id        = fields.Many2one(related="centrale_id.client_id")
     client_child_ids = fields.One2many(related="centrale_id.client_id.child_ids")
     is_client_a_risque = fields.Selection(related="centrale_id.client_id.is_client_a_risque", string="Client à risque")
@@ -206,6 +208,23 @@ class IsSav(models.Model):
             'view_mode': 'form',
             'target': 'current',
         }
+
+    def action_retrier_sequence(self):
+        """Retrie les SAV : urgents en premier, puis ceux avec date de maintenance, puis les autres"""
+        all_records = self.search(self._context.get('active_domain', []))
+        urgents = all_records.filtered(lambda r: r.degre_urgence == 'urgent')
+        avec_maintenance = (all_records - urgents).filtered(lambda r: r.maintenance_date_signature)
+        autres = all_records - urgents - avec_maintenance
+        seq = 1
+        for rec in urgents:
+            rec.sequence = seq
+            seq += 1
+        for rec in avec_maintenance:
+            rec.sequence = seq
+            seq += 1
+        for rec in autres:
+            rec.sequence = seq
+            seq += 1
 
     @api.model
     def _read_group_state(self, stages, domain):
