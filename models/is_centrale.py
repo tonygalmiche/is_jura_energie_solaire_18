@@ -86,24 +86,18 @@ class IsCentraleAffaire(models.Model):
     name = fields.Char("Affaire")
     centrale_ids = fields.One2many('is.centrale', 'affaire_id', string="Centrales", readonly=True)
     puissance_panneau_totale = fields.Float("Puissance totale (kWc)", compute='_compute_puissance_panneau_totale', store=True)
-    euro_par_kwc = fields.Float("€/kWc", compute='_compute_tarifs', store=True, digits=(10, 2))
-    forfait = fields.Integer("Forfait", compute='_compute_tarifs', store=True)
+
+    #euro         = fields.Float("€/kWc", compute='_compute_tarifs', store=True, digits=(10, 0))
+    euro_par_kwc = fields.Float("€/kWc", compute='_compute_tarifs', store=True, digits=(10, 1))
+
+    #forfait = fields.Integer("Forfait", compute='_compute_tarifs', store=True)
     formule_id = fields.Many2one('is.centrale.formule', string="Formule appliquée", compute='_compute_tarifs', store=True)
 
     @api.depends('puissance_panneau_totale')
     def _compute_tarifs(self):
         for record in self:
-            # Recherche de la formule avec la limite la plus proche inférieure
-            formule = self.env['is.centrale.formule'].search([
-                ('limite_kwc', '<', record.puissance_panneau_totale)
-            ], order='limite_kwc desc', limit=1)
-            
-            # Si non trouvé (puissance < toutes les limites), prendre la plus petite limite
-            if not formule:
-                formule = self.env['is.centrale.formule'].search([], order='limite_kwc asc', limit=1)
-            
-            record.euro_par_kwc = formule.euro_par_kwc if formule else 0.0
-            record.forfait = formule.forfait if formule else 0
+            formule, euro_ht, euro_par_kwc = self.env['is.centrale.formule'].calculer_pour_kwc(record.puissance_panneau_totale)
+            record.euro_par_kwc = euro_par_kwc
             record.formule_id = formule.id if formule else False
 
     @api.depends('centrale_ids.puissance_panneau_totale')
@@ -130,11 +124,32 @@ class IsCentraleFormule(models.Model):
     _rec_name = "limite_kwc"
     _order='limite_kwc,id'
 
-    limite_kwc   = fields.Integer("Limite (kWc)", required=True)
-    forfait      = fields.Integer("Forfait")
+    limite_kwc   = fields.Integer("Limite (<=)(kWc)", required=True)
     formule      = fields.Char("Formule")
-    euro_par_kwc = fields.Float("€/kWc", compute='_compute_euro_par_kwc', store=True, readonly=True, digits=(10, 2))
+    euro         = fields.Float("€"    , compute='_compute_euro_par_kwc', store=True, readonly=True, digits=(10, 0))
+    euro_par_kwc = fields.Float("€/kWc", compute='_compute_euro_par_kwc', store=True, readonly=True, digits=(10, 1))
     commentaire  = fields.Char("Commentaire")
+
+    @api.model
+    def get_formule_pour_kwc(self, kwc):
+        formule = self.search([('limite_kwc', '>=', kwc)], order='limite_kwc asc', limit=1)
+        if not formule:
+            formule = self.search([], order='limite_kwc desc', limit=1)
+        return formule
+
+    @api.model
+    def calculer_pour_kwc(self, kwc):
+        formule = self.get_formule_pour_kwc(kwc)
+        euro_ht = 0.0
+        euro_par_kwc = 0.0
+        if formule and formule.formule and kwc > 0:
+            try:
+                formule_calc = formule.formule.replace(',', '.').replace('x', str(kwc))
+                euro_ht = float(eval(formule_calc, {"__builtins__": {}}, {}))
+                euro_par_kwc = euro_ht / kwc
+            except Exception:
+                pass
+        return formule, euro_ht, euro_par_kwc
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -161,8 +176,48 @@ class IsCentraleFormule(models.Model):
                     result = float(eval(formule_calc, {"__builtins__": {}}, {}))
                 except Exception as e:
                     result = 0.0
-            obj.euro_par_kwc = result
- 
+
+            obj.euro = result
+            euro_par_kwc = 0
+            if  obj.limite_kwc>0:
+                euro_par_kwc = obj.euro / obj.limite_kwc
+            obj.euro_par_kwc = euro_par_kwc
+
+
+class IsCentraleFormuleResultat(models.Model):
+    _name = 'is.centrale.formule.resultat'
+    _description = "Résultats des formules"
+    _order = 'kwc'
+
+    kwc          = fields.Integer("kWc")
+    euro_ht      = fields.Float("€(HT)", digits=(10, 2))
+    euro_par_kwc = fields.Float("€/kWc", digits=(10, 2))
+
+    @api.model
+    def action_generer_resultats(self):
+        # Supprimer les fiches existantes
+        self.search([]).unlink()
+
+        vals_list = []
+        for kwc in range(1, 1001):
+            formule, euro_ht, euro_par_kwc = self.env['is.centrale.formule'].calculer_pour_kwc(kwc)
+            vals_list.append({
+                'kwc': kwc,
+                'euro_ht': euro_ht,
+                'euro_par_kwc': euro_par_kwc,
+            })
+
+        self.create(vals_list)
+
+        graph_view = self.env.ref('is_jura_energie_solaire_18.view_is_centrale_formule_resultat_graph_euro_ht', raise_if_not_found=False)
+        return {
+            'type': 'ir.actions.act_window',
+            'name': '€(HT) par kWc',
+            'res_model': 'is.centrale.formule.resultat',
+            'view_mode': 'graph,list',
+            'views': [(graph_view.id if graph_view else False, 'graph'), (False, 'list')],
+        }
+
 
 class IsCentralePanneau(models.Model):
     _name='is.centrale.panneau'
@@ -411,7 +466,7 @@ class IsCentrale(models.Model):
     affaire_id               = fields.Many2one('is.centrale.affaire', string="Affaire", tracking=True)
     affaire_puissance_panneau_totale = fields.Float(related='affaire_id.puissance_panneau_totale', string="Puissance totale de l'affaire", store=True, tracking=True)
     affaire_euro_par_kwc = fields.Float(related='affaire_id.euro_par_kwc', string="€/kWc", store=True, tracking=True)
-    affaire_forfait = fields.Integer(related='affaire_id.forfait', string="Forfait", store=True, tracking=True)
+    #affaire_forfait = fields.Integer(related='affaire_id.forfait', string="Forfait", store=True, tracking=True)
     affaire_formule_id = fields.Many2one(related='affaire_id.formule_id', string="Formule appliquée", store=True, tracking=True)
     montant_maintenance = fields.Float(
         string="Montant maintenance",

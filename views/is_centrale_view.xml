@@ -462,7 +462,6 @@
                                     <field name="affaire_puissance_panneau_totale"/>
                                     <field name="affaire_formule_id"/>
                                     <field name="affaire_euro_par_kwc"/>
-                                    <field name="affaire_forfait"/>
                                     <field name="montant_maintenance"/>
                                 </group>
                              </group>
@@ -850,7 +849,6 @@
                 <field name="puissance_panneau_totale"/>
                 <field name="formule_id"/>
                 <field name="euro_par_kwc"/>
-                <field name="forfait"/>
             </list>
         </field>
     </record>
@@ -869,7 +867,6 @@
                         <field name="puissance_panneau_totale"/>
                         <field name="formule_id"/>
                         <field name="euro_par_kwc"/>
-                        <field name="forfait"/>
                     </group>
                     <group string="Centrales associées">
                         <field name="centrale_ids" nolabel="1">
@@ -904,6 +901,15 @@
         <field name="domain">[]</field>
     </record>
 
+    <record id="action_server_recalculer_tarifs_affaire" model="ir.actions.server">
+        <field name="name">Recalculer les tarifs</field>
+        <field name="model_id" ref="model_is_centrale_affaire"/>
+        <field name="binding_model_id" ref="model_is_centrale_affaire"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">records._compute_tarifs()</field>
+    </record>
+
 
     <!-- Vues pour is.centrale.formule -->
     <record id="view_is_centrale_formule_list" model="ir.ui.view">
@@ -911,10 +917,10 @@
         <field name="model">is.centrale.formule</field>
         <field name="arch" type="xml">
             <list>
-                <field name="limite_kwc"/>
                 <field name="formule"/>
+                <field name="limite_kwc"/>
+                <field name="euro"/>
                 <field name="euro_par_kwc"/>
-                <field name="forfait"/>
                 <field name="commentaire"/>
             </list>
         </field>
@@ -930,8 +936,8 @@
                         <group>
                             <field name="limite_kwc"/>
                             <field name="formule"/>
+                            <field name="euro"/>
                             <field name="euro_par_kwc"/>
-                            <field name="forfait"/>
                             <field name="commentaire"/>
                         </group>
                     </group>
@@ -1300,6 +1306,84 @@
         <field name="res_model">is.centrale.type.pose</field>
         <field name="view_mode">list,form</field>
         <field name="view_id" ref="view_is_centrale_type_pose_list"/>
+    </record>
+
+
+    <!-- Résultats des formules -->
+    <record id="view_is_centrale_formule_resultat_list" model="ir.ui.view">
+        <field name="name">is.centrale.formule.resultat.list</field>
+        <field name="model">is.centrale.formule.resultat</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="kwc"/>
+                <field name="euro_ht"/>
+                <field name="euro_par_kwc"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_is_centrale_formule_resultat_graph_euro_ht" model="ir.ui.view">
+        <field name="name">is.centrale.formule.resultat.graph.euro_ht</field>
+        <field name="model">is.centrale.formule.resultat</field>
+        <field name="arch" type="xml">
+            <graph string="€(HT) par kWc" type="line">
+                <field name="kwc" type="row"/>
+                <field name="euro_ht" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_is_centrale_formule_resultat_graph_euro_par_kwc" model="ir.ui.view">
+        <field name="name">is.centrale.formule.resultat.graph.euro_par_kwc</field>
+        <field name="model">is.centrale.formule.resultat</field>
+        <field name="arch" type="xml">
+            <graph string="€/kWc par kWc" type="line">
+                <field name="kwc" type="row"/>
+                <field name="euro_par_kwc" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="is_centrale_formule_resultat_action" model="ir.actions.act_window">
+        <field name="name">€(HT) par kWc</field>
+        <field name="res_model">is.centrale.formule.resultat</field>
+        <field name="view_mode">graph,list</field>
+        <field name="view_id" ref="view_is_centrale_formule_resultat_graph_euro_ht"/>
+    </record>
+
+    <record id="view_is_centrale_formule_resultat_search" model="ir.ui.view">
+        <field name="name">is.centrale.formule.resultat.search</field>
+        <field name="model">is.centrale.formule.resultat</field>
+        <field name="arch" type="xml">
+            <search string="Résultats formules">
+                <field name="kwc" string="kWc" filter_domain="[('kwc', '=', self)]"/>
+                <filter name="kwc_35" string="kWc &gt;= 35" domain="[('kwc', '&gt;=', 35)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="is_centrale_formule_resultat_action_euro_par_kwc" model="ir.actions.act_window">
+        <field name="name">€/kWc par kWc</field>
+        <field name="res_model">is.centrale.formule.resultat</field>
+        <field name="view_mode">graph,list</field>
+        <field name="view_id" ref="view_is_centrale_formule_resultat_graph_euro_par_kwc"/>
+        <field name="search_view_id" ref="view_is_centrale_formule_resultat_search"/>
+        <field name="context">{'search_default_kwc_35': 1}</field>
+    </record>
+
+    <record id="is_centrale_formule_resultat_list_action" model="ir.actions.act_window">
+        <field name="name">Résultats des formules</field>
+        <field name="res_model">is.centrale.formule.resultat</field>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_is_centrale_formule_resultat_list"/>
+        <field name="search_view_id" ref="view_is_centrale_formule_resultat_search"/>
+    </record>
+
+    <record id="action_server_generer_formule_resultats" model="ir.actions.server">
+        <field name="name">Générer les résultats des formules</field>
+        <field name="model_id" ref="model_is_centrale_formule_resultat"/>
+        <field name="state">code</field>
+        <field name="code">action = model.action_generer_resultats()</field>
     </record>
 
 
