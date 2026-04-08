@@ -104,6 +104,7 @@
                     }
                 </style>
                 <sheet>
+                    <widget name="web_ribbon" title="Archivé" bg_color="text-bg-danger" invisible="active"/>
                     <div class="oe_button_box" name="button_box">
                         <button name="action_view_purchase_orders" type="object" class="oe_stat_button" icon="fa-shopping-cart" groups="purchase.group_purchase_user" invisible="purchase_order_count == 0">
                             <field name="purchase_order_count" widget="statinfo" string="Commandes d'achat"/>

@@ -4,7 +4,9 @@ access_crm_lead_readonly,access_crm_lead_readonly,crm.model_crm_lead,group_crm_r
 access_is_provenance_client,access_is_provenance_client,model_is_provenance_client,group_centrale_consultation,1,0,0,0
 
 access_is_centrale,access_is_centrale,model_is_centrale,group_centrale_consultation,1,0,0,0
-access_is_centrale_manager,access_is_centrale_manager,model_is_centrale,group_centrale_gestion,1,1,1,1
+access_is_centrale_modification,access_is_centrale_modification,model_is_centrale,group_centrale_modification,1,1,0,0
+access_is_centrale_manager,access_is_centrale_manager,model_is_centrale,group_centrale_gestion,1,1,1,0
+
 
 access_is_centrale_affaire,access_is_centrale_affaire,model_is_centrale_affaire,group_centrale_consultation,1,0,0,0
 

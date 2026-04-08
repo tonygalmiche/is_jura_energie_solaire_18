@@ -76,17 +76,24 @@
         <field name="category_id" ref="module_category_jes_crm"/>
     </record>
 
-    <!-- Groupe Centrale / Consultation -->
+
+
+
+
+    <!-- Groupe Centrale -->
     <record id="group_centrale_consultation" model="res.groups">
         <field name="name">Consultation</field>
         <field name="category_id" ref="module_category_jes_centrale"/>
     </record>
-
-    <!-- Groupe Centrale / Gestion -->
+    <record id="group_centrale_modification" model="res.groups">
+        <field name="name">Modification</field>
+        <field name="category_id" ref="module_category_jes_centrale"/>
+        <field name="implied_ids" eval="[(4, ref('group_centrale_consultation'))]"/>
+    </record>
     <record id="group_centrale_gestion" model="res.groups">
         <field name="name">Gestion</field>
         <field name="category_id" ref="module_category_jes_centrale"/>
-        <field name="implied_ids" eval="[(4, ref('group_centrale_consultation'))]"/>
+        <field name="implied_ids" eval="[(4, ref('group_centrale_modification'))]"/>
     </record>
 
 

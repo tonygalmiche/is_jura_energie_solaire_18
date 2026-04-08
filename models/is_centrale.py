@@ -365,6 +365,7 @@ class IsCentrale(models.Model):
     _order='name'
 
     name                     = fields.Char("Nom", size=40, required=True, tracking=True)
+    active                   = fields.Boolean("Actif", default=True, tracking=True)
 
  
     secteur = fields.Selection(
@@ -987,18 +988,32 @@ class IsCentrale(models.Model):
 
     def action_schedule_meeting(self, smart_calendar=True):
         self.ensure_one()
-        action = self.env["ir.actions.actions"]._for_xml_id("calendar.action_calendar_event")
+        # Choisir l'action calendrier selon le secteur de la centrale
+        secteur_action_map = {
+            'gp'  : 'is_jura_energie_solaire_18.is_calendar_centrale_gp_action',
+            're'  : 'is_jura_energie_solaire_18.is_calendar_centrale_re_action',
+            'th'  : 'is_jura_energie_solaire_18.is_calendar_centrale_th_action',
+            'si'  : 'is_jura_energie_solaire_18.is_calendar_centrale_si_action',
+            'irve': 'is_jura_energie_solaire_18.is_calendar_centrale_irve_action',
+        }
+        xml_id = secteur_action_map.get(self.secteur, 'calendar.action_calendar_event')
+        action = self.env["ir.actions.actions"]._for_xml_id(xml_id)
         partner_ids = self.env.user.partner_id.ids
         if self.client_id:
             partner_ids.append(self.client_id.id)
         current_centrale_id = self.id
-        action['context'] = {
+        import ast
+        ctx = action.get('context')
+        if isinstance(ctx, str):
+            ctx = ast.literal_eval(ctx) if ctx else {}
+        action['context'] = dict(ctx or {})
+        action['context'].update({
             'search_default_is_centrale_id': current_centrale_id,
             'default_is_centrale_id': current_centrale_id,
             'default_partner_id': self.client_id.id if self.client_id else False,
             'default_partner_ids': partner_ids,
             'default_name': self.name,
-        }
+        })
         if smart_calendar:
             mode, initial_date = self._get_centrale_meeting_view_parameters()
             action['context'].update({'default_mode': mode, 'initial_date': initial_date})

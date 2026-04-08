@@ -81,6 +81,7 @@
             <!-- Passer en js_class standard pour ne plus forcer la sidebar participants -->
             <xpath expr="//calendar" position="attributes">
                 <attribute name="js_class">calendar</attribute>
+                <attribute name="quick_create">false</attribute>
                 <attribute name="color">is_equipe_id</attribute>
             </xpath>
             <!-- Supprimer le filtre sidebar sur partner_ids -->
@@ -142,11 +143,25 @@
         <field name="context">{'search_default_filter_centrale_irve': 1}</field>
     </record>
 
+    <!-- Vue calendrier SAV/Maintenance : js_class standard + quick_create désactivé -->
+    <record id="is_view_calendar_sav_maintenance" model="ir.ui.view">
+        <field name="name">is.view.calendar.sav.maintenance</field>
+        <field name="model">calendar.event</field>
+        <field name="mode">primary</field>
+        <field name="inherit_id" ref="is_view_calendar_event_calendar"/>
+        <field name="arch" type="xml">
+            <xpath expr="//calendar" position="attributes">
+                <attribute name="js_class">calendar</attribute>
+                <attribute name="quick_create">false</attribute>
+            </xpath>
+        </field>
+    </record>
+
     <record id="is_calendar_sav_action" model="ir.actions.act_window">
         <field name="name">Calendrier SAV</field>
         <field name="res_model">calendar.event</field>
         <field name="view_mode">calendar,list,form</field>
-        <field name="view_id" ref="calendar.view_calendar_event_calendar"/>
+        <field name="view_id" ref="is_view_calendar_sav_maintenance"/>
         <field name="search_view_id" ref="is_view_calendar_event_search"/>
         <field name="context">{'search_default_filter_sav': 1}</field>
     </record>
@@ -155,7 +170,7 @@
         <field name="name">Calendrier Maintenance</field>
         <field name="res_model">calendar.event</field>
         <field name="view_mode">calendar,list,form</field>
-        <field name="view_id" ref="calendar.view_calendar_event_calendar"/>
+        <field name="view_id" ref="is_view_calendar_sav_maintenance"/>
         <field name="search_view_id" ref="is_view_calendar_event_search"/>
         <field name="context">{'search_default_filter_maintenance': 1}</field>
     </record>
