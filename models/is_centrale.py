@@ -358,6 +358,22 @@ class IsCentraleAutre(models.Model):
     quantite     = fields.Integer("Quantité")
 
 
+class IsMailActivity(models.Model):
+    _inherit = 'mail.activity'
+
+    def action_feedback(self, feedback=False, attachment_ids=None):
+        # Sauvegarder les res_id AVANT le super() qui supprime les activités
+        crd_centrale_ids = self.filtered(
+            lambda a: a.res_model == 'is.centrale' and 'Date limite CRD' in (a.summary or '')
+        ).mapped('res_id')
+        res = super().action_feedback(feedback=feedback, attachment_ids=attachment_ids)
+        if crd_centrale_ids:
+            for centrale in self.env['is.centrale'].browse(crd_centrale_ids).exists():
+                if not centrale.crd_signature:
+                    centrale.with_context(crd_from_activity=True).write({'crd_signature': fields.Date.today()})
+        return res
+
+
 class IsCentrale(models.Model):
     _name='is.centrale'
     _inherit = ['portal.mixin', 'mail.thread', 'mail.activity.mixin']
@@ -782,6 +798,61 @@ class IsCentrale(models.Model):
                         'date_prevue': date_prevue,
                         'technicien_id': self.env.user.id,
                     })
+        # Si crd_recu est renseigné, créer 5 activités d'alerte
+        if 'crd_recu' in vals and vals['crd_recu']:
+            activity_type = self.env.ref('mail.mail_activity_data_todo', raise_if_not_found=False)
+            if not activity_type:
+                activity_type = self.env['mail.activity.type'].search([], limit=1)
+            for record in self:
+                # Supprimer les activités CRD existantes pour éviter les doublons
+                record.activity_ids.filtered(
+                    lambda a: 'Date limite CRD' in (a.summary or '')
+                ).unlink()
+                date_limite = fields.Date.from_string(vals['crd_recu'])
+                date_limite_str = date_limite.strftime('%d/%m/%Y')
+                # Responsable : gestionnaire administrative de la société ou utilisateur courant
+                responsable = self.env.company.is_gestionnaire_administrative_id or self.env.user
+                alertes = [
+                    (relativedelta(months=2), f"Date limite CRD prévue le {date_limite_str} : alerte 2 mois avant"),
+                    (relativedelta(months=1), f"Date limite CRD prévue le {date_limite_str} : alerte 1 mois avant"),
+                    (timedelta(weeks=2),      f"Date limite CRD prévue le {date_limite_str} : alerte 2 semaines avant"),
+                    (timedelta(weeks=1),      f"Date limite CRD prévue le {date_limite_str} : alerte 1 semaine avant"),
+                    (timedelta(days=3),       f"Date limite CRD prévue le {date_limite_str} : alerte 3 jours avant"),
+                ]
+                today = fields.Date.today()
+                hier = today - timedelta(days=1)
+                alerte_retard_creee = False
+                for delta, note in alertes:
+                    date_echeance = date_limite - delta
+                    if date_echeance >= today:
+                        record.activity_schedule(
+                            activity_type_id=activity_type.id,
+                            date_deadline=date_echeance,
+                            summary=note,
+                            note=note,
+                            user_id=responsable.id,
+                        )
+                    elif not alerte_retard_creee:
+                        record.activity_schedule(
+                            activity_type_id=activity_type.id,
+                            date_deadline=hier,
+                            summary=note,
+                            note=note,
+                            user_id=responsable.id,
+                        )
+                        alerte_retard_creee = True
+        # Si crd_signature est renseignée, marquer la 1ère activité CRD comme faite et supprimer les autres
+        # (traité après crd_recu pour gérer le cas où les deux sont renseignés simultanément)
+        # Le contexte crd_from_activity évite la boucle quand c'est l'activité qui déclenche le write
+        if 'crd_signature' in vals and vals['crd_signature'] and not self.env.context.get('crd_from_activity'):
+            for record in self:
+                crd_activities = record.activity_ids.filtered(
+                    lambda a: 'Date limite CRD' in (a.summary or '')
+                ).sorted('date_deadline')
+                if crd_activities:
+                    date_sig = fields.Date.from_string(vals['crd_signature']).strftime('%d/%m/%Y')
+                    crd_activities[0].action_feedback(feedback=f'Signé le {date_sig}')
+                    crd_activities[1:].unlink()
         return res
 
     @api.model

@@ -608,7 +608,7 @@
     <record id="is_centrale_action" model="ir.actions.act_window">
         <field name="name">Centrales</field>
         <field name="res_model">is.centrale</field>
-        <field name="view_mode">list,form,kanban</field>
+        <field name="view_mode">list,form,kanban,activity</field>
         <field name="search_view_id" ref="view_is_centrale_search"/>
     </record>
 
@@ -700,6 +700,12 @@
         <field name="view_id" ref="view_is_centrale_kanban"/>
         <field name="context">{'group_by': 'maintenance_statut', 'group_expand': True}</field>
         <field name="domain">[]</field>
+    </record>
+
+    <record id="is_centrale_activity_action" model="ir.actions.act_window">
+        <field name="name">Activités Centrales</field>
+        <field name="res_model">is.centrale</field>
+        <field name="view_mode">activity,list,form</field>
     </record>
 
 

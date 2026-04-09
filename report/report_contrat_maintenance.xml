@@ -202,10 +202,6 @@
                         <td class="info-label">Tarif :</td>
                         <td><span t-field="o.affaire_euro_par_kwc"/> €/kWc</td>
                     </tr>
-                    <tr t-if="o.affaire_forfait">
-                        <td class="info-label">Forfait :</td>
-                        <td><span t-field="o.affaire_forfait"/> €</td>
-                    </tr>
                     <tr>
                         <td class="info-label"><strong>Montant annuel de la maintenance :</strong></td>
                         <td><strong><span t-field="o.montant_maintenance" t-options='{"widget": "monetary", "display_currency": company.currency_id}'/></strong></td>

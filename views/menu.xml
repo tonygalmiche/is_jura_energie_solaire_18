@@ -34,6 +34,7 @@
     <menuitem id="is_centrale_kanban_s21_menu"     name="Kanban S21"     parent="is_centrale_main_menu" action="is_centrale_kanban_s21_action"     sequence="36"/>
     <menuitem id="is_centrale_kanban_edf_menu"     name="Kanban EDF AO"  parent="is_centrale_main_menu" action="is_centrale_kanban_edf_action"     sequence="37"/>
     <menuitem id="is_centrale_kanban_maintenance_menu" name="Kanban Maintenance" parent="is_centrale_main_menu" action="is_centrale_kanban_maintenance_action" sequence="38"/>
+    <menuitem id="is_centrale_activity_menu" name="Activités" parent="is_centrale_main_menu" action="is_centrale_activity_action" sequence="39"/>
 
     <!-- JES / Calendriers -->
     <menuitem id="is_calendrier_main_menu" name="Calendriers" parent="is_crm_root_menu" sequence="15"/>

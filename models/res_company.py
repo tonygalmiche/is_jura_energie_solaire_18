@@ -5,6 +5,11 @@ from odoo import fields, models
 class ResCompany(models.Model):
     _inherit = 'res.company'
 
+    is_gestionnaire_administrative_id = fields.Many2one(
+        'res.users',
+        string="Gestionnaire administrative",
+    )
+
     is_conditions_generales_ids = fields.Many2many(
         comodel_name='ir.attachment',
         relation='is_company_conditions_generales_rel',

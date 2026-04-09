@@ -9,6 +9,9 @@
             <xpath expr="//notebook" position="inside">
                 <page string="JES" name="jes">
                     <group>
+                        <field name="is_gestionnaire_administrative_id"/>
+                    </group>
+                    <group>
                         <field name="is_conditions_generales_ids" widget="many2many_binary"/>
                     </group>
                 </page>
