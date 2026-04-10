@@ -7,21 +7,29 @@
 
     <!-- Layout Standard (layout par défaut d'Odoo 18) -->
     <template id="hide_footer_info_standard" inherit_id="web.external_layout_standard">
+        <!-- Masquer le logo dans le header -->
+        <xpath expr="//img[hasclass('o_company_logo_small')]" position="replace"/>
+        <!-- Masquer les infos société dans le footer -->
         <xpath expr="//div[hasclass('o_footer_content')]/div[@t-field='company.report_footer']" position="attributes">
             <attribute name="style">display: none !important;</attribute>
         </xpath>
         <xpath expr="//div[hasclass('o_footer_content')]" position="attributes">
             <attribute name="class">o_footer_content d-flex pt-2</attribute>
+            <attribute name="style">border-top: none !important;</attribute>
         </xpath>
     </template>
 
     <!-- Layout Boxed -->
     <template id="hide_footer_info_boxed" inherit_id="web.external_layout_boxed">
+        <!-- Masquer le logo dans le header -->
+        <xpath expr="//img[hasclass('o_company_logo_big')]" position="replace"/>
+        <!-- Masquer les infos société dans le footer -->
         <xpath expr="//div[hasclass('o_footer_content')]//span[@t-field='company.report_footer']" position="attributes">
             <attribute name="style">display: none !important;</attribute>
         </xpath>
         <xpath expr="//div[hasclass('o_footer_content')]" position="attributes">
             <attribute name="class">o_footer_content d-flex pt-2</attribute>
+            <attribute name="style">border-top: none !important;</attribute>
         </xpath>
     </template>
 
