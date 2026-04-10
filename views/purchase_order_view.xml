@@ -8,6 +8,17 @@
         <field name="inherit_id" ref="purchase.purchase_order_form"/>
         <field name="arch" type="xml">
 
+            <!-- Bouton "Imprimer avec papier-en-tête" dans le header -->
+            <xpath expr="//header/button[@name='button_done']" position="after">
+                <button name="action_print_pdf_with_background"
+                        string="Imprimer avec papier-en-tête"
+                        type="object"
+                        class="btn-secondary"
+                        invisible="state not in ('purchase', 'done')"
+                        icon="fa-print"
+                        data-hotkey="y"/>
+            </xpath>
+
             <!-- Utilise section_and_note_one2many pour séparer les colonnes articles et description -->
             <!-- tout en gardant le bon affichage des sections et notes -->
             <xpath expr="//field[@name='order_line']" position="attributes">

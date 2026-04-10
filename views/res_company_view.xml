@@ -14,6 +14,15 @@
                     <group>
                         <field name="is_conditions_generales_ids" widget="many2many_binary"/>
                     </group>
+                    <group string="PDF">
+                        <!-- <field name="is_pdf_background_image" widget="image" class="oe_avatar" options="{'preview_image': 'is_pdf_background_image'}"/> -->
+                        <field name="is_pdf_background" filename="is_pdf_background_filename"/>
+                    </group>
+                    <!-- <group string="Fond PDF découpé (en-tête / corps / pied de page)">
+                        <field name="is_pdf_bg_header" widget="image" options="{'preview_image': 'is_pdf_bg_header'}"/>
+                        <field name="is_pdf_bg_body" widget="image" options="{'preview_image': 'is_pdf_bg_body'}"/>
+                        <field name="is_pdf_bg_footer" widget="image" options="{'preview_image': 'is_pdf_bg_footer'}"/>
+                    </group> -->
                 </page>
             </xpath>
         </field>

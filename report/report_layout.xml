@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Masquer les infos société dans le footer des rapports PDF.
+         Ne garder que "Page X / Y" à droite.
+         Le papier-en-tête est géré par fusion PDF (PyPDF2). -->
+
+    <!-- Layout Standard (layout par défaut d'Odoo 18) -->
+    <template id="hide_footer_info_standard" inherit_id="web.external_layout_standard">
+        <xpath expr="//div[hasclass('o_footer_content')]/div[@t-field='company.report_footer']" position="attributes">
+            <attribute name="style">display: none !important;</attribute>
+        </xpath>
+        <xpath expr="//div[hasclass('o_footer_content')]" position="attributes">
+            <attribute name="class">o_footer_content d-flex pt-2</attribute>
+        </xpath>
+    </template>
+
+    <!-- Layout Boxed -->
+    <template id="hide_footer_info_boxed" inherit_id="web.external_layout_boxed">
+        <xpath expr="//div[hasclass('o_footer_content')]//span[@t-field='company.report_footer']" position="attributes">
+            <attribute name="style">display: none !important;</attribute>
+        </xpath>
+        <xpath expr="//div[hasclass('o_footer_content')]" position="attributes">
+            <attribute name="class">o_footer_content d-flex pt-2</attribute>
+        </xpath>
+    </template>
+
+</odoo>
