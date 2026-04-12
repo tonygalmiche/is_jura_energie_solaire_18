@@ -278,6 +278,17 @@ class IsCentraleOnduleur(models.Model):
                 obj.annee_garantie = False 
 
 
+class IsCentraleAccessoireOnduleur(models.Model):
+    _name='is.centrale.accessoire.onduleur'
+    _description = "Accessoires onduleurs des centrales"
+    _order='sequence,id'
+
+    centrale_id = fields.Many2one('is.centrale', 'Centrale', required=True, ondelete='cascade')
+    sequence    = fields.Integer("Ordre")
+    produit_id  = fields.Many2one('product.product', string="Produit")
+    quantite    = fields.Integer("Quantité", default=1)
+
+
 class IsCentraleCoffret(models.Model):
     _name='is.centrale.coffret'
     _description = "Coffrets des centrales"
@@ -687,6 +698,7 @@ class IsCentrale(models.Model):
     # Onglet "Informations techniques"
     panneau_ids  = fields.One2many('is.centrale.panneau' , 'centrale_id', 'Panneaux')
     onduleur_ids = fields.One2many('is.centrale.onduleur', 'centrale_id', 'Onduleurs')
+    accessoire_onduleur_ids = fields.One2many('is.centrale.accessoire.onduleur', 'centrale_id', 'Accessoires onduleurs')
     bridage_onduleur = fields.Integer("Bridage onduleur (kVA)", tracking=True)
     coffret_ids  = fields.One2many('is.centrale.coffret' , 'centrale_id', 'Protections électriques')
     type_communication = fields.Selection(
@@ -1163,6 +1175,22 @@ class IsCentrale(models.Model):
                     'order_id': order.id,
                     'product_id': line.onduleur_id.id,
                     'name': line.onduleur_id.display_name,
+                    'product_qty': line.quantite,
+                    'price_unit': 0,
+                    'is_centrale_id': self.id,
+                })
+
+        # Section Accessoires Onduleurs
+        if self.accessoire_onduleur_ids.filtered(lambda l: l.produit_id and l.quantite):
+            lines.append({'order_id': order.id, 'display_type': 'line_section', 'name': 'Accessoires Onduleurs', 'product_qty': 0})
+
+        # Accessoires Onduleurs
+        for line in self.accessoire_onduleur_ids:
+            if line.produit_id and line.quantite:
+                lines.append({
+                    'order_id': order.id,
+                    'product_id': line.produit_id.id,
+                    'name': line.produit_id.display_name,
                     'product_qty': line.quantite,
                     'price_unit': 0,
                     'is_centrale_id': self.id,

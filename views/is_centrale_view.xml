@@ -354,6 +354,17 @@
                                     <field name="bridage_onduleur"/>
                                 </group>
                             </group>
+                            <group string="Accessoires Onduleurs" invisible="secteur in ['th']">
+                                <group>
+                                    <field name="accessoire_onduleur_ids" nolabel="1">
+                                        <list editable="bottom">
+                                            <field name="sequence" widget="handle"/>
+                                            <field name="produit_id" optional="show"/>
+                                            <field name="quantite"   optional="show" sum="Total"/>
+                                        </list>
+                                    </field>
+                                </group>
+                            </group>
                             <group string="Optimiseurs" invisible="presence_optimiseur==False">
                                 <group>
                                     <field name="optimiseur_ids" nolabel="1">
