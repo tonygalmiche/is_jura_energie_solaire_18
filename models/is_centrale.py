@@ -497,9 +497,15 @@ class IsCentrale(models.Model):
     #affaire_forfait = fields.Integer(related='affaire_id.forfait', string="Forfait", store=True, tracking=True)
     affaire_formule_id = fields.Many2one(related='affaire_id.formule_id', string="Formule appliquée", store=True, tracking=True)
     montant_maintenance = fields.Float(
-        string="Montant maintenance",
+        string="Montant maintenance calculé",
         compute="_compute_montant_maintenance",
         store=True,
+    )
+    montant_maintenance_applique = fields.Float(
+        string="Montant maintenance appliqué",
+        compute="_compute_montant_maintenance_applique",
+        store=True,
+        readonly=False,
     )
     maintenance_statut = fields.Selection(
         [
@@ -766,6 +772,12 @@ class IsCentrale(models.Model):
     def _compute_montant_maintenance(self):
         for record in self:
             record.montant_maintenance = record.affaire_euro_par_kwc * record.puissance_panneau_totale
+
+    @api.depends('montant_maintenance')
+    def _compute_montant_maintenance_applique(self):
+        for record in self:
+            if not record.montant_maintenance_applique:
+                record.montant_maintenance_applique = record.montant_maintenance
 
     @api.depends('onduleur_ids.puissance_totale', 'bridage_onduleur')
     def _compute_puissance_onduleur_totale(self):

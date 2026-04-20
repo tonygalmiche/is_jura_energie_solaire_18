@@ -476,6 +476,7 @@
                                     <field name="affaire_formule_id"/>
                                     <field name="affaire_euro_par_kwc"/>
                                     <field name="montant_maintenance"/>
+                                    <field name="montant_maintenance_applique"/>
                                 </group>
                              </group>
                              <group>
@@ -890,20 +891,22 @@
                     <group string="Centrales associées">
                         <field name="centrale_ids" nolabel="1">
                             <list>
-                                <button name="action_view_centrale" type="object" icon="fa-search" title="Voir la centrale"/>
-                                <field name="name"/>
-                                <field name="client_id"/>
-                                <field name="adresse"/>
-                                <field name="secteur"/>
-                                <field name="puissance_panneau_totale" sum="Total"/>
+                                <button name="action_view_centrale" type="object" icon="fa-search" title="Voir la centrale" width="25px"/>
+                                <field name="name" optional="show"/>
+                                <field name="client_id" optional="show"/>
+                                <field name="adresse" optional="hide"/>
+                                <field name="secteur" optional="show"/>
+                                <field name="puissance_panneau_totale" sum="Total" optional="show"/>
                                 <field name="maintenance_statut" widget="badge"
                                     decoration-info="maintenance_statut == 'en_attente'"
                                     decoration-warning="maintenance_statut == 'envoye'"
                                     decoration-success="maintenance_statut == 'signe'"
                                     decoration-danger="maintenance_statut == 'refuse'"
+                                    optional="show"
                                 />
-                                <field name="maintenance_date_signature"/>
-                                <field name="montant_maintenance" sum="Total"/>
+                                <field name="maintenance_date_signature" optional="show"/>
+                                <field name="montant_maintenance" sum="Total" optional="show"/>
+                                <field name="montant_maintenance_applique" sum="Total" optional="show"/>
                             </list>
                         </field>
                     </group>
