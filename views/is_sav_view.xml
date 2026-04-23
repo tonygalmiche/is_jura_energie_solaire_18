@@ -27,6 +27,7 @@
                     decoration-danger="state == 'planifie'"
                     decoration-success="state == 'termine'"
                 />
+                <field name="sous_statut_html" optional="show" widget="html" string="Sous-statut"/>
             </list>
         </field>
     </record>
@@ -63,6 +64,10 @@
                         <group>
                             <field name="intervenant_ids" widget="many2many_tags"/>
                             <field name="ticket_number"/>
+                            <field name="sous_statut_line_id"
+                                domain="[('sous_statut_id.state', '=', state)]"
+                                options="{'no_create': True, 'no_edit': True}"
+                            />
                             <field name="description"/>
                             <field name="info_depannage"/>
                         </group>
@@ -151,8 +156,11 @@
                                     <field name="maintenance_date_signature"/> ⭐
                                 </div>
                             </div>
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
                                 <field name="secteur" widget="badge"/>
+                                <div t-if="record.sous_statut_html.raw_value">
+                                    <field name="sous_statut_html" widget="html"/>
+                                </div>
                                 <field name="degre_urgence" widget="badge"
                                     decoration-info="degre_urgence == 'non_urgent'"
                                     decoration-warning="degre_urgence == 'inter'"

@@ -50,6 +50,9 @@
     <menuitem id="is_sav_main_menu"   name="SAV"        parent="is_crm_root_menu" sequence="20"/>
     <menuitem id="is_sav_menu"        name="SAV"        parent="is_sav_main_menu" action="is_sav_action"        sequence="10"/>
     <menuitem id="is_sav_kanban_menu" name="Vue Kanban" parent="is_sav_main_menu" action="is_sav_kanban_action" sequence="20"/>
+    <menuitem id="is_sav_sous_statut_menu" name="Sous-statuts SAV" parent="is_sav_main_menu"
+        action="is_sav_sous_statut_action" sequence="90"
+        groups="is_jura_energie_solaire_18.group_sav_administration"/>
 
 
 

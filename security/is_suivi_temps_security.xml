@@ -130,6 +130,13 @@
         <field name="implied_ids" eval="[(4, ref('group_sav_consultation'))]"/>
     </record>
 
+    <!-- Groupe SAV / Administration -->
+    <record id="group_sav_administration" model="res.groups">
+        <field name="name">Administration</field>
+        <field name="category_id" ref="module_category_jes_sav"/>
+        <field name="implied_ids" eval="[(4, ref('group_sav_gestion'))]"/>
+    </record>
+
     <!-- Règles d'enregistrement pour is.suivi.temps -->
     <record id="is_suivi_temps_user_rule" model="ir.rule">
         <field name="name">Suivi temps: utilisateur voit uniquement ses propres enregistrements</field>

@@ -751,7 +751,7 @@ class IsCentrale(models.Model):
     plan_securite_ids            = fields.Many2many('ir.attachment', 'is_centrale_plan_securite_rel',        'centrale_id', 'attachment_id', string="Plan de sécurité")
     plan_masse_ids               = fields.Many2many('ir.attachment', 'is_centrale_plan_masse_rel',           'centrale_id', 'attachment_id', string="Plan de masse")
     plan_note_calculs_ids        = fields.Many2many('ir.attachment', 'is_centrale_plan_note_calculs_rel',    'centrale_id', 'attachment_id', string="Note de calculs Électrique")
-    plan_autres_ids              = fields.Many2many('ir.attachment', 'is_centrale_plan_autres_rel',          'centrale_id', 'attachment_id', string="Autres")
+    plan_autres_ids              = fields.Many2many('ir.attachment', 'is_centrale_plan_autres_rel',          'centrale_id', 'attachment_id', string="Autres plans")
 
 
     @api.onchange('secteur')

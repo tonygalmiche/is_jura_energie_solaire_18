@@ -5,6 +5,7 @@ from . import res_users
 from . import product
 from . import project
 from . import is_sav
+from . import is_sav_sous_statut
 from . import is_centrale
 from . import is_maintenance
 from . import is_maintenance_tache

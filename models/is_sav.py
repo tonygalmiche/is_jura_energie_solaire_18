@@ -1,8 +1,35 @@
 # -*- coding: utf-8 -*-
-from odoo import fields, models, api  
+from odoo import fields, models, api
+from odoo.tools import html_escape
 from datetime import datetime, timedelta
 import pytz
 from .is_centrale import SECTEUR_SELECTION
+
+SAV_STATE_SELECTION = [
+    ('pas_commence', 'Pas commencé'),
+    ('en_cours',     'A traiter'),
+    ('en_etude',     'En attente'),
+    ('a_planifier',  'A Planifier'),
+    ('planifie',     'Planifié'),
+    ('termine',      'Terminé'),
+]
+
+
+# Palette Odoo standard (index 0-11) - versions pastels
+_ODOO_COLORS = {
+    0:  '#f0f0f0',  # gris clair
+    1:  '#fde8e6',  # rouge clair
+    2:  '#fef0dc',  # orange clair
+    3:  '#fdf6d1',  # jaune clair
+    4:  '#daf0fc',  # bleu clair
+    5:  '#e8d5e0',  # violet clair
+    6:  '#fce4e4',  # saumon clair
+    7:  '#d2edf2',  # bleu-vert clair
+    8:  '#d5dce8',  # ardoise claire
+    9:  '#f9d5e5',  # fuchsia clair
+    10: '#d4f2e5',  # vert clair
+    11: '#ead5f4',  # violet clair
+}
 
 
 class IsSav(models.Model):
@@ -38,18 +65,54 @@ class IsSav(models.Model):
     description     = fields.Text(string="Description", tracking=True)
     info_depannage  = fields.Text(string="Informations Dépannage", tracking=True)
     state = fields.Selection(
-        [
-            ('pas_commence', 'Pas commencé'),
-            ('en_cours', 'En Cours'),
-            ('en_etude', 'En Etude'),
-            ('planifie', 'Planifié'),
-            ('termine', 'Terminé'),
-        ],
+        SAV_STATE_SELECTION,
         string="Statut",
         tracking=True,
         default='pas_commence',
         group_expand='_read_group_state',
     )
+    sous_statut_line_id = fields.Many2one(
+        'is.sav.sous.statut.line',
+        string="Sous-statut",
+        compute='_compute_sous_statut_line_id',
+        store=True,
+        readonly=False,
+        tracking=True,
+    )
+    sous_statut_html = fields.Html(
+        compute='_compute_sous_statut_html',
+        string="Sous-statut (couleur)",
+        sanitize=False,
+    )
+
+
+    @api.depends('state')
+    def _compute_sous_statut_line_id(self):
+        for record in self:
+            sous_statut = self.env['is.sav.sous.statut'].search(
+                [('state', '=', record.state)], limit=1
+            )
+            if sous_statut and sous_statut.line_ids:
+                record.sous_statut_line_id = sous_statut.line_ids.sorted(
+                    lambda l: (l.sequence, l.id)
+                )[0]
+            else:
+                record.sous_statut_line_id = False
+
+    @api.depends('sous_statut_line_id', 'sous_statut_line_id.name', 'sous_statut_line_id.color')
+    def _compute_sous_statut_html(self):
+        for record in self:
+            line = record.sous_statut_line_id
+            if line:
+                name = html_escape(line.name or '')
+                color = _ODOO_COLORS.get(line.color, '#FFFFFF')
+                record.sous_statut_html = (
+                    f'<span style="background-color: {color}; border: 1px solid rgba(0,0,0,0.15); '
+                    f'color: #000; padding: 2px 10px; '
+                    f'border-radius: 50rem; white-space: nowrap; font-size: 0.875em;">{name}</span>'
+                )
+            else:
+                record.sous_statut_html = ''
 
     calendar_event_ids    = fields.One2many('calendar.event', 'is_sav_id', string='Réunion')
     meeting_display_date  = fields.Date(compute="_compute_meeting_display")
@@ -234,7 +297,7 @@ class IsSav(models.Model):
         return mylist
 
     def write(self, vals):
-        """Surcharge de write pour mettre à jour date_resolution automatiquement"""
+        """Surcharge de write pour mettre à jour date_resolution et sous_statut automatiquement"""
         # Si le statut passe à 'termine' et que date_resolution est vide
         if vals.get('state') == 'termine':
             for record in self:
