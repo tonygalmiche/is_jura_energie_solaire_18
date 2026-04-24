@@ -52,6 +52,67 @@
         </field>
     </record>
 
+    <!-- is.preparation.paye.ligne : form view -->
+    <record id="is_preparation_paye_ligne_form_view" model="ir.ui.view">
+        <field name="name">is.preparation.paye.ligne.form</field>
+        <field name="model">is.preparation.paye.ligne</field>
+        <field name="arch" type="xml">
+            <form string="Ligne de préparation paye">
+                <header>
+                    <button name="action_voir_saisie_temps"
+                            type="object"
+                            string="Voir les suivis du temps"
+                            class="btn-primary"/>
+                    <button name="action_voir_suivi_temps"
+                            type="object"
+                            string="Voir le détail des suivis du temps"
+                            class="btn-secondary"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box"/>
+                    <div style="display:flex;gap:24px;align-items:flex-start;">
+                        <div style="flex:1;">
+                            <group>
+                                <group string="Identification">
+                                    <field name="preparation_id"/>
+                                    <field name="utilisateur_id"/>
+                                    <field name="semaine"/>
+                                </group>
+                                <group string="Détail par jour">
+                                    <field name="detail_html" widget="html" readonly="1" nolabel="1"/>
+                                </group>
+                            </group>
+                            <group string="Heures">
+                                <group>
+                                    <field name="nb_jour_travaille"/>
+                                    <field name="nb_heure_prevue" widget="float_time"/>
+                                    <field name="nb_heure_travaille" widget="float_time"/>
+                                    <field name="nb_heure_absence" widget="float_time"/>
+                                    <field name="nb_heure_total" widget="float_time"/>
+                                    <field name="nb_heure_dimanche" widget="float_time"/>
+                                </group>
+                                <group>
+                                    <field name="heures_supplementaire" widget="float_time"/>
+                                    <field name="hs_25" widget="float_time"/>
+                                    <field name="hs_50" widget="float_time"/>
+                                    <field name="heure_sup_a_payer" widget="float_time"/>
+                                    <field name="recuperation" widget="float_time"/>
+                                </group>
+                            </group>
+                            <group string="Congés et primes">
+                                <group>
+                                    <field name="conge_cp"/>
+                                    <field name="conge_evenement"/>
+                                    <field name="nb_panier"/>
+                                </group>
+                            </group>
+                        </div>
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
     <!-- is.preparation.paye.ligne : list view for popup -->
     <record id="is_preparation_paye_ligne_tree_view" model="ir.ui.view">
         <field name="name">is.preparation.paye.ligne.tree</field>

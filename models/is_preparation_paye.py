@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from odoo import models, fields, api
 from datetime import date, timedelta
+from markupsafe import Markup
 
 
 class IsPreparationPaye(models.Model):
@@ -62,10 +63,10 @@ class IsPreparationPaye(models.Model):
         """Ouvre toutes les lignes de tous les employés."""
         self.ensure_one()
         return {
-            'name': f'Toutes les lignes – {self.name}',
+            'name': 'Lignes',
             'type': 'ir.actions.act_window',
             'res_model': 'is.preparation.paye.ligne',
-            'view_mode': 'list',
+            'view_mode': 'list,form',
             'domain': [('preparation_id', '=', self.id)],
             'context': {'default_preparation_id': self.id},
         }
@@ -189,7 +190,8 @@ class IsPreparationPaye(models.Model):
                     'nb_panier': nb_panier,
                 })
 
-        self.env['is.preparation.paye.ligne'].create(lignes_vals)
+        lignes = self.env['is.preparation.paye.ligne'].create(lignes_vals)
+        lignes._compute_detail_html()
 
         # Créer les enregistrements employés (sans doublon)
         employe_vals = []
@@ -214,6 +216,7 @@ class IsPreparationPaye(models.Model):
 class IsPreparationPayeLigne(models.Model):
     _name = 'is.preparation.paye.ligne'
     _description = 'Ligne de préparation des Paies'
+    _rec_name = 'id'
     _order = 'utilisateur_id, semaine'
 
     preparation_id = fields.Many2one(
@@ -238,6 +241,181 @@ class IsPreparationPayeLigne(models.Model):
     recuperation = fields.Float(string='Récupération', digits=(10, 2))
     heure_sup_a_payer = fields.Float(string='HS à payer', digits=(10, 2))
     nb_panier = fields.Integer(string='Nb paniers')
+    detail_html = fields.Html(
+        string='Détail par jour',
+        sanitize=False,
+    )
+
+    def _float_to_hhmm(self, val):
+        """Formate un float d'heures en 'Xh30' ou 'Xh'"""
+        if val <= 0:
+            return '0h'
+        h = int(val)
+        m = int(round((val - h) * 60))
+        return f"{h}h{m:02d}" if m else f"{h}h"
+
+    def _compute_detail_html(self):
+        JOURS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche']
+        for record in self:
+            if not record.semaine or not record.utilisateur_id:
+                record.detail_html = Markup('')
+                continue
+
+            parts = record.semaine.split('-S')
+            year, week = int(parts[0]), int(parts[1])
+
+            employee = self.env['hr.employee'].sudo().search(
+                [('user_id', '=', record.utilisateur_id.id)], limit=1
+            )
+            calendar = employee.resource_calendar_id if employee else False
+
+            rows = []
+            total_theorique = 0.0
+            total_temps_passe = 0.0
+            total_delta = 0.0
+
+            for day_num in range(1, 8):
+                current_date = date.fromisocalendar(year, week, day_num)
+                dayofweek_str = str(current_date.weekday())
+                nom_jour = JOURS[day_num - 1]
+
+                # Heures théoriques depuis le calendrier
+                if calendar:
+                    attendances = calendar.attendance_ids.filtered(
+                        lambda a, dow=dayofweek_str, d=current_date:
+                            a.dayofweek == dow and
+                            a.day_period != 'lunch' and
+                            (not a.date_from or a.date_from <= d) and
+                            (not a.date_to or a.date_to >= d)
+                    )
+                    heures_theoriques = sum(att.hour_to - att.hour_from for att in attendances)
+                else:
+                    heures_theoriques = 0.0
+
+                # Suivis de temps pour ce jour
+                suivis = self.env['is.suivi.temps'].sudo().search([
+                    ('utilisateur_id', '=', record.utilisateur_id.id),
+                    ('date', '=', str(current_date)),
+                ])
+
+                has_absence = any(s.type_travail == 'absence' for s in suivis)
+                all_absence = suivis and all(s.type_travail == 'absence' for s in suivis)
+
+                # Ignorer les jours sans heures théoriques et sans saisie
+                if heures_theoriques == 0.0 and not suivis:
+                    continue
+
+                if suivis:
+                    temps_passe = sum(s.duree for s in suivis)
+                    delta = temps_passe - heures_theoriques
+                    if all_absence:
+                        temps_passe_str = 'Abs'
+                        css_passe = 'color:#888;font-style:italic;'
+                        row_style = 'background:#f9f0ff;'
+                    elif has_absence:
+                        temps_passe_str = f'{record._float_to_hhmm(temps_passe)} (Abs)'
+                        css_passe = 'color:#888;font-style:italic;'
+                        row_style = 'background:#f9f0ff;'
+                    else:
+                        temps_passe_str = record._float_to_hhmm(temps_passe)
+                        css_passe = ''
+                        row_style = ''
+                    if delta > 0:
+                        delta_str = f'+{record._float_to_hhmm(delta)}'
+                        css_delta = 'color:green;font-weight:bold;'
+                    elif delta < 0:
+                        delta_str = f'-{record._float_to_hhmm(abs(delta))}'
+                        css_delta = 'color:red;'
+                    else:
+                        delta_str = '0h'
+                        css_delta = ''
+                    total_temps_passe += temps_passe
+                    total_delta += delta
+                else:
+                    # Heures théoriques mais pas de saisie
+                    temps_passe = 0.0
+                    temps_passe_str = '—'
+                    delta = -heures_theoriques
+                    delta_str = f'-{record._float_to_hhmm(heures_theoriques)}'
+                    css_delta = 'color:orange;'
+                    row_style = ''
+                    css_passe = ''
+                    total_delta += delta
+
+                total_theorique += heures_theoriques
+
+                jour_label = f'{nom_jour} {current_date.strftime("%d/%m")}'
+
+                rows.append(
+                    f'<tr style="{row_style}">'
+                    f'<td style="padding:3px 8px;">{jour_label}</td>'
+                    f'<td style="text-align:right;padding:3px 8px;">{record._float_to_hhmm(heures_theoriques)}</td>'
+                    f'<td style="text-align:right;padding:3px 8px;{css_passe}">{temps_passe_str}</td>'
+                    f'<td style="text-align:right;padding:3px 8px;{css_delta}">{delta_str}</td>'
+                    f'</tr>'
+                )
+
+            # Formatage des totaux
+            total_theorique_str = record._float_to_hhmm(total_theorique)
+            total_temps_passe_str = record._float_to_hhmm(total_temps_passe)
+            if total_delta > 0:
+                total_delta_str = f'+{record._float_to_hhmm(total_delta)}'
+                color_total = 'green'
+            elif total_delta < 0:
+                total_delta_str = f'-{record._float_to_hhmm(abs(total_delta))}'
+                color_total = 'red'
+            else:
+                total_delta_str = '0h'
+                color_total = 'inherit'
+
+            thead = (
+                '<table style="width:auto;border-collapse:collapse;font-size:13px;">'
+                '<thead>'
+                '<tr style="background:#f0f0f0;font-weight:bold;">'
+                '<th style="text-align:left;padding:4px 8px;border-bottom:1px solid #ccc;">Jour</th>'
+                '<th style="text-align:right;padding:4px 8px;border-bottom:1px solid #ccc;">Théorique</th>'
+                '<th style="text-align:right;padding:4px 8px;border-bottom:1px solid #ccc;">Temps passé</th>'
+                '<th style="text-align:right;padding:4px 8px;border-bottom:1px solid #ccc;">Delta</th>'
+                '</tr>'
+                '</thead>'
+                '<tbody>'
+            )
+            tfoot = (
+                '</tbody>'
+                '<tfoot>'
+                '<tr style="font-weight:bold;border-top:2px solid #ccc;background:#f0f0f0;">'
+                '<td style="padding:4px 8px;">Total</td>'
+                f'<td style="text-align:right;padding:4px 8px;">{total_theorique_str}</td>'
+                f'<td style="text-align:right;padding:4px 8px;">{total_temps_passe_str}</td>'
+                f'<td style="text-align:right;padding:4px 8px;color:{color_total};font-weight:bold;">{total_delta_str}</td>'
+                '</tr>'
+                '</tfoot>'
+                '</table>'
+            )
+
+            record.detail_html = Markup(thead) + Markup(''.join(rows)) + Markup(tfoot)
+
+
+    def action_voir_saisie_temps(self):
+        """Ouvre les saisies de temps (is.suivi.temps.saisie) de l'employé pour cette semaine."""
+        self.ensure_one()
+
+        parts = self.semaine.split('-S')
+        year, week = int(parts[0]), int(parts[1])
+        start_of_week = date.fromisocalendar(year, week, 1)
+        end_of_week = date.fromisocalendar(year, week, 7)
+
+        return {
+            'name': f'Saisies – {self.utilisateur_id.name} – {self.semaine}',
+            'type': 'ir.actions.act_window',
+            'res_model': 'is.suivi.temps.saisie',
+            'view_mode': 'list,form',
+            'domain': [
+                ('utilisateur_id', '=', self.utilisateur_id.id),
+                ('date', '>=', str(start_of_week)),
+                ('date', '<=', str(end_of_week)),
+            ],
+        }
 
     def action_voir_suivi_temps(self):
         """Ouvre les enregistrements IsSuiviTemps de l'employé pour cette semaine."""
@@ -281,7 +459,7 @@ class IsPreparationPayeEmploye(models.Model):
             'name': f'Semaines – {self.utilisateur_id.name}',
             'type': 'ir.actions.act_window',
             'res_model': 'is.preparation.paye.ligne',
-            'view_mode': 'list',
+            'view_mode': 'list,form',
             'domain': [
                 ('preparation_id', '=', self.preparation_id.id),
                 ('utilisateur_id', '=', self.utilisateur_id.id),
