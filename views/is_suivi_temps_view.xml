@@ -232,6 +232,8 @@
                 <field name="utilisateur_id"/>
                 <field name="date"/>
                 <separator/>
+                <filter string="Mes saisies" name="mes_saisies" domain="[('utilisateur_id', '=', uid)]"/>
+                <separator/>
                 <filter string="Avec panier" name="panier" domain="[('panier', '=', True)]"/>
                 <filter string="Avec nuitée" name="nuitee" domain="[('nuitee', '=', True)]"/>
                 <group expand="0" string="Regrouper par">
@@ -241,11 +243,31 @@
             </search>
         </field>
     </record>
+    <record id="is_suivi_temps_saisie_calendar_view" model="ir.ui.view">
+        <field name="name">is.suivi.temps.saisie.calendar</field>
+        <field name="model">is.suivi.temps.saisie</field>
+        <field name="arch" type="xml">
+            <calendar
+                string="Saisie du temps"
+                date_start="date_debut"
+                date_stop="date_fin"
+                color="utilisateur_id"
+                mode="month"
+                quick_create="0"
+                event_open_popup="0"
+                show_unusual_days="1">
+                <field name="utilisateur_id" filters="1" avatar_field="image_128"/>
+                <field name="temps_travail"/>
+                <field name="panier"/>
+                <field name="nuitee"/>
+            </calendar>
+        </field>
+    </record>
     <record id="is_suivi_temps_saisie_action" model="ir.actions.act_window">
         <field name="name">Saisie du temps</field>
         <field name="res_model">is.suivi.temps.saisie</field>
-        <field name="view_mode">list,form</field>
-        <field name="context">{}</field>
+        <field name="view_mode">calendar,list,form</field>
+        <field name="context">{'search_default_mes_saisies': 1}</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                 Créer une nouvelle saisie de temps

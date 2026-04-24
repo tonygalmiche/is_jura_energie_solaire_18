@@ -57,10 +57,10 @@
         <field name="name">is.preparation.paye.ligne.tree</field>
         <field name="model">is.preparation.paye.ligne</field>
         <field name="arch" type="xml">
-            <list string="Lignes de préparation paye" editable="bottom">
+            <list string="Lignes de préparation paye">
                 <button name="action_voir_suivi_temps"
                         type="object"
-                        icon="fa-search"
+                        icon="fa-list"
                         title="Voir le détail du suivi temps"/>
                 <field name="utilisateur_id"/>
                 <field name="semaine"/>

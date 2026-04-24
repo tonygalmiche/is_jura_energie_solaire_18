@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
+import logging
 from odoo import models, fields, api
-from datetime import datetime, time
+from datetime import datetime, timedelta, time as dt_time, time
+from pytz import UTC
+
+_logger = logging.getLogger(__name__)
 import pytz
 
 
@@ -183,11 +187,12 @@ class IsSuiviTemps(models.Model):
 class IsSuiviTempsSaisie(models.Model):
     _name = 'is.suivi.temps.saisie'
     _description = 'Saisie simplifiée du temps'
-    _rec_name = "utilisateur_id"
+    _rec_name = "name"
     _order = 'date desc'
     _inherit = ['mail.thread', 'mail.activity.mixin']
 
     utilisateur_id = fields.Many2one('res.users', string='Utilisateur', required=True, default=lambda self: self.env.user, index=True, tracking=True)
+    name = fields.Char(string='Nom', compute='_compute_name', store=True)
     date = fields.Date(string='Date', required=True, default=fields.Date.context_today, index=True, tracking=True)
     heure_debut = fields.Float(string='Heure de début', help='Heure de début de journée', tracking=True)
     heure_fin = fields.Float(string='Heure de fin', help='Heure de fin de journée', tracking=True)
@@ -201,6 +206,41 @@ class IsSuiviTempsSaisie(models.Model):
     ligne_ids = fields.One2many('is.suivi.temps.saisie.ligne', 'saisie_id', string='Lignes de saisie', copy=True)
     suivi_route_id = fields.Many2one('is.suivi.temps', string='Suivi de route', readonly=True, copy=False)
     has_sav = fields.Boolean(string='Contient du SAV', compute='_compute_has_sav', store=False)
+    date_debut = fields.Datetime(string='Début (calendrier)', compute='_compute_datetimes', store=True)
+    date_fin = fields.Datetime(string='Fin (calendrier)', compute='_compute_datetimes', store=True)
+
+    def _get_tz(self):
+        return pytz.timezone(self.env.user.tz or 'Europe/Paris')
+
+    def _utc_to_local(self, dt_utc):
+        if not dt_utc:
+            return None
+        dt_utc = pytz.UTC.localize(dt_utc) if not dt_utc.tzinfo else dt_utc
+        return dt_utc.astimezone(self._get_tz())
+
+    def _local_to_utc(self, dt_local):
+        if not dt_local:
+            return None
+        dt_local = self._get_tz().localize(dt_local) if not dt_local.tzinfo else dt_local
+        return dt_local.astimezone(pytz.UTC).replace(tzinfo=None)
+
+    def _float_to_time(self, float_hour):
+        float_hour = float_hour % 24
+        hours = int(float_hour)
+        minutes = int((float_hour - hours) * 60)
+        return time(hours, minutes)
+
+    def _datetime_to_float_hour(self, dt):
+        return dt.hour + dt.minute / 60.0
+
+    @api.depends('date', 'heure_debut', 'heure_fin')
+    def _compute_datetimes(self):
+        for record in self:
+            if record.date and record.heure_debut is not False and record.heure_fin is not False:
+                dt_local = datetime.combine(record.date, record._float_to_time(record.heure_debut))
+                record.date_debut = record._local_to_utc(dt_local)
+                dt_local = datetime.combine(record.date, record._float_to_time(record.heure_fin))
+                record.date_fin = record._local_to_utc(dt_local)
 
     def _get_horaires_from_calendar(self, user_id, date):
         """
@@ -284,26 +324,37 @@ class IsSuiviTempsSaisie(models.Model):
     def default_get(self, fields_list):
         """Surcharge pour définir les valeurs par défaut à partir des horaires de travail de l'employé"""
         res = super(IsSuiviTempsSaisie, self).default_get(fields_list)
-        
+
+        # Si date_debut est présent (création depuis le calendrier)
+        # Le super().default_get() ne remonte pas les champs calculés, on lit donc le contexte
+        date_debut_raw = res.get('date_debut') or self.env.context.get('default_date_debut')
+        if date_debut_raw:
+            dt_debut_local = self._utc_to_local(fields.Datetime.to_datetime(date_debut_raw))
+            res['date'] = dt_debut_local.date()
+            res['heure_debut'] = self._datetime_to_float_hour(dt_debut_local)
+
         # Récupérer l'utilisateur (soit depuis res, soit l'utilisateur courant)
         user_id = res.get('utilisateur_id') or self.env.user.id
         date = res.get('date') or fields.Date.context_today(self)
-        
-        # Récupérer les horaires depuis le calendrier
-        horaires = self._get_horaires_from_calendar(user_id, date)
-        
-        # Définir les valeurs par défaut
-        if 'heure_debut' in fields_list:
-            res['heure_debut'] = horaires['heure_debut']
-        if 'heure_fin' in fields_list:
-            res['heure_fin'] = horaires['heure_fin']
-        if 'temps_pose' in fields_list:
-            res['temps_pose'] = horaires['temps_pose']
-        
+
+        # Récupérer les horaires depuis le calendrier (sauf si la date provient du calendrier)
+        if not date_debut_raw:
+            horaires = self._get_horaires_from_calendar(user_id, date)
+            if 'heure_debut' in fields_list:
+                res['heure_debut'] = horaires['heure_debut']
+            if 'heure_fin' in fields_list:
+                res['heure_fin'] = horaires['heure_fin']
+            if 'temps_pose' in fields_list:
+                res['temps_pose'] = horaires['temps_pose']
+        else:
+            horaires = self._get_horaires_from_calendar(user_id, date)
+            if 'temps_pose' in fields_list:
+                res['temps_pose'] = horaires['temps_pose']
+
         # Pré-remplir les lignes à partir du jour précédent (sauf si lundi)
         if 'ligne_ids' in fields_list:
             res['ligne_ids'] = self._get_default_lignes(user_id, date)
-        
+
         return res
 
     @api.onchange('date', 'utilisateur_id')
@@ -344,7 +395,30 @@ class IsSuiviTempsSaisie(models.Model):
                 record.temps_presence = 0.0
                 record.temps_travail = 0.0
 
+    @api.depends('utilisateur_id', 'temps_travail')
+    def _compute_name(self):
+        for record in self:
+            user = record.utilisateur_id.name or ''
+            if record.temps_travail:
+                h = int(record.temps_travail)
+                m = int(round((record.temps_travail - h) * 60))
+                heures = f"{h}h{m:02d}" if m else f"{h}h"
+                record.name = f"{user} ({heures})"
+            else:
+                record.name = user
+
     def write(self, vals):
+        # Gestion du drag & drop depuis le calendrier (date_debut / date_fin modifiés)
+        if 'date_debut' in vals and vals.get('date_debut'):
+            dt_local = self._utc_to_local(fields.Datetime.to_datetime(vals['date_debut']))
+            vals['date'] = dt_local.date()
+            vals['heure_debut'] = self._datetime_to_float_hour(dt_local)
+        if 'date_fin' in vals and vals.get('date_fin'):
+            dt_local = self._utc_to_local(fields.Datetime.to_datetime(vals['date_fin']))
+            if 'date' not in vals:
+                vals['date'] = dt_local.date()
+            vals['heure_fin'] = self._datetime_to_float_hour(dt_local)
+
         res = super(IsSuiviTempsSaisie, self).write(vals)
         # Si des champs qui impactent les suivis du temps sont modifiés, mettre à jour les lignes
         if any(field in vals for field in ['heure_debut', 'heure_fin', 'temps_pose', 'heure_route', 'commentaire', 'panier', 'nuitee']):
@@ -412,6 +486,34 @@ class IsSuiviTempsSaisie(models.Model):
         ('unique_utilisateur_date', 'UNIQUE(utilisateur_id, date)', 
          'Une saisie existe déjà pour cet utilisateur à cette date !')
     ]
+
+    def get_unusual_days(self, date_from, date_to=None):
+        # La version installée ne passe qu'un seul argument (la fin de la plage visible).
+        # On reconstruit la plage complète de 6 semaines (vue mensuelle).
+        if not date_to:
+            date_to = date_from
+            date_from_dt = fields.Datetime.from_string(date_to) if isinstance(date_to, str) else date_to
+            date_from = fields.Datetime.to_string(date_from_dt - timedelta(weeks=6))
+        _logger.info('get_unusual_days appelé: date_from=%s, date_to=%s', date_from, date_to)
+        employee_id = self.env.context.get('employee_id', False)
+        employee = self.env['hr.employee'].browse(employee_id) if employee_id else self.env.user.employee_id
+        _logger.info('get_unusual_days: employee_id=%s, employee=%s', employee_id, employee)
+        if not employee:
+            _logger.warning('get_unusual_days: aucun employé trouvé, fallback sur calendrier compagnie')
+            calendar = self.env.company.resource_calendar_id
+            if not calendar:
+                _logger.warning('get_unusual_days: aucun calendrier compagnie, retour {}')
+                return {}
+            start_dt = datetime.combine(fields.Date.from_string(date_from), dt_time.min).replace(tzinfo=UTC)
+            end_dt = datetime.combine(fields.Date.from_string(date_to), dt_time.max).replace(tzinfo=UTC)
+            result = calendar._get_unusual_days(start_dt, end_dt, self.env.company)
+            unusual = {k: v for k, v in result.items() if v}
+            _logger.info('get_unusual_days (fallback): %d jours inhabituels sur %d', len(unusual), len(result))
+            return result
+        result = employee.sudo(False)._get_unusual_days(date_from, date_to)
+        unusual = {k: v for k, v in result.items() if v}
+        _logger.info('get_unusual_days: %d jours inhabituels sur %d: %s', len(unusual), len(result), list(unusual.keys())[:5])
+        return result
 
     def action_voir_suivis_temps(self):
         """Ouvre la liste des suivis du temps liés à cette saisie"""
