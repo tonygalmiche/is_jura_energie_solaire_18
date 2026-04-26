@@ -20,7 +20,7 @@
                             <field name="type_travail"/>
                             <field name="centrale_id" invisible="type_travail != 'chantier'" required="type_travail == 'chantier'"/>
                             <!-- <field name="absence" invisible="type_travail != 'absence'" required="type_travail == 'absence'"/> -->
-                            <field name="conge_type_id" invisible="type_travail != 'absence'"/>
+                            <field name="conge_type_id" invisible="type_travail != 'absence'" required="type_travail == 'absence'"/>
                             <field name="panier"/>
                             <field name="nuitee"/>
                         </group>
@@ -189,7 +189,7 @@
                                     <field name="type_travail"/>
                                     <field name="centrale_id" invisible="type_travail != 'chantier'" required="type_travail == 'chantier'"/>
                                     <!-- <field name="absence" invisible="type_travail != 'absence'" required="type_travail == 'absence'"/> -->
-                                    <field name="conge_type_id" invisible="type_travail != 'absence'"/>
+                                    <field name="conge_type_id" invisible="type_travail != 'absence'" required="type_travail == 'absence'"/>
                                     <field name="duree"/>
                                 </group>
                             </form>
