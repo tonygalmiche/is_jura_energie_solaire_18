@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name"     : "Module Odoo 18 pour Jura Energie Solaire",
-    "version"  : "0.1",
+    "version"  : "18.0.0.2",
     "author"   : "InfoSaône",
     "category" : "InfoSaône",
     "description": """

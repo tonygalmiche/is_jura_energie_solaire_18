@@ -19,7 +19,8 @@
                             <field name="duree_hors_deplacement" widget="float_time"/>
                             <field name="type_travail"/>
                             <field name="centrale_id" invisible="type_travail != 'chantier'" required="type_travail == 'chantier'"/>
-                            <field name="absence" invisible="type_travail != 'absence'" required="type_travail == 'absence'"/>
+                            <!-- <field name="absence" invisible="type_travail != 'absence'" required="type_travail == 'absence'"/> -->
+                            <field name="conge_type_id" invisible="type_travail != 'absence'"/>
                             <field name="panier"/>
                             <field name="nuitee"/>
                         </group>
@@ -56,7 +57,8 @@
                 <!-- <field name="duree_hors_deplacement" widget="float_time" optional="show"/> -->
                 <field name="type_travail" optional="show"/>
                 <field name="centrale_id" optional="show"/>
-                <field name="absence" optional="show"/>
+                <field name="absence" optional="hide"/>
+                <field name="conge_type_id" optional="show"/>
                 <field name="commentaire" optional="show"/>
                 <field name="panier" optional="show"/>
                 <field name="nuitee" optional="show"/>
@@ -71,7 +73,7 @@
                 <field name="utilisateur_id"/>
                 <field name="centrale_id"/>
                 <field name="type_travail"/>
-                <field name="absence"/>
+                <field name="conge_type_id"/>
                  <separator/>
                 <filter string="Avec panier" name="panier" domain="[('panier', '=', True)]"/>
                 <filter string="Avec nuitée" name="nuitee" domain="[('nuitee', '=', True)]"/>
@@ -79,7 +81,6 @@
                     <filter string="Utilisateur" name="group_utilisateur" context="{'group_by': 'utilisateur_id'}"/>
                     <filter string="Type de travail" name="group_type_travail" context="{'group_by': 'type_travail'}"/>
                     <filter string="Centrale" name="group_centrale" context="{'group_by': 'centrale_id'}"/>
-                    <filter string="Absence" name="group_absence" context="{'group_by': 'absence'}"/>
                 </group>
             </search>
         </field>
@@ -99,7 +100,8 @@
                 <field name="utilisateur_id" filters="1" avatar_field="image_128"/>
                 <field name="type_travail" filters="1" />
                 <field name="centrale_id"/>
-                <field name="absence" filters="1" />
+                <!-- <field name="absence" filters="1" /> -->
+                <field name="conge_type_id"  filters="1"/>
             </calendar>
         </field>
     </record>
@@ -175,7 +177,8 @@
                                 <field name="sequence" widget="handle"/>
                                 <field name="type_travail"/>
                                 <field name="centrale_id"/>
-                                <field name="absence"/>
+                                <!-- <field name="absence"/> -->
+                                <field name="conge_type_id"/>
                                 <field name="duree" sum="Total"/>
                                 <field name="suivi_temps_id" optional="hide"/>
                                 <field name="suivi_heure_debut" optional="hide"/>
@@ -185,7 +188,8 @@
                                 <group>
                                     <field name="type_travail"/>
                                     <field name="centrale_id" invisible="type_travail != 'chantier'" required="type_travail == 'chantier'"/>
-                                    <field name="absence" invisible="type_travail != 'absence'" required="type_travail == 'absence'"/>
+                                    <!-- <field name="absence" invisible="type_travail != 'absence'" required="type_travail == 'absence'"/> -->
+                                    <field name="conge_type_id" invisible="type_travail != 'absence'"/>
                                     <field name="duree"/>
                                 </group>
                             </form>

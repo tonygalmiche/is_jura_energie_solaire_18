@@ -18,9 +18,32 @@ TYPE_TRAVAIL_SELECTION = [
 ]
 
 
+
+
+
+
 TYPE_TRAVAIL_AVEC_ROUTE = TYPE_TRAVAIL_SELECTION + [
     ('route', 'Route'),
 ]
+
+
+
+ABSENCE_SELECTION = [
+    ('cp'        , 'Congés payés'),
+    ('sans_solde', 'Sans Solde'),
+    ('evenement' , 'Congé Evènement'),
+    ('recup'     , 'Récup'),
+    ('conge'     , 'Congé'),
+    ('repos'     , 'Repos'),
+]
+
+
+# Congés payés
+# Maladie
+# Sans Solde
+# RTT
+# Congé Evènement
+
 
 
 
@@ -41,7 +64,8 @@ class IsSuiviTemps(models.Model):
     date_fin = fields.Datetime(string='Heure de fin', compute='_compute_datetimes', store=True, readonly=False, tracking=True)
     type_travail = fields.Selection(TYPE_TRAVAIL_AVEC_ROUTE, string='Type de travail', default='bureau', required=True, index=True, tracking=True)
     centrale_id = fields.Many2one('is.centrale', string='Centrale', index=True, tracking=True)
-    absence = fields.Selection([('recup', 'Récup'), ('cp', 'CP'), ('sans_solde', 'Sans solde'), ('conge', 'Congé'), ('evenement', 'Evenement'), ('repos', 'Repos')], string='Absence', index=True, tracking=True)
+    absence = fields.Selection(ABSENCE_SELECTION, string='Absence', index=True, tracking=True)
+    conge_type_id = fields.Many2one('hr.leave.type', string='Type de congés', index=True, tracking=True)
     heure_route = fields.Float(string='Heure de route', help='Temps de route en heures et minutes', tracking=True)
     duree = fields.Float(string='Durée', compute='_compute_duree', store=True, help='Durée en heures')
     duree_hors_deplacement = fields.Float(string='Durée hors déplacement', compute='_compute_duree_hors_deplacement', store=True, help='Durée en heures sans le temps de route')
@@ -315,6 +339,7 @@ class IsSuiviTempsSaisie(models.Model):
                 'type_travail': ligne.type_travail,
                 'centrale_id': ligne.centrale_id.id if ligne.centrale_id else False,
                 'absence': ligne.absence,
+                'conge_type_id': ligne.conge_type_id.id if ligne.conge_type_id else False,
                 'duree': 0.0,
             }))
         
@@ -563,31 +588,6 @@ class IsSuiviTempsSaisie(models.Model):
         return new_record
 
 
-    # def _create_or_update_suivi_route(self):
-    #     """Crée, met à jour ou supprime le suivi de route lié à cette saisie"""
-    #     self.ensure_one()
-    #     if self.heure_route:
-    #         heure_debut_route = self.heure_debut + sum(self.ligne_ids.mapped('duree'))
-    #         heure_fin_route = heure_debut_route + self.heure_route
-    #         vals = {
-    #             'utilisateur_id': self.utilisateur_id.id,
-    #             'date': self.date,
-    #             'heure_debut': heure_debut_route,
-    #             'heure_fin': heure_fin_route,
-    #             'type_travail': 'route',
-    #             'commentaire': self.commentaire,
-    #             'panier': self.panier,
-    #             'nuitee': self.nuitee,
-    #         }
-    #         if self.suivi_route_id:
-    #             self.suivi_route_id.sudo().write(vals)
-    #         else:
-    #             suivi = self.env['is.suivi.temps'].sudo().create(vals)
-    #             self.sudo().suivi_route_id = suivi.id
-    #     elif self.suivi_route_id:
-    #         self.suivi_route_id.sudo().unlink()
-    #         self.sudo().suivi_route_id = False
-
     def unlink(self):
         """Supprimer les IsSuiviTemps associés avant de supprimer la saisie"""
         # Récupérer tous les suivis du temps liés aux lignes et à la route
@@ -609,11 +609,22 @@ class IsSuiviTempsSaisieLigne(models.Model):
     saisie_id = fields.Many2one('is.suivi.temps.saisie', string='Saisie', required=True, ondelete='cascade', index=True)
     type_travail = fields.Selection(TYPE_TRAVAIL_SELECTION, string='Type de travail', required=True)
     centrale_id = fields.Many2one('is.centrale', string='Centrale', index=True)
-    absence = fields.Selection([('recup', 'Récup'), ('cp', 'CP'), ('sans_solde', 'Sans solde'), ('conge', 'Congé'), ('evenement', 'Evenement'), ('repos', 'Repos')], string='Absence', index=True)
+
+
+    absence = fields.Selection(ABSENCE_SELECTION, string='Absence', index=True)
+    conge_type_id = fields.Many2one('hr.leave.type', string='Type de congés', index=True)
+
+
+
+
     duree = fields.Float(string='Durée', required=True, help='Durée en heures')
     suivi_temps_id = fields.Many2one('is.suivi.temps', string='Suivi du temps lié', readonly=True, index=True, copy=False)
     suivi_heure_debut = fields.Float(string='Suivi heure début', related='suivi_temps_id.heure_debut', readonly=True, store=False)
     suivi_heure_fin = fields.Float(string='Suivi heure fin', related='suivi_temps_id.heure_fin', readonly=True, store=False)
+
+
+
+
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -625,7 +636,7 @@ class IsSuiviTempsSaisieLigne(models.Model):
     def write(self, vals):
         res = super(IsSuiviTempsSaisieLigne, self).write(vals)
         # Mettre à jour les suivis du temps liés si les champs importants changent
-        if any(field in vals for field in ['type_travail', 'centrale_id', 'duree', 'absence']):
+        if any(field in vals for field in ['type_travail', 'centrale_id', 'duree', 'absence', 'conge_type_id']):
             for ligne in self:
                 ligne._create_or_update_suivi_temps()
         return res
@@ -674,6 +685,7 @@ class IsSuiviTempsSaisieLigne(models.Model):
             'type_travail': self.type_travail,
             'centrale_id': self.centrale_id.id if self.centrale_id else False,
             'absence': self.absence,
+            'conge_type_id': self.conge_type_id.id if self.conge_type_id else False,
             'commentaire': saisie.commentaire,
             'panier': saisie.panier,
             'nuitee': saisie.nuitee,
