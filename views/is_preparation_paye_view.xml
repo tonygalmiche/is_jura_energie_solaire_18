@@ -104,6 +104,7 @@
                                     <field name="conge_cp"/>
                                     <field name="conge_evenement"/>
                                     <field name="nb_panier"/>
+                                    <field name="nb_nuitee"/>
                                 </group>
                             </group>
                         </div>
@@ -125,20 +126,21 @@
                         title="Voir le détail du suivi temps"/>
                 <field name="utilisateur_id"/>
                 <field name="semaine"/>
-                <field name="nb_jour_travaille" sum="Total"/>
-                <field name="nb_heure_prevue" sum="Total" widget="float_time"/>
-                <field name="nb_heure_travaille" sum="Total" widget="float_time"/>
-                <field name="nb_heure_absence" sum="Total" widget="float_time"/>
-                <field name="nb_heure_total" sum="Total" widget="float_time"/>
-                <field name="heures_supplementaire" sum="Total" widget="float_time"/>
-                <field name="hs_25" sum="Total" widget="float_time"/>
-                <field name="hs_50" sum="Total" widget="float_time"/>
-                <field name="nb_heure_dimanche" sum="Total" widget="float_time"/>
-                <field name="conge_cp" sum="Total"/>
-                <field name="conge_evenement" sum="Total"/>
-                <field name="recuperation" sum="Total" widget="float_time"/>
-                <field name="heure_sup_a_payer" sum="Total" widget="float_time"/>
-                <field name="nb_panier" sum="Total"/>
+                <field name="nb_jour_travaille" sum="Total" optional="show"/>
+                <field name="nb_heure_prevue" sum="Total" widget="float_time" optional="show"/>
+                <field name="nb_heure_travaille" sum="Total" widget="float_time" optional="show"/>
+                <field name="nb_heure_absence" sum="Total" widget="float_time" optional="show"/>
+                <field name="nb_heure_total" sum="Total" widget="float_time" optional="show"/>
+                <field name="heures_supplementaire" sum="Total" widget="float_time" optional="show"/>
+                <field name="hs_25" sum="Total" widget="float_time" optional="show"/>
+                <field name="hs_50" sum="Total" widget="float_time" optional="show"/>
+                <field name="nb_heure_dimanche" sum="Total" widget="float_time" optional="show"/>
+                <field name="conge_cp" sum="Total" optional="show"/>
+                <field name="conge_evenement" sum="Total" optional="show"/>
+                <field name="recuperation" sum="Total" widget="float_time" optional="show"/>
+                <field name="heure_sup_a_payer" sum="Total" widget="float_time" optional="show"/>
+                <field name="nb_panier" sum="Total" optional="show"/>
+                <field name="nb_nuitee" sum="Total" optional="show"/>
             </list>
         </field>
     </record>

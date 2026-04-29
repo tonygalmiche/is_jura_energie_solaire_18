@@ -77,6 +77,8 @@
                  <separator/>
                 <filter string="Avec panier" name="panier" domain="[('panier', '=', True)]"/>
                 <filter string="Avec nuitée" name="nuitee" domain="[('nuitee', '=', True)]"/>
+                <separator/>
+                <filter string="Sans les poses" name="sans_pose" domain="[('type_travail', '!=', 'pose')]"/>
                 <group expand="0" string="Regrouper par">
                     <filter string="Utilisateur" name="group_utilisateur" context="{'group_by': 'utilisateur_id'}"/>
                     <filter string="Type de travail" name="group_type_travail" context="{'group_by': 'type_travail'}"/>

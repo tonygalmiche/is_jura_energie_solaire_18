@@ -23,6 +23,7 @@ TYPE_TRAVAIL_SELECTION = [
 
 
 TYPE_TRAVAIL_AVEC_ROUTE = TYPE_TRAVAIL_SELECTION + [
+    ('pose', 'Pose'),
     ('route', 'Route'),
 ]
 
@@ -229,6 +230,7 @@ class IsSuiviTempsSaisie(models.Model):
     commentaire = fields.Text(string='Commentaire', tracking=True)
     ligne_ids = fields.One2many('is.suivi.temps.saisie.ligne', 'saisie_id', string='Lignes de saisie', copy=True)
     suivi_route_id = fields.Many2one('is.suivi.temps', string='Suivi de route', readonly=True, copy=False)
+    suivi_pose_id = fields.Many2one('is.suivi.temps', string='Suivi de pose', readonly=True, copy=False)
     has_sav = fields.Boolean(string='Contient du SAV', compute='_compute_has_sav', store=False)
     date_debut = fields.Datetime(string='Début (calendrier)', compute='_compute_datetimes', store=True)
     date_fin = fields.Datetime(string='Fin (calendrier)', compute='_compute_datetimes', store=True)
@@ -450,6 +452,7 @@ class IsSuiviTempsSaisie(models.Model):
             for record in self:
                 for ligne in record.ligne_ids:
                     ligne._create_or_update_suivi_temps()
+                record._create_or_update_suivi_pose()
         return res
 
     @api.constrains('heure_debut', 'heure_fin')
@@ -540,12 +543,40 @@ class IsSuiviTempsSaisie(models.Model):
         _logger.info('get_unusual_days: %d jours inhabituels sur %d: %s', len(unusual), len(result), list(unusual.keys())[:5])
         return result
 
+    def _create_or_update_suivi_pose(self):
+        """Crée ou met à jour l'enregistrement is.suivi.temps pour le temps de pose"""
+        self.ensure_one()
+        if not self.temps_pose or not self.heure_debut or not self.date:
+            if self.suivi_pose_id:
+                self.suivi_pose_id.sudo().unlink()
+                self.suivi_pose_id = False
+            return
+        # La pose commence après toutes les lignes d'activité
+        total_lignes = sum(self.ligne_ids.mapped('duree'))
+        heure_debut_pose = self.heure_debut + total_lignes
+        heure_fin_pose = heure_debut_pose + self.temps_pose
+        vals = {
+            'utilisateur_id': self.utilisateur_id.id,
+            'date': self.date,
+            'heure_debut': heure_debut_pose,
+            'heure_fin': heure_fin_pose,
+            'type_travail': 'pose',
+            'commentaire': self.commentaire,
+            'panier': self.panier,
+            'nuitee': self.nuitee,
+        }
+        if self.suivi_pose_id:
+            self.suivi_pose_id.sudo().write(vals)
+        else:
+            suivi = self.env['is.suivi.temps'].sudo().create(vals)
+            self.suivi_pose_id = suivi.id
+
     def action_voir_suivis_temps(self):
         """Ouvre la liste des suivis du temps liés à cette saisie"""
         self.ensure_one()
         
-        # Récupérer les IDs des suivis du temps liés aux lignes et à la route
-        suivi_temps_ids = (self.ligne_ids.mapped('suivi_temps_id') | self.suivi_route_id).ids
+        # Récupérer les IDs des suivis du temps liés aux lignes, à la route et à la pose
+        suivi_temps_ids = (self.ligne_ids.mapped('suivi_temps_id') | self.suivi_route_id | self.suivi_pose_id).ids
         
         return {
             'name': 'Suivis du temps',
@@ -592,6 +623,7 @@ class IsSuiviTempsSaisie(models.Model):
         """Supprimer les IsSuiviTemps associés avant de supprimer la saisie"""
         # Récupérer tous les suivis du temps liés aux lignes et à la route
         suivis_to_delete = self.mapped('ligne_ids.suivi_temps_id') | self.mapped('suivi_route_id')
+        suivis_to_delete |= self.mapped('suivi_pose_id')
         # Supprimer d'abord la saisie (cela supprimera les lignes en cascade)
         res = super(IsSuiviTempsSaisie, self).unlink()
         # Ensuite supprimer les suivis du temps avec sudo() pour avoir les droits
@@ -697,6 +729,9 @@ class IsSuiviTempsSaisieLigne(models.Model):
         else:
             suivi = self.env['is.suivi.temps'].sudo().create(vals)
             self.suivi_temps_id = suivi.id
+
+        # Mettre à jour le suivi de pose (son heure de début dépend des lignes)
+        self.saisie_id._create_or_update_suivi_pose()
 
         # Créer/mettre à jour le suivi de route si heure_route est renseigné
         # Désactivé le 01/04/2026

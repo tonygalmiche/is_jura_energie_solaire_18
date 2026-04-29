@@ -116,8 +116,8 @@ class IsPreparationPaye(models.Model):
                 # --- Nombre d'heures prévues (calendrier employé) ---
                 nb_heure_prevue = self._get_heures_prevues_semaine(user, week_key)
 
-                # --- Nombre d'heures travaillées (hors absences) ---
-                nb_heure_travaille = sum(s.duree for s in week_suivis if s.type_travail != 'absence')
+                # --- Nombre d'heures travaillées (hors absences et poses) ---
+                nb_heure_travaille = sum(s.duree for s in week_suivis if s.type_travail not in ('absence', 'pose'))
 
                 # --- Nombre d'heures d'absence ---
                 nb_heure_absence = sum(s.duree for s in week_suivis if s.type_travail == 'absence')
@@ -170,6 +170,13 @@ class IsPreparationPaye(models.Model):
                         dates_panier.add(s.date)
                 nb_panier = len(dates_panier)
 
+                # --- Nombre de nuitées (1 par jour si au moins 1 nuitée dans la journée) ---
+                dates_nuitee = set()
+                for s in week_suivis:
+                    if s.nuitee:
+                        dates_nuitee.add(s.date)
+                nb_nuitee = len(dates_nuitee)
+
                 lignes_vals.append({
                     'preparation_id': self.id,
                     'utilisateur_id': user.id,
@@ -188,6 +195,7 @@ class IsPreparationPaye(models.Model):
                     'recuperation': recuperation,
                     'heure_sup_a_payer': heure_sup_a_payer,
                     'nb_panier': nb_panier,
+                    'nb_nuitee': nb_nuitee,
                 })
 
         lignes = self.env['is.preparation.paye.ligne'].create(lignes_vals)
@@ -241,6 +249,7 @@ class IsPreparationPayeLigne(models.Model):
     recuperation = fields.Float(string='Récupération', digits=(10, 2))
     heure_sup_a_payer = fields.Float(string='HS à payer', digits=(10, 2))
     nb_panier = fields.Integer(string='Nb paniers')
+    nb_nuitee = fields.Integer(string='Nb nuitées')
     detail_html = fields.Html(
         string='Détail par jour',
         sanitize=False,
@@ -436,6 +445,7 @@ class IsPreparationPayeLigne(models.Model):
                 ('date', '>=', str(start_of_week)),
                 ('date', '<=', str(end_of_week)),
             ],
+            'context': {'search_default_sans_pose': 1},
         }
 
 
