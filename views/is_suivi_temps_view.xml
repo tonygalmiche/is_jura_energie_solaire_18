@@ -170,7 +170,8 @@
                             <field name="heure_route" invisible="temps_travail &lt;= 10"/>
                             <field name="temps_travail" readonly="1"/>
                             <field name="panier"/>
-                            <field name="nuitee"/> 
+                            <field name="nuitee"/>
+                            <field name="conge_id" readonly="1" optional="show"/>
                         </group>
                     </group>
                     <group string="Détail des activités">
@@ -226,6 +227,7 @@
                 <field name="heure_route" widget="float_time" optional="show"/>
                 <field name="panier" optional="show"/>
                 <field name="nuitee" optional="show"/>
+                <field name="conge_id" optional="hide"/>
                 <field name="commentaire" optional="show"/>
             </list>
         </field>

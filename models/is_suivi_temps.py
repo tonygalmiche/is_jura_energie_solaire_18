@@ -231,6 +231,7 @@ class IsSuiviTempsSaisie(models.Model):
     ligne_ids = fields.One2many('is.suivi.temps.saisie.ligne', 'saisie_id', string='Lignes de saisie', copy=True)
     suivi_route_id = fields.Many2one('is.suivi.temps', string='Suivi de route', readonly=True, copy=False)
     suivi_pose_id = fields.Many2one('is.suivi.temps', string='Suivi de pose', readonly=True, copy=False)
+    conge_id = fields.Many2one('hr.leave', string='Demande de congés', readonly=True, copy=False, ondelete='set null', index=True)
     has_sav = fields.Boolean(string='Contient du SAV', compute='_compute_has_sav', store=False)
     date_debut = fields.Datetime(string='Début (calendrier)', compute='_compute_datetimes', store=True)
     date_fin = fields.Datetime(string='Fin (calendrier)', compute='_compute_datetimes', store=True)
@@ -270,16 +271,18 @@ class IsSuiviTempsSaisie(models.Model):
 
     def _get_horaires_from_calendar(self, user_id, date):
         """
-        Récupère les horaires de travail à partir du calendrier de l'employé
-        Retourne un dict avec heure_debut, heure_fin, temps_pose
+        Récupère les horaires de travail à partir du calendrier de l'employé.
+        Retourne un dict avec heure_debut, heure_fin, temps_pose,
+        ou None si le jour n'est pas travaillé (week-end, pas d'attendance).
         """
-        result = {'heure_debut': 8.0, 'heure_fin': 17.0, 'temps_pose': 0.0}
-        
         # Chercher l'employé lié à cet utilisateur
         employee = self.env['hr.employee'].search([('user_id', '=', user_id)], limit=1)
         
         if not employee or not employee.resource_calendar_id:
-            return result
+            # Pas de calendrier : fallback 8h-17h
+            return {'heure_debut': 8.0, 'heure_fin': 17.0, 'temps_pose': 0.0}
+        
+        result = {'heure_debut': 8.0, 'heure_fin': 17.0, 'temps_pose': 0.0}
         
         calendar = employee.resource_calendar_id
         
@@ -294,21 +297,24 @@ class IsSuiviTempsSaisie(models.Model):
                      (not a.date_to or a.date_to >= date)
         ).sorted('hour_from')
         
-        if attendances:
-            # Première plage horaire = heure de début
-            # Dernière plage horaire = heure de fin
-            result['heure_debut'] = attendances[0].hour_from
-            result['heure_fin'] = attendances[-1].hour_to
-            
-            # Calculer le temps de pause (somme des périodes 'lunch')
-            lunch_attendances = calendar.attendance_ids.filtered(
-                lambda a: a.dayofweek == dayofweek and 
-                         a.day_period == 'lunch' and
-                         (not a.date_from or a.date_from <= date) and
-                         (not a.date_to or a.date_to >= date)
-            )
-            if lunch_attendances:
-                result['temps_pose'] = sum((att.hour_to - att.hour_from) for att in lunch_attendances)
+        if not attendances:
+            # Jour non travaillé (week-end, jour férié…)
+            return None
+
+        # Première plage horaire = heure de début
+        # Dernière plage horaire = heure de fin
+        result['heure_debut'] = attendances[0].hour_from
+        result['heure_fin'] = attendances[-1].hour_to
+
+        # Calculer le temps de pause (somme des périodes 'lunch')
+        lunch_attendances = calendar.attendance_ids.filtered(
+            lambda a: a.dayofweek == dayofweek and 
+                     a.day_period == 'lunch' and
+                     (not a.date_from or a.date_from <= date) and
+                     (not a.date_to or a.date_to >= date)
+        )
+        if lunch_attendances:
+            result['temps_pose'] = sum((att.hour_to - att.hour_from) for att in lunch_attendances)
         
         return result
 
