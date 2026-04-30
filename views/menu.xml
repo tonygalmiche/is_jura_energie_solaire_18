@@ -12,6 +12,18 @@
     <!-- JES -->
     <menuitem id="is_crm_root_menu" name="JES" sequence="1"/>
 
+    <!-- Kanban des demandes de prix (premier menu sous Achats > Commandes) -->
+    <menuitem id="menu_purchase_kanban_by_state"
+        name="Kanban des demandes de prix"
+        parent="purchase.menu_procurement_management"
+        action="is_jura_energie_solaire_18.action_purchase_kanban_by_state"
+        sequence="0"/>
+
+    <!-- Passer "Demandes de prix" en deuxième position -->
+    <record id="purchase.menu_purchase_rfq" model="ir.ui.menu">
+        <field name="sequence">5</field>
+    </record>
+
     <!-- Suivi du temps -->
     <menuitem id="is_suivi_temps_root_menu" name="Suivi du temps" sequence="2"/>
     <menuitem id="is_suivi_temps_saisie_menu" name="Saisie suivi du temps" parent="is_suivi_temps_root_menu" action="is_suivi_temps_saisie_action" sequence="10"/>

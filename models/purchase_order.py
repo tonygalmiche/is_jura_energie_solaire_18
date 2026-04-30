@@ -14,6 +14,28 @@ class PurchaseOrder(models.Model):
     is_centrale_id = fields.Many2one("is.centrale", string="Centrale", index=True)
     is_objet = fields.Char(string="Objet de la commande")
 
+    # Redéfinition pour forcer l'affichage de toutes les colonnes kanban (sauf cancel)
+    # et pour ajouter l'état "Livré"
+    state = fields.Selection(
+        selection_add=[('livre', 'Livré')],
+        ondelete={'livre': lambda recs: recs.write({'state': 'purchase'})},
+        group_expand='_read_group_state_kanban',
+    )
+
+    @api.depends('name', 'is_objet')
+    def _compute_display_name(self):
+        for rec in self:
+            if rec.is_objet:
+                rec.display_name = f"{rec.is_objet} ({rec.name})"
+            else:
+                rec.display_name = rec.name
+
+    def action_marquer_livre(self):
+        self.write({'state': 'livre'})
+
+    def action_retour_commande(self):
+        self.write({'state': 'purchase'})
+
     def action_print_pdf_with_background(self):
         """Génère le PDF du bon de commande avec le papier-en-tête en fond."""
         self.ensure_one()
@@ -58,6 +80,12 @@ class PurchaseOrder(models.Model):
             'url': '/web/content/%s?download=true' % attachment.id,
             'target': 'new',
         }
+
+
+    @api.model
+    def _read_group_state_kanban(self, stages, domain):
+        """Retourne tous les états sauf 'cancel' pour forcer l'affichage de toutes les colonnes kanban."""
+        return [s for s in ('draft', 'sent', 'to approve', 'purchase', 'livre', 'done')]
 
 
 class PurchaseOrderLine(models.Model):

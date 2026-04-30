@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Renommer l'état "Bon de commande fournisseur" (purchase) en "Commandé" -->
+    <record id="purchase.selection__purchase_order__state__purchase" model="ir.model.fields.selection">
+        <field name="name">Commandé</field>
+    </record>
+</odoo>

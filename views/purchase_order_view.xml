@@ -14,9 +14,21 @@
                         string="Imprimer avec papier-en-tête"
                         type="object"
                         class="btn-secondary"
-                        invisible="state not in ('purchase', 'done')"
+                        invisible="state not in ('purchase', 'done', 'livre')"
                         icon="fa-print"
                         data-hotkey="y"/>
+                <button name="action_marquer_livre"
+                        string="Marquer comme livré"
+                        type="object"
+                        class="btn-primary"
+                        invisible="state != 'purchase'"
+                        icon="fa-truck"/>
+                <button name="action_retour_commande"
+                        string="Retour à Commandé"
+                        type="object"
+                        class="btn-secondary"
+                        invisible="state != 'livre'"
+                        icon="fa-undo"/>
             </xpath>
 
             <!-- Utilise section_and_note_one2many pour séparer les colonnes articles et description -->
@@ -93,6 +105,76 @@
                 <field name="is_centrale_id" optional="show" widget="many2one_clickable"/>
             </field>
         </field>
+    </record>
+
+    <!-- Vue Kanban des demandes de prix et commandes, groupée par état, sans annulé -->
+    <record id="view_purchase_order_kanban_by_state" model="ir.ui.view">
+        <field name="name">purchase.order.kanban.by.state.is_jura</field>
+        <field name="model">purchase.order</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state"
+                    draggable="0"
+                    quick_create="false"
+                    sample="1">
+                <field name="currency_id"/>
+                <field name="state"/>
+                <field name="priority"/>
+                <field name="is_centrale_id"/>
+                <field name="is_objet"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="oe_kanban_global_click">
+                            <div class="d-flex justify-content-between align-items-baseline fw-bold mb-1" style="background-color: #e8f0fe; padding: 3px 6px; border-radius: 4px;">
+                                <field name="name"/>
+                                <field name="amount_total" widget="monetary" class="ms-2 text-nowrap"/>
+                            </div>
+                            <div>
+                                <field name="partner_id"/>
+                            </div>
+                            <div t-if="record.is_centrale_id.raw_value">
+                                <field name="is_centrale_id"/>
+                            </div>
+                            <div t-if="record.is_objet.raw_value" class="fst-italic text-muted">
+                                <field name="is_objet"/>
+                            </div>
+                            <div class="mt-1 d-flex justify-content-between align-items-center" style="background-color: #e8f0fe; padding: 3px 6px; border-radius: 4px;">
+                                <field name="date_order" options="{'show_time': false}"/>
+                                <field name="activity_ids" widget="kanban_activity"/>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Vue Calendrier (Arrivée prévue) des demandes de prix -->
+    <record id="view_purchase_order_calendar_date_planned" model="ir.ui.view">
+        <field name="name">purchase.order.calendar.date_planned.is_jura</field>
+        <field name="model">purchase.order</field>
+        <field name="arch" type="xml">
+            <calendar date_start="date_planned" string="Arrivée prévue" mode="month" color="partner_id" quick_create="false">
+                <field name="name"/>
+                <field name="partner_id" filters="1"/>
+                <field name="amount_total" widget="monetary"/>
+                <field name="is_centrale_id"/>
+                <field name="state"/>
+            </calendar>
+        </field>
+    </record>
+
+    <!-- Action Kanban des demandes de prix -->
+    <record id="action_purchase_kanban_by_state" model="ir.actions.act_window">
+        <field name="name">Kanban des demandes de prix</field>
+        <field name="res_model">purchase.order</field>
+        <field name="view_mode">kanban,list,form,pivot,graph,calendar,activity</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'kanban',   'view_id': ref('view_purchase_order_kanban_by_state')}),
+            (0, 0, {'view_mode': 'calendar', 'view_id': ref('view_purchase_order_calendar_date_planned')}),
+        ]"/>
+        <field name="domain">[('state', '!=', 'cancel')]</field>
+        <field name="context">{'group_by': 'state'}</field>
+        <field name="search_view_id" ref="purchase.purchase_order_view_search"/>
     </record>
 
     <!-- Ajout de la Centrale dans la vue search -->
