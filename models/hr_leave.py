@@ -9,6 +9,14 @@ _logger = logging.getLogger(__name__)
 class HrLeave(models.Model):
     _inherit = 'hr.leave'
 
+    @api.model
+    def _search_display_name(self, operator, value):
+        return ['|', '|',
+            ('employee_id.name', operator, value),
+            ('holiday_status_id.name', operator, value),
+            ('name', operator, value),
+        ]
+
     def _create_or_update_saisies_conge(self):
         """Crée ou met à jour les IsSuiviTempsSaisie pour cette demande de congés."""
         SaisieModel = self.env['is.suivi.temps.saisie'].sudo()
@@ -50,9 +58,8 @@ class HrLeave(models.Model):
                     continue
                 heure_debut = horaires['heure_debut']
                 heure_fin = horaires['heure_fin']
-                # Pas de temps de pose pour un jour de congé
-                temps_pose = 0.0
-                duree_ligne = heure_fin - heure_debut
+                temps_pose = horaires.get('temps_pose', 0.0)
+                duree_ligne = heure_fin - heure_debut - temps_pose
 
                 ligne_vals = {
                     'sequence': 10,
@@ -62,20 +69,24 @@ class HrLeave(models.Model):
                 }
 
                 if existing:
-                    # Mettre à jour la saisie existante liée à ce congé
+                    # Mettre à jour la saisie existante liée à ce congé en un seul write
+                    ligne_cmd = []
+                    if existing.ligne_ids:
+                        ligne_cmd.append((1, existing.ligne_ids[0].id, {
+                            'type_travail': 'absence',
+                            'conge_type_id': conge_type_id,
+                            'duree': duree_ligne,
+                        }))
+                        for extra in existing.ligne_ids[1:]:
+                            ligne_cmd.append((2, extra.id))
+                    else:
+                        ligne_cmd.append((0, 0, ligne_vals))
                     existing.write({
                         'heure_debut': heure_debut,
                         'heure_fin': heure_fin,
                         'temps_pose': temps_pose,
+                        'ligne_ids': ligne_cmd,
                     })
-                    if existing.ligne_ids:
-                        existing.ligne_ids[0].write({
-                            'type_travail': 'absence',
-                            'conge_type_id': conge_type_id,
-                            'duree': duree_ligne,
-                        })
-                    else:
-                        existing.write({'ligne_ids': [(0, 0, ligne_vals)]})
                 else:
                     SaisieModel.create({
                         'utilisateur_id': user.id,

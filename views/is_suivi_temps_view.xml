@@ -172,6 +172,7 @@
                             <field name="panier"/>
                             <field name="nuitee"/>
                             <field name="conge_id" readonly="1" optional="show"/>
+                            <field name="jour_ferie_id" readonly="1" optional="show"/>
                         </group>
                     </group>
                     <group string="Détail des activités">
@@ -228,7 +229,12 @@
                 <field name="panier" optional="show"/>
                 <field name="nuitee" optional="show"/>
                 <field name="conge_id" optional="hide"/>
+                <field name="jour_ferie_id" optional="hide"/>
                 <field name="commentaire" optional="show"/>
+                <field name="create_date" optional="hide" />
+                <field name="create_uid"  optional="hide" />
+                <field name="write_date"  optional="hide" />
+                <field name="write_uid"   optional="hide" />
             </list>
         </field>
     </record>
@@ -239,8 +245,12 @@
             <search string="Rechercher">
                 <field name="utilisateur_id"/>
                 <field name="date"/>
+                <field name="conge_id" string="Demande de congés"/>
+                <field name="jour_ferie_id" string="Jour férié"/>
                 <separator/>
                 <filter string="Mes saisies" name="mes_saisies" domain="[('utilisateur_id', '=', uid)]"/>
+                <filter string="Congés" name="conges" domain="[('conge_id', '!=', False)]"/>
+                <filter string="Jours fériés" name="jours_feries" domain="[('jour_ferie_id', '!=', False)]"/>
                 <separator/>
                 <filter string="Avec panier" name="panier" domain="[('panier', '=', True)]"/>
                 <filter string="Avec nuitée" name="nuitee" domain="[('nuitee', '=', True)]"/>
@@ -295,6 +305,32 @@ saisies = records if records else env['is.suivi.temps.saisie'].search([('heure_r
 for saisie in saisies:
     if saisie.heure_route and not saisie.suivi_route_id:
         saisie._create_or_update_suivi_route()
+        </field>
+    </record>
+
+    <!-- Action serveur : créer ou mettre à jour les saisies de congé sur les demandes de congés -->
+    <record id="action_server_creer_maj_saisies_conge" model="ir.actions.server">
+        <field name="name">Créer/Mettre à jour le suivi du temps associé</field>
+        <field name="model_id" ref="hr_holidays.model_hr_leave"/>
+        <field name="binding_model_id" ref="hr_holidays.model_hr_leave"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+conges = records if records else env['hr.leave'].search([('state', 'in', ['confirm', 'validate1', 'validate'])])
+conges._create_or_update_saisies_conge()
+        </field>
+    </record>
+
+    <!-- Action serveur : créer ou mettre à jour les saisies de temps pour les jours fériés -->
+    <record id="action_server_sync_suivi_jours_feries" model="ir.actions.server">
+        <field name="name">Créer/Mettre à jour le suivi du temps associé</field>
+        <field name="model_id" ref="resource.model_resource_calendar_leaves"/>
+        <field name="binding_model_id" ref="resource.model_resource_calendar_leaves"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+jours = records if records else env['resource.calendar.leaves'].search([('resource_id', '=', False)])
+jours._sync_saisies_jours_feries()
         </field>
     </record>
 

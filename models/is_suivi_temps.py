@@ -232,6 +232,7 @@ class IsSuiviTempsSaisie(models.Model):
     suivi_route_id = fields.Many2one('is.suivi.temps', string='Suivi de route', readonly=True, copy=False)
     suivi_pose_id = fields.Many2one('is.suivi.temps', string='Suivi de pose', readonly=True, copy=False)
     conge_id = fields.Many2one('hr.leave', string='Demande de congés', readonly=True, copy=False, ondelete='set null', index=True)
+    jour_ferie_id = fields.Many2one('resource.calendar.leaves', string='Jour férié', readonly=True, copy=False, ondelete='set null', index=True)
     has_sav = fields.Boolean(string='Contient du SAV', compute='_compute_has_sav', store=False)
     date_debut = fields.Datetime(string='Début (calendrier)', compute='_compute_datetimes', store=True)
     date_fin = fields.Datetime(string='Fin (calendrier)', compute='_compute_datetimes', store=True)
