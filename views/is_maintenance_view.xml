@@ -54,6 +54,8 @@
                     <group>
                         <group>
                             <field name="centrale_id" options="{'no_create': True}"/>
+                            <field name="adresse" readonly="1" invisible="not adresse"/>
+                            <field name="localisation_google_maps_url" widget="url" string="📍 Maps" invisible="not localisation_google_maps_url"/>
                             <field name="numero_maintenance" readonly="1"/>
                             <field name="date_prevue"/>
                             <field name="annee" readonly="1"/>
@@ -86,7 +88,10 @@
                             <group>
                                 <field name="client_id" readonly="1"/>
                             </group>
-                            <field name="client_child_ids" readonly="1" nolabel="1">
+                            <group invisible="not is_client_contacts_html">
+                                <field name="is_client_contacts_html" nolabel="1" readonly="1"/>
+                            </group>
+                            <!-- <field name="client_child_ids" readonly="1" nolabel="1">
                                 <list>
                                     <button name="action_open_contact" type="object" icon="fa-search" title="Ouvrir la fiche"/>
                                     <field name="name"/>
@@ -97,7 +102,7 @@
                                     <field name="email"/>
                                     <field name="city"/>
                                 </list>
-                            </field>
+                            </field> -->
                         </page>
                         <page string="Annexes">
                             <group>

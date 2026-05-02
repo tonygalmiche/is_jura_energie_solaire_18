@@ -43,6 +43,7 @@ class IsSav(models.Model):
     secteur          = fields.Selection(related="centrale_id.secteur", string="Secteur", tracking=True, store=True, readonly=True)
     adresse          = fields.Char(related="centrale_id.adresse", string="Adresse", tracking=True, store=True, readonly=True)
     localisation     = fields.Char(related="centrale_id.localisation", string="Localisation", tracking=True, store=True, readonly=True)
+    localisation_google_maps_url = fields.Char(related="centrale_id.localisation_google_maps_url", string="Maps", readonly=True, store=False)
     centrale_id                  = fields.Many2one('is.centrale', string="Centrale", tracking=True)
     maintenance_date_signature   = fields.Date(related="centrale_id.maintenance_date_signature", string="Date signature maintenance", store=True, readonly=True)
     client_id        = fields.Many2one(related="centrale_id.client_id")
@@ -84,6 +85,7 @@ class IsSav(models.Model):
         string="Sous-statut (couleur)",
         sanitize=False,
     )
+    is_client_contacts_html = fields.Html(related='client_id.is_contacts_html', store=False, string="Tableau des contacts")
 
 
     @api.depends('state')

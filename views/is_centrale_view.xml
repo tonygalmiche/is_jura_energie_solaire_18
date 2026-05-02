@@ -124,7 +124,7 @@
                             <field name="das" invisible="secteur!='gp'"/>
                             <field name="adresse"/>
                             <field name="localisation"/>
-                            <field name="localisation_google_maps_url" widget="url" string="📍 Voir sur Google Maps" invisible="not localisation"/>
+                            <field name="localisation_google_maps_url" widget="url" string="📍 Maps" invisible="not localisation"/>
                         </group>
                         <group>
                             <field name="puissance_panneau_demandee"  invisible="secteur in ['th']"/>
@@ -141,7 +141,7 @@
                                     <field name="client_id"/>
                                 </group>
                             </group>
-                            <group  invisible="not client_child_ids" string="Contacts">
+                            <!-- <group  invisible="not client_child_ids" string="Contacts">
                                 <field name="client_child_ids" nolabel="1">
                                     <list>
                                         <field name="name"     optional="show" string="Contact"/>
@@ -151,6 +151,9 @@
                                         <field name="email"    optional="show"/>
                                     </list>
                                 </field>
+                            </group> -->
+                            <group invisible="not is_client_contacts_html">
+                                <field name="is_client_contacts_html" nolabel="1" readonly="1"/>
                             </group>
 
                         </page>

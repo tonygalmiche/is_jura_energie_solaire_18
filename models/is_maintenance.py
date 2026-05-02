@@ -104,6 +104,8 @@ class IsMaintenance(models.Model):
     )
     
     client_id = fields.Many2one('res.partner', related='centrale_id.client_id', string="Client", store=True, tracking=True)
+    localisation_google_maps_url = fields.Char(related='centrale_id.localisation_google_maps_url', string="Maps", readonly=True, store=False)
+    adresse              = fields.Char(related='centrale_id.adresse', string="Adresse", readonly=True, store=False)
     client_child_ids = fields.Many2many('res.partner', compute='_compute_client_child_ids', string="Contacts client")
     
     information_maintenance = fields.Text("Information maintenance", tracking=True)
@@ -132,6 +134,8 @@ class IsMaintenance(models.Model):
     calendar_event_ids = fields.One2many('calendar.event', 'is_maintenance_id', string='Réunions')
     meeting_display_date = fields.Date(compute="_compute_meeting_display")
     meeting_display_label = fields.Char(compute="_compute_meeting_display")
+    is_client_contacts_html = fields.Html(related='client_id.is_contacts_html', store=False, string="Tableau des contacts")
+
 
     @api.depends('calendar_event_ids', 'calendar_event_ids.start')
     def _compute_meeting_display(self):

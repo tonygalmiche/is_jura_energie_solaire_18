@@ -12,6 +12,10 @@
                 <field name="is_centrale_id"/>
                 <field name="is_centrale_secteur"/>
                 <field name="is_equipe_id"/>
+                <field name="is_client_id" readonly="1" invisible="not is_client_id"/>
+                <field name="is_adresse" readonly="1" invisible="not is_adresse"/>
+                <field name="is_maps_url" widget="url" string="📍 Maps" readonly="1" invisible="not is_maps_url"/>
+                <field name="is_contacts_html" readonly="1" invisible="not is_contacts_html" nolabel="1"/>
             </field> 
         </field>
     </record>
@@ -22,6 +26,8 @@
         <field name="inherit_id" ref="calendar.view_calendar_event_tree"/>
         <field name="arch" type="xml">
             <field name="location" position="after">
+                <field name="is_client_id" optional="show" widget="many2one_clickable"/>
+                <field name="is_contacts_html" optional="hide"/>
                 <field name="is_sav_id" optional="show" widget="many2one_clickable"/>
                 <field name="is_maintenance_id" optional="show" widget="many2one_clickable"/>
                 <field name="is_centrale_id" optional="show" widget="many2one_clickable"/>
@@ -64,6 +70,10 @@
                 <field name="is_centrale_id" invisible="not is_centrale_id" options="{'icon': 'fa fa-bolt'}"/>
                 <field name="is_centrale_secteur" invisible="not is_centrale_secteur"/>
                 <field name="is_equipe_id" invisible="not is_equipe_id" options="{'icon': 'fa fa-users'}"/>
+                <field name="is_client_id" invisible="not is_client_id" options="{'icon': 'fa fa-user'}"/>
+                <field name="is_adresse" invisible="not is_adresse" options="{'icon': 'fa fa-map-marker'}"/>
+                <field name="is_maps_url" widget="url" string="📍 Maps" invisible="not is_maps_url"/>
+                <field name="is_contacts_html" invisible="not is_contacts_html"/>
             </field>
             <field name="res_model_name" position="attributes">
                 <attribute name="invisible">not res_model_name or is_centrale_id or is_sav_id</attribute>
