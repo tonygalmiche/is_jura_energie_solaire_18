@@ -12,6 +12,7 @@ from . import is_maintenance_tache
 from . import calendar
 from . import crm_lead
 from . import is_suivi_temps
+from . import is_suivi_temps_semaine
 from . import hr_leave
 from . import resource_calendar_leaves
 from . import is_preparation_paye

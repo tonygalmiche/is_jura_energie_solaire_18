@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ============================================================
+         is.suivi.temps.semaine – Formulaire
+    ============================================================ -->
+    <record id="is_suivi_temps_semaine_form_view" model="ir.ui.view">
+        <field name="name">is.suivi.temps.semaine.form</field>
+        <field name="model">is.suivi.temps.semaine</field>
+        <field name="arch" type="xml">
+            <form string="Suivi du temps de la semaine">
+                <header>
+                    <button name="action_actualiser"
+                            string="Actualiser"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="etat == 'valide'"
+                            help="Recalcule les lignes à partir des saisies du temps"
+                            groups="is_jura_energie_solaire_18.group_suivi_temps_manager"/>
+                    <button name="action_valider"
+                            string="Valider"
+                            type="object"
+                            class="btn-primary"
+                            invisible="etat == 'valide'"
+                            groups="is_jura_energie_solaire_18.group_suivi_temps_manager"/>
+                    <button name="action_remettre_en_attente"
+                            string="Remettre en attente"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="etat == 'en_attente'"
+                            groups="is_jura_energie_solaire_18.group_suivi_temps_manager"/>
+                    <button name="%(is_jura_energie_solaire_18.action_report_suivi_temps_semaine)d"
+                            string="Imprimer"
+                            type="action"
+                            class="btn-secondary"
+                            icon="fa-print"/>
+                    <field name="etat" widget="statusbar"
+                           statusbar_visible="en_attente,valide"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="salarie_id" readonly="1"/>
+                            <field name="semaine" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="date_debut" readonly="1"/>
+                            <field name="date_fin" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="total_temps_travaille" widget="float_time" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="total_nuitees" readonly="1"/>
+                            <field name="total_paniers" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Détail journalier">
+                            <field name="ligne_ids" readonly="1">
+                                <list decoration-muted="heure_arrivee == 0 and heure_depart == 0">
+                                    <button name="action_voir_saisie" type="object" icon="fa-search" title="Ouvrir la saisie du jour"/>
+                                    <field name="jour"/>
+                                    <field name="date"/>
+                                    <field name="heure_arrivee" widget="float_time"/>
+                                    <field name="temps_pause" widget="float_time"/>
+                                    <field name="heure_depart" widget="float_time"/>
+                                    <field name="temps_route" widget="float_time"/>
+                                    <field name="temps_travaille" widget="float_time" sum="Total"/>
+                                    <field name="nuitee"/>
+                                    <field name="panier"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- ============================================================
+         is.suivi.temps.semaine – Liste
+    ============================================================ -->
+    <record id="is_suivi_temps_semaine_tree_view" model="ir.ui.view">
+        <field name="name">is.suivi.temps.semaine.tree</field>
+        <field name="model">is.suivi.temps.semaine</field>
+        <field name="arch" type="xml">
+            <list string="Suivi du temps de la semaine" decoration-success="etat == 'valide'">
+                <field name="salarie_id"/>
+                <field name="semaine"/>
+                <field name="date_debut"/>
+                <field name="date_fin"/>
+                <field name="total_temps_travaille" widget="float_time"/>
+                <field name="total_nuitees"/>
+                <field name="total_paniers"/>
+                <field name="etat" widget="badge"
+                       decoration-success="etat == 'valide'"
+                       decoration-warning="etat == 'en_attente'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ============================================================
+         is.suivi.temps.semaine – Recherche
+    ============================================================ -->
+    <record id="is_suivi_temps_semaine_search_view" model="ir.ui.view">
+        <field name="name">is.suivi.temps.semaine.search</field>
+        <field name="model">is.suivi.temps.semaine</field>
+        <field name="arch" type="xml">
+            <search string="Rechercher">
+                <field name="salarie_id"/>
+                <field name="semaine"/>
+                <separator/>
+                <filter string="En attente de validation" name="en_attente"
+                        domain="[('etat', '=', 'en_attente')]"/>
+                <filter string="Validé" name="valide"
+                        domain="[('etat', '=', 'valide')]"/>
+                <group expand="0" string="Regrouper par">
+                    <filter string="Salarié" name="group_salarie"
+                            context="{'group_by': 'salarie_id'}"/>
+                    <filter string="Semaine" name="group_semaine"
+                            context="{'group_by': 'semaine'}"/>
+                    <filter string="État" name="group_etat"
+                            context="{'group_by': 'etat'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ============================================================
+         Action + Menu
+    ============================================================ -->
+    <record id="is_suivi_temps_semaine_action" model="ir.actions.act_window">
+        <field name="name">Suivi du temps de la semaine</field>
+        <field name="res_model">is.suivi.temps.semaine</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="is_suivi_temps_semaine_search_view"/>
+        <field name="context">{}</field>
+    </record>
+
+    <!-- ============================================================
+         Tâche cron
+    ============================================================ -->
+        <record id="ir_cron_suivi_temps_semaine" model="ir.cron">
+            <field name="name">Suivi du temps – Créer/actualiser les fiches de la semaine précédente</field>
+            <field name="model_id" ref="model_is_suivi_temps_semaine"/>
+            <field name="state">code</field>
+            <field name="code">model.cron_creer_fiches_semaine()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="active" eval="True"/>
+        </record>
+
+</odoo>

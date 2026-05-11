@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Action rapport -->
+    <record id="action_report_suivi_temps_semaine" model="ir.actions.report">
+        <field name="name">Récapitulatif hebdomadaire</field>
+        <field name="model">is.suivi.temps.semaine</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">is_jura_energie_solaire_18.report_suivi_temps_semaine_document</field>
+        <field name="report_file">is_jura_energie_solaire_18.report_suivi_temps_semaine_document</field>
+        <field name="binding_model_id" ref="model_is_suivi_temps_semaine"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="base.paperformat_euro"/>
+    </record>
+
+    <!-- Template document -->
+    <template id="report_suivi_temps_semaine_document">
+        <t t-foreach="docs" t-as="o">
+            <t t-call="web.external_layout">
+                <main>
+                    <div class="page">
+                    <style>
+                        .recap-header {
+                            text-align: center;
+                            margin-bottom: 20px;
+                        }
+                        .recap-header h2 {
+                            font-size: 14pt;
+                            font-weight: bold;
+                            color: #333;
+                            margin: 0;
+                        }
+                        .recap-table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin-top: 20px;
+                            font-size: 9pt;
+                        }
+                        .recap-table th {
+                            background-color: #f0f0f0;
+                            border: 1px solid #ccc;
+                            padding: 5px 8px;
+                            text-align: center;
+                            font-weight: bold;
+                        }
+                        .recap-table td {
+                            border: 1px solid #ccc;
+                            padding: 5px 8px;
+                            text-align: center;
+                        }
+                        .recap-table td.label {
+                            text-align: left;
+                            font-weight: normal;
+                            background-color: #fafafa;
+                        }
+                        .total-box {
+                            display: inline-block;
+                            background-color: #4a7c4e;
+                            color: white;
+                            font-weight: bold;
+                            font-size: 12pt;
+                            padding: 6px 20px;
+                            border-radius: 4px;
+                            margin-top: 20px;
+                        }
+                        .total-section {
+                            margin-top: 15px;
+                        }
+                        .certification {
+                            margin-top: 25px;
+                            font-style: italic;
+                            font-size: 9pt;
+                        }
+                        .signature-section {
+                            margin-top: 40px;
+                        }
+                        .signature-table {
+                            width: 100%;
+                        }
+                        .signature-table td {
+                            width: 45%;
+                            vertical-align: top;
+                            padding: 10px 20px;
+                        }
+                        .signature-label {
+                            font-weight: bold;
+                            font-size: 10pt;
+                            margin-bottom: 8px;
+                        }
+                        .signature-box {
+                            border: 1px solid #000;
+                            height: 80px;
+                            margin-top: 5px;
+                        }
+                        .zero { color: #999; }
+                        .panier-nuitee { color: #1a6abf; font-weight: bold; }
+                    </style>
+
+                    <!-- En-tête -->
+                    <div class="recap-header">
+                        <h2>Récapitulatif des heures</h2>
+                        <h2>
+                            semaine n°
+                            <t t-esc="o.semaine"/>
+                        </h2>
+                        <h2>de <t t-esc="o.salarie_id.name"/></h2>
+                    </div>
+
+                    <!-- Tableau -->
+                    <t t-set="lignes" t-value="o.ligne_ids.sorted('date')"/>
+                    <table class="recap-table">
+                        <thead>
+                            <tr>
+                                <th style="width:18%; text-align:left;"></th>
+                                <t t-foreach="lignes" t-as="l">
+                                    <th><t t-esc="l.jour"/></th>
+                                </t>
+                            </tr>
+                            <tr>
+                                <th style="text-align:left;"></th>
+                                <t t-foreach="lignes" t-as="l">
+                                    <th>
+                                        <t t-esc="l.date" t-options='{"widget": "date", "format": "dd-MMM"}'/>
+                                    </th>
+                                </t>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Heure d'arrivée -->
+                            <tr>
+                                <td class="label">heure d'arrivée :</td>
+                                <t t-foreach="lignes" t-as="l">
+                                    <td>
+                                        <t t-if="l.heure_arrivee">
+                                            <t t-esc="'%dh%02d' % (int(l.heure_arrivee), int(round((l.heure_arrivee % 1) * 60)))"/>
+                                        </t>
+                                        <t t-else=""><span class="zero">0</span></t>
+                                    </td>
+                                </t>
+                            </tr>
+                            <!-- Temps de pause -->
+                            <tr>
+                                <td class="label">temps de pause :</td>
+                                <t t-foreach="lignes" t-as="l">
+                                    <td>
+                                        <t t-if="l.temps_pause">
+                                            <t t-esc="'%dh%02d' % (int(l.temps_pause), int(round((l.temps_pause % 1) * 60)))"/>
+                                        </t>
+                                        <t t-else=""><span class="zero">0</span></t>
+                                    </td>
+                                </t>
+                            </tr>
+                            <!-- Heure de départ -->
+                            <tr>
+                                <td class="label">heure de départ :</td>
+                                <t t-foreach="lignes" t-as="l">
+                                    <td>
+                                        <t t-if="l.heure_depart">
+                                            <t t-esc="'%dh%02d' % (int(l.heure_depart), int(round((l.heure_depart % 1) * 60)))"/>
+                                        </t>
+                                        <t t-else=""><span class="zero">0</span></t>
+                                    </td>
+                                </t>
+                            </tr>
+                            <!-- Temps de route -->
+                            <tr>
+                                <td class="label">temps de route :</td>
+                                <t t-foreach="lignes" t-as="l">
+                                    <td>
+                                        <t t-if="l.temps_route">
+                                            <t t-esc="'%dh%02d' % (int(l.temps_route), int(round((l.temps_route % 1) * 60)))"/>
+                                        </t>
+                                        <t t-else=""><span class="zero">0</span></t>
+                                    </td>
+                                </t>
+                            </tr>
+                            <!-- Temps travaillé -->
+                            <tr>
+                                <td class="label">temps travaillé :</td>
+                                <t t-foreach="lignes" t-as="l">
+                                    <td>
+                                        <t t-if="l.temps_travaille">
+                                            <t t-esc="'%dh%02d' % (int(l.temps_travaille), int(round((l.temps_travaille % 1) * 60)))"/>
+                                        </t>
+                                        <t t-else=""><span class="zero">0</span></t>
+                                    </td>
+                                </t>
+                            </tr>
+                            <!-- Nuitée -->
+                            <tr>
+                                <td class="label">Nuitée :</td>
+                                <t t-foreach="lignes" t-as="l">
+                                    <td>
+                                        <t t-if="l.nuitee"><span class="panier-nuitee">1</span></t>
+                                        <t t-else=""><span class="zero">0</span></t>
+                                    </td>
+                                </t>
+                            </tr>
+                            <!-- Panier -->
+                            <tr>
+                                <td class="label">Panier :</td>
+                                <t t-foreach="lignes" t-as="l">
+                                    <td>
+                                        <t t-if="l.panier"><span class="panier-nuitee">1</span></t>
+                                        <t t-else=""><span class="zero">0</span></t>
+                                    </td>
+                                </t>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- Total heures -->
+                    <div class="total-section">
+                        <span class="total-box">
+                            total heures :&#160;&#160;
+                            <t t-esc="'%dh%02d' % (int(o.total_temps_travaille), int(round((o.total_temps_travaille % 1) * 60)))"/>
+                        </span>
+                    </div>
+
+                    <!-- Certification -->
+                    <div class="certification">
+                        Je certifie que les heures renseignées ci-dessus sont exactes et complètes.
+                    </div>
+
+                    <!-- Signatures -->
+                    <div class="signature-section">
+                        <table class="signature-table">
+                            <tr>
+                                <td>
+                                    <div class="signature-label">Signature de l'employé</div>
+                                    <div class="signature-box"></div>
+                                </td>
+                                <td>
+                                    <div class="signature-label">Signature du responsable</div>
+                                    <div class="signature-box"></div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                </div>
+                </main>
+            </t>
+        </t>
+    </template>
+
+</odoo>
