@@ -126,15 +126,28 @@
                             </tr>
                         </thead>
                         <tbody>
+                            <!-- Congés -->
+                            <tr>
+                                <td class="label">Absence :</td>
+                                <t t-foreach="lignes" t-as="l">
+                                    <td>
+                                        <t t-if="l.conge_type_id">
+                                            <span style="color:#c0392b; font-weight:bold;">
+                                                <t t-esc="l.conge_type_id.name"/>
+                                            </span>
+                                        </t>
+                                    </td>
+                                </t>
+                            </tr>
                             <!-- Heure d'arrivée -->
                             <tr>
                                 <td class="label">heure d'arrivée :</td>
                                 <t t-foreach="lignes" t-as="l">
                                     <td>
-                                        <t t-if="l.heure_arrivee">
+                                        <t t-if="not l.conge_type_id and l.heure_arrivee">
                                             <t t-esc="'%dh%02d' % (int(l.heure_arrivee), int(round((l.heure_arrivee % 1) * 60)))"/>
                                         </t>
-                                        <t t-else=""><span class="zero">0</span></t>
+                                        <t t-elif="not l.conge_type_id"><span class="zero">0</span></t>
                                     </td>
                                 </t>
                             </tr>
@@ -143,10 +156,10 @@
                                 <td class="label">temps de pause :</td>
                                 <t t-foreach="lignes" t-as="l">
                                     <td>
-                                        <t t-if="l.temps_pause">
+                                        <t t-if="not l.conge_type_id and l.temps_pause">
                                             <t t-esc="'%dh%02d' % (int(l.temps_pause), int(round((l.temps_pause % 1) * 60)))"/>
                                         </t>
-                                        <t t-else=""><span class="zero">0</span></t>
+                                        <t t-elif="not l.conge_type_id"><span class="zero">0</span></t>
                                     </td>
                                 </t>
                             </tr>
@@ -155,10 +168,10 @@
                                 <td class="label">heure de départ :</td>
                                 <t t-foreach="lignes" t-as="l">
                                     <td>
-                                        <t t-if="l.heure_depart">
+                                        <t t-if="not l.conge_type_id and l.heure_depart">
                                             <t t-esc="'%dh%02d' % (int(l.heure_depart), int(round((l.heure_depart % 1) * 60)))"/>
                                         </t>
-                                        <t t-else=""><span class="zero">0</span></t>
+                                        <t t-elif="not l.conge_type_id"><span class="zero">0</span></t>
                                     </td>
                                 </t>
                             </tr>
@@ -167,10 +180,10 @@
                                 <td class="label">temps de route :</td>
                                 <t t-foreach="lignes" t-as="l">
                                     <td>
-                                        <t t-if="l.temps_route">
+                                        <t t-if="not l.conge_type_id and l.temps_route">
                                             <t t-esc="'%dh%02d' % (int(l.temps_route), int(round((l.temps_route % 1) * 60)))"/>
                                         </t>
-                                        <t t-else=""><span class="zero">0</span></t>
+                                        <t t-elif="not l.conge_type_id"><span class="zero">0</span></t>
                                     </td>
                                 </t>
                             </tr>
@@ -179,10 +192,10 @@
                                 <td class="label">temps travaillé :</td>
                                 <t t-foreach="lignes" t-as="l">
                                     <td>
-                                        <t t-if="l.temps_travaille">
+                                        <t t-if="not l.conge_type_id and l.temps_travaille">
                                             <t t-esc="'%dh%02d' % (int(l.temps_travaille), int(round((l.temps_travaille % 1) * 60)))"/>
                                         </t>
-                                        <t t-else=""><span class="zero">0</span></t>
+                                        <t t-elif="not l.conge_type_id"><span class="zero">0</span></t>
                                     </td>
                                 </t>
                             </tr>
@@ -191,8 +204,10 @@
                                 <td class="label">Nuitée :</td>
                                 <t t-foreach="lignes" t-as="l">
                                     <td>
-                                        <t t-if="l.nuitee"><span class="panier-nuitee">1</span></t>
-                                        <t t-else=""><span class="zero">0</span></t>
+                                        <t t-if="not l.conge_type_id">
+                                            <t t-if="l.nuitee"><span class="panier-nuitee">1</span></t>
+                                            <t t-else=""><span class="zero">0</span></t>
+                                        </t>
                                     </td>
                                 </t>
                             </tr>
@@ -201,8 +216,10 @@
                                 <td class="label">Panier :</td>
                                 <t t-foreach="lignes" t-as="l">
                                     <td>
-                                        <t t-if="l.panier"><span class="panier-nuitee">1</span></t>
-                                        <t t-else=""><span class="zero">0</span></t>
+                                        <t t-if="not l.conge_type_id">
+                                            <t t-if="l.panier"><span class="panier-nuitee">1</span></t>
+                                            <t t-else=""><span class="zero">0</span></t>
+                                        </t>
                                     </td>
                                 </t>
                             </tr>

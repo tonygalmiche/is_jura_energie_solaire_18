@@ -67,6 +67,7 @@
                                     <button name="action_voir_saisie" type="object" icon="fa-search" title="Ouvrir la saisie du jour"/>
                                     <field name="jour"/>
                                     <field name="date"/>
+                                    <field name="conge_type_id" optional="show"/>
                                     <field name="heure_arrivee" widget="float_time"/>
                                     <field name="temps_pause" widget="float_time"/>
                                     <field name="heure_depart" widget="float_time"/>

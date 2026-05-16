@@ -121,6 +121,9 @@ class IsSuiviTempsSemaine(models.Model):
                     'date': current_date,
                 }
                 if saisie:
+                    conge_ligne = saisie.ligne_ids.filtered(
+                        lambda l: l.type_travail == 'absence' and l.conge_type_id
+                    )[:1]
                     vals.update({
                         'heure_arrivee': saisie.heure_debut or 0.0,
                         'temps_pause': saisie.temps_pose or 0.0,
@@ -128,6 +131,7 @@ class IsSuiviTempsSemaine(models.Model):
                         'temps_route': saisie.heure_route or 0.0,
                         'nuitee': saisie.nuitee,
                         'panier': saisie.panier,
+                        'conge_type_id': conge_ligne.conge_type_id.id if conge_ligne else False,
                     })
                 self.env['is.suivi.temps.semaine.ligne'].create(vals)
             current_date += timedelta(days=1)
@@ -196,6 +200,7 @@ class IsSuiviTempsSemaineLigne(models.Model):
     )
     nuitee = fields.Boolean(string='Nuitée', default=False)
     panier = fields.Boolean(string='Panier', default=False)
+    conge_type_id = fields.Many2one('hr.leave.type', string='Type de congés', index=True)
 
     JOURS_FR = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche']
 

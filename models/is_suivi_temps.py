@@ -223,7 +223,7 @@ class IsSuiviTempsSaisie(models.Model):
     heure_fin = fields.Float(string='Heure de fin', help='Heure de fin de journée', tracking=True)
     heure_route = fields.Float(string='Heure de route', help='Temps de route en heures', tracking=True)
     temps_pose = fields.Float(string='Temps de pose', help='Temps de pause en heures', tracking=True)
-    temps_travail = fields.Float(string='Temps de travail', compute='_compute_temps', store=True, help='Temps de travail effectif')
+    temps_travail = fields.Float(string="Temps comptabilisé", help='Temps de travail effectif ou absence', compute='_compute_temps', store=True)
     temps_presence = fields.Float(string='Temps de présence', compute='_compute_temps', store=True, help='Temps de présence total')
     nuitee = fields.Boolean(string='Nuitée', default=False, tracking=True)
     panier = fields.Boolean(string='Panier', default=False, tracking=True)

@@ -94,7 +94,7 @@
         <field name="binding_model_id" ref="crm.model_crm_lead"/>
         <field name="binding_view_types">list,form</field>
         <field name="state">code</field>
-        <field name="code">records.action_recalcul_premiere_reunion()</field>
+        <field name="code">if records: records.action_recalcul_premiere_reunion()</field>
     </record>
 
     <!-- Vues pour is.provenance.client -->
