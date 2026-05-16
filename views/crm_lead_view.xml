@@ -15,15 +15,21 @@
                     </div>
                 </button>
             </xpath>
-            <xpath expr="//group[@name='lead_priority']" position="after">
+            <xpath expr="//notebook" position="before">
                 <group>
-                    <field name="is_provenance_client_id"/>
-                    <field name="is_secteur" required="1"/>
-                    <field name="is_sous_secteur"/>
-                    <field name="is_adresse" required="1"/>
-                    <field name="is_localisation"/>
-                    <field name="is_centrale_id"/>
-                    <field name="is_date_changement_etat"/>
+                    <group>
+                        <field name="is_provenance_client_id"/>
+                        <field name="is_secteur" required="1"/>
+                        <field name="is_sous_secteur"/>
+                        <field name="is_adresse" required="1"/>
+                        <field name="is_localisation"/>
+                        <field name="is_centrale_id"/>
+                    </group>
+                    <group>
+                        <field name="is_date_changement_etat"/>
+                        <field name="is_date_premiere_reunion"/>
+                        <field name="is_delai_prise_en_compte"/>
+                    </group>
                 </group>
             </xpath>
             <xpath expr="//page[@name='internal_notes']" position="after">
@@ -49,7 +55,9 @@
                 <field name="is_adresse"              optional="show"/>
                 <field name="is_localisation"         optional="show" />
                 <field name="is_centrale_id"          optional="show"  widget="many2one_clickable"/>
-                <field name="is_date_changement_etat" optional="show" />
+                <field name="is_date_changement_etat"    optional="show" />
+                <field name="is_date_premiere_reunion"   optional="show" />
+                <field name="is_delai_prise_en_compte"   optional="show" />
             </field>
             <field name="stage_id" position="after">
                 <field name="active"      optional="hide" />
@@ -77,6 +85,16 @@
                 <filter string="Changement d'état depuis 30 jours" name="state_change_last_30_days" domain="[('is_date_changement_etat', '&gt;=', (context_today() - datetime.timedelta(days=30)).strftime('%Y-%m-%d'))]"/>
             </xpath>
         </field>
+    </record>
+
+    <!-- Action serveur : recalculer première réunion -->
+    <record id="action_recalcul_premiere_reunion" model="ir.actions.server">
+        <field name="name">Recalculer première réunion</field>
+        <field name="model_id" ref="crm.model_crm_lead"/>
+        <field name="binding_model_id" ref="crm.model_crm_lead"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="state">code</field>
+        <field name="code">records.action_recalcul_premiere_reunion()</field>
     </record>
 
     <!-- Vues pour is.provenance.client -->

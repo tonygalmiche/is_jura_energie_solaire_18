@@ -14,7 +14,11 @@ class IsProvenanceClient(models.Model):
 
 class crm_lead(models.Model):
     _inherit = "crm.lead"
-    
+    _order = 'sequence, priority desc, id desc'
+
+    # Le champ doit s'appeler exactement "sequence" (DEFAULT_HANDLE_FIELD dans le JS Odoo 18)
+    # pour que le drag-and-drop vertical dans les colonnes kanban soit activé automatiquement.
+    sequence        = fields.Integer('Ordre', default=10)
     is_provenance_client_id = fields.Many2one('is.provenance.client', string="Provenance client", tracking=True)
     is_secteur      = fields.Selection(SECTEUR_SELECTION,string="Secteur",tracking=True)
     is_sous_secteur = fields.Selection([('chantier', 'Chantier'), ('sav', 'SAV')], string="Sous secteur", default='chantier', tracking=True)
@@ -22,6 +26,8 @@ class crm_lead(models.Model):
     is_localisation = fields.Char("Localisation", tracking=True)
     is_centrale_id  = fields.Many2one('is.centrale', string="Centrale", tracking=True)
     is_date_changement_etat = fields.Datetime("Date de dernier changement d'état", readonly=False, tracking=True)
+    is_date_premiere_reunion  = fields.Date("Date de première réunion", readonly=True, tracking=True)
+    is_delai_prise_en_compte  = fields.Integer("Délai de prise en compte de la demande (jours)", readonly=True, tracking=True)
     is_devis_signe_ids = fields.Many2many(
         'ir.attachment',
         'crm_lead_devis_signe_rel',
@@ -106,3 +112,24 @@ class crm_lead(models.Model):
             'view_mode': 'form',
             'views': [(False, 'form')],
         }
+
+    def action_recalcul_premiere_reunion(self):
+        """Action serveur : recalcule la date de première réunion et le délai pour les leads sélectionnés."""
+        for lead in self:
+            first_meeting = self.env['calendar.event'].search(
+                [('opportunity_id', '=', lead.id)],
+                order='start asc',
+                limit=1,
+            )
+            if first_meeting:
+                start_date = first_meeting.start.date()
+                delta = (start_date - lead.create_date.date()).days
+                lead.write({
+                    'is_date_premiere_reunion': start_date,
+                    'is_delai_prise_en_compte': delta,
+                })
+            else:
+                lead.write({
+                    'is_date_premiere_reunion': False,
+                    'is_delai_prise_en_compte': 0,
+                })

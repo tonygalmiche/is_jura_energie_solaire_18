@@ -44,3 +44,17 @@ class calendar_event(models.Model):
                 or rec.is_sav_id.centrale_id.localisation_google_maps_url
                 or False
             )
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        records = super().create(vals_list)
+        for rec in records:
+            lead = rec.opportunity_id
+            if lead and not lead.is_date_premiere_reunion and rec.start:
+                start_date = rec.start.date()
+                delta = (start_date - lead.create_date.date()).days
+                lead.write({
+                    'is_date_premiere_reunion': start_date,
+                    'is_delai_prise_en_compte': delta,
+                })
+        return records

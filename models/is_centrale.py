@@ -554,6 +554,7 @@ class IsCentrale(models.Model):
 
     # Onglet "DP/PC"
     is_afficher_administratif = fields.Boolean("Afficher l'administratif", default=True)
+    is_chantier_en_cours       = fields.Boolean("Chantier en cours", default=False)
     dp_etat = fields.Selection(
         [
             ('a_faire'   , 'A faire'),

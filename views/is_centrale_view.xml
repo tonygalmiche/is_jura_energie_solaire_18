@@ -132,6 +132,7 @@
                             <field name="puissance_panneau_totale"    invisible="secteur in ['th']"/>
                             <field name="puissance_onduleur_totale"   invisible="secteur in ['th']"/>
                             <field name="is_afficher_administratif" string="Afficher l’administratif" widget="boolean_toggle"/>
+                            <field name="is_chantier_en_cours" string="Chantier en cours" widget="boolean_toggle"/>
                         </group>
                     </group>
                     <notebook>
@@ -141,17 +142,6 @@
                                     <field name="client_id"/>
                                 </group>
                             </group>
-                            <!-- <group  invisible="not client_child_ids" string="Contacts">
-                                <field name="client_child_ids" nolabel="1">
-                                    <list>
-                                        <field name="name"     optional="show" string="Contact"/>
-                                        <field name="function" optional="show"/>
-                                        <field name="phone"    optional="show"/>
-                                        <field name="mobile"   optional="show"/>
-                                        <field name="email"    optional="show"/>
-                                    </list>
-                                </field>
-                            </group> -->
                             <group invisible="not is_client_contacts_html">
                                 <field name="is_client_contacts_html" nolabel="1" readonly="1"/>
                             </group>
@@ -174,6 +164,7 @@
                             </field>
                         </page>
                         <page string="DP/PC" invisible="not is_afficher_administratif">
+                            <field name="is_chantier_en_cours" string="Chantier en cours" widget="boolean_toggle"/>
                             <group>
                                 <group>
                                     <field name="dp_etat"/>
@@ -189,6 +180,7 @@
                             </group>
                         </page>
                         <page string="PTF" invisible="secteur in ['th'] or not is_afficher_administratif">
+                            <field name="is_chantier_en_cours" string="Chantier en cours" widget="boolean_toggle"/>
                             <group>
                                 <group>
                                     <field name="ptf_etat"/>
@@ -202,6 +194,7 @@
                             </group>
                         </page>
                         <page string="CRD" invisible="secteur in ['re','th'] or not is_afficher_administratif">
+                            <field name="is_chantier_en_cours" string="Chantier en cours" widget="boolean_toggle"/>
                             <group>
                                 <group>
                                     <field name="crd_etat"/>
@@ -217,6 +210,7 @@
                             </group>
                         </page>
                         <page string="CARD-I" invisible="secteur in ['re', 'th'] or loget == 'tarif_bleu' or not is_afficher_administratif">
+                            <field name="is_chantier_en_cours" string="Chantier en cours" widget="boolean_toggle"/>
                             <group>
                                 <group>
                                     <field name="cardi_etat"/>
@@ -236,6 +230,7 @@
 
                         </page>
                         <page string="Socotec" invisible="secteur in ['re', 'th'] or not is_afficher_administratif">
+                            <field name="is_chantier_en_cours" string="Chantier en cours" widget="boolean_toggle"/>
                             <group>
                                 <group>
                                     <field name="socotec_etat"/>
@@ -250,6 +245,7 @@
                             </group>
                         </page>
                         <page string="Consuel" invisible="secteur in ['th'] or not is_afficher_administratif">
+                            <field name="is_chantier_en_cours" string="Chantier en cours" widget="boolean_toggle"/>
                             <group>
                                 <group>
                                     <field name="consuel_etat"/>
@@ -265,6 +261,7 @@
                             </group>
                         </page>
                         <page string="Mise en service" invisible="secteur in ['th'] or not is_afficher_administratif">
+                            <field name="is_chantier_en_cours" string="Chantier en cours" widget="boolean_toggle"/>
                             <group>
                                 <group>
                                     <field name="mes_demande"/>
@@ -276,6 +273,7 @@
                             </group>
                         </page>
                         <page string="S21" invisible="secteur in ['re','th'] or not is_afficher_administratif">
+                            <field name="is_chantier_en_cours" string="Chantier en cours" widget="boolean_toggle"/>
                             <group>
                                 <group>
                                     <field name="s21_etat"/>
@@ -291,6 +289,7 @@
                             </group>
                         </page>
                         <page string="EDF AO" invisible="secteur in ['th'] or not is_afficher_administratif">
+                            <field name="is_chantier_en_cours" string="Chantier en cours" widget="boolean_toggle"/>
                             <group>
                                 <group>
                                     <field name="edf_identifiant"/>
@@ -617,6 +616,7 @@
                 <field name="das"/>
                 <field name="adresse"/>
                 <field name="client_id"/>
+                <filter string="Chantier en cours" name="chantier_en_cours" domain="[('is_chantier_en_cours', '=', True)]"/>
             </search>
         </field>
     </record>
@@ -625,6 +625,7 @@
         <field name="res_model">is.centrale</field>
         <field name="view_mode">list,form,kanban,activity</field>
         <field name="search_view_id" ref="view_is_centrale_search"/>
+        <field name="context">{"search_default_chantier_en_cours": 1}</field>
     </record>
 
     <!-- Action serveur pour afficher les centrales sur Google Maps -->
