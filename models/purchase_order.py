@@ -14,6 +14,56 @@ class PurchaseOrder(models.Model):
     is_centrale_id = fields.Many2one("is.centrale", string="Centrale", index=True)
     is_objet = fields.Char(string="Objet de la commande")
 
+    # --- Livraison ---
+    is_livraison_type = fields.Selection([
+        ('centrale', 'Centrale'),
+        ('societe',  'Société (nos bureaux)'),
+    ], string="Adresse de livraison", default='societe')
+
+    # Champ auxiliaire pour le domaine du contact (client de la centrale)
+    is_livraison_client_id = fields.Many2one(
+        'res.partner',
+        compute='_compute_livraison_client_id',
+        store=True,
+        string="Client (centrale livraison)",
+    )
+
+    is_livraison_contact_id = fields.Many2one(
+        'res.partner',
+        string="Contact de livraison",
+    )
+
+    is_livraison_adresse = fields.Char(
+        string="Adresse",
+        compute='_compute_livraison_adresse',
+    )
+
+    @api.depends('is_livraison_type', 'is_centrale_id', 'company_id')
+    def _compute_livraison_adresse(self):
+        for rec in self:
+            if rec.is_livraison_type == 'centrale' and rec.is_centrale_id:
+                rec.is_livraison_adresse = rec.is_centrale_id.adresse or ''
+            elif rec.is_livraison_type == 'societe':
+                company = rec.company_id
+                parts = [p for p in [company.street, company.zip, company.city] if p]
+                rec.is_livraison_adresse = ', '.join(parts)
+            else:
+                rec.is_livraison_adresse = ''
+
+    @api.depends('is_centrale_id')
+    def _compute_livraison_client_id(self):
+        for rec in self:
+            rec.is_livraison_client_id = rec.is_centrale_id.client_id if rec.is_centrale_id else False
+
+    @api.onchange('is_livraison_type')
+    def _onchange_livraison_type(self):
+        if self.is_livraison_type != 'centrale':
+            self.is_livraison_contact_id = False
+
+    @api.onchange('is_centrale_id')
+    def _onchange_centrale_id_livraison(self):
+        self.is_livraison_contact_id = False
+
     # Redéfinition pour forcer l'affichage de toutes les colonnes kanban (sauf cancel)
     # et pour ajouter l'état "Livré"
     state = fields.Selection(
@@ -48,7 +98,7 @@ class PurchaseOrder(models.Model):
         pdf_content, _content_type = report._render_qweb_pdf(report.id, [self.id])
 
         # 2. Lire le PDF de fond (une page)
-        bg_reader = PdfReader(io.BytesIO(base64.b64decode(bg_pdf_data)))
+        bg_reader = PdfReader(io.BytesIO(base64.b64decode(bg_pdf_data)), strict=False)
         bg_page = bg_reader.pages[0]
 
         # 3. Fusionner : fond en arrière-plan de chaque page

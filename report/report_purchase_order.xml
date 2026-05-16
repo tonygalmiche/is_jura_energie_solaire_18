@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Personnalisation du bon de commande d'achat PDF :
+         - Numéro de commande + Objet affiché à droite de l'Acheteur
+         - Colonne "Arrivée prévue" supprimée
+         - Titre principal sans le numéro de commande -->
+
+    <template id="report_purchaseorder_document_jes"
+              inherit_id="purchase.report_purchaseorder_document">
+
+        <!-- 1. Simplifier le titre : enlever le numéro de commande -->
+        <xpath expr="//div[hasclass('mt-4')]" position="replace">
+            <div class="mt-4">
+                <t t-set="layout_document_title">
+                    <t t-if="o.state in ['draft', 'sent', 'to approve']">Demande de prix</t>
+                    <t t-if="o.state in ['purchase', 'done']">Bon de commande</t>
+                    <t t-if="o.state == 'cancel'">Bon de commande annulé</t>
+                </t>
+            </div>
+        </xpath>
+
+        <!-- 2. Ajouter le numéro de commande + Objet à droite de l'Acheteur -->
+        <xpath expr="//div[@id='informations']/div[@t-if='o.user_id']" position="after">
+            <div class="col">
+                <strong t-if="o.state in ['draft', 'sent', 'to approve']">Demande de prix</strong>
+                <strong t-if="o.state in ['purchase', 'done', 'cancel']">Bon de commande</strong>
+                <div>
+                    <span t-field="o.name"/>
+                    <t t-if="o.is_objet"> / <span t-field="o.is_objet"/></t>
+                </div>
+            </div>
+        </xpath>
+
+        <!-- 3. Supprimer la colonne "Arrivée prévue" -->
+        <xpath expr="//div[@id='informations']/div[@t-if='o.date_planned']" position="replace"/>
+
+        <!-- 4. Supprimer les modalités de paiement en bas du PDF -->
+        <xpath expr="//div[hasclass('page')]/strong" position="replace"/>
+        <xpath expr="//span[@t-field='o.payment_term_id']" position="replace"/>
+
+        <!-- 5. Adresse de livraison à gauche du fournisseur (information_block) -->
+        <xpath expr="//t[@t-if='o.dest_address_id']" position="replace">
+            <t t-set="information_block">
+                <div style="border: 1px solid #000; padding: 6px 8px;">
+                    <strong class="d-block">Information livraison :</strong>
+                    <!-- Livraison sur une centrale -->
+                    <t t-if="o.is_livraison_type == 'centrale' and o.is_centrale_id">
+                        <div>
+                            <span t-out="o.is_centrale_id.name"/>
+                        </div>
+                        <div t-if="o.is_centrale_id.adresse">
+                            <span t-out="o.is_centrale_id.adresse"/>
+                        </div>
+                        <div t-if="o.is_livraison_contact_id" class="mt-2">
+                            <t t-set="tel" t-value="o.is_livraison_contact_id.phone or o.is_livraison_contact_id.mobile"/>
+                            <strong>Contact :</strong>
+                            <span t-out="o.is_livraison_contact_id.name"/>
+                            <t t-if="tel"> (<span t-out="tel"/>)</t>
+                        </div>
+                    </t>
+                    <!-- Livraison à nos bureaux -->
+                    <t t-elif="o.is_livraison_type == 'societe'">
+                        <div t-field="o.company_id.partner_id"
+                             t-options='{"widget": "contact", "fields": ["name", "address", "phone"], "no_marker": true, "phone_icons": true}'/>
+                    </t>
+                </div>
+            </t>
+        </xpath>
+
+    </template>
+
+</odoo>

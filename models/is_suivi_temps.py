@@ -429,17 +429,21 @@ class IsSuiviTempsSaisie(models.Model):
                 record.temps_presence = 0.0
                 record.temps_travail = 0.0
 
-    @api.depends('utilisateur_id', 'temps_travail')
+    @api.depends('utilisateur_id', 'temps_travail', 'ligne_ids.type_travail', 'ligne_ids.conge_type_id')
     def _compute_name(self):
         for record in self:
             user = record.utilisateur_id.name or ''
+            heures_str = ''
             if record.temps_travail:
                 h = int(record.temps_travail)
                 m = int(round((record.temps_travail - h) * 60))
                 heures = f"{h}h{m:02d}" if m else f"{h}h"
-                record.name = f"{user} ({heures})"
-            else:
-                record.name = user
+                heures_str = f" ({heures})"
+            conge_types = record.ligne_ids.filtered(
+                lambda l: l.type_travail == 'absence' and l.conge_type_id
+            ).mapped('conge_type_id.name')
+            conge_str = f"({', '.join(conge_types)})" if conge_types else ''
+            record.name = f"{user}{heures_str}{conge_str}"
 
     def write(self, vals):
         # Gestion du drag & drop depuis le calendrier (date_debut / date_fin modifiés)

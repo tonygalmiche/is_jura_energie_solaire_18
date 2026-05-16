@@ -218,7 +218,8 @@
         <field name="model">is.suivi.temps.saisie</field>
         <field name="arch" type="xml">
             <list string="Saisie du temps">
-                <field name="utilisateur_id" optional="show"/>
+                <field name="name" optional="show"/>
+                <field name="utilisateur_id" optional="hide"/>
                 <field name="date" optional="show"/>
                 <field name="heure_debut" widget="float_time" optional="show"/>
                 <field name="heure_fin" widget="float_time" optional="show"/>
@@ -290,6 +291,19 @@
             <p class="o_view_nocontent_smiling_face">
                 Créer une nouvelle saisie de temps
             </p>
+        </field>
+    </record>
+
+    <!-- Action serveur : recalculer le nom des saisies -->
+    <record id="action_server_recalculer_name_saisie" model="ir.actions.server">
+        <field name="name">Recalculer le nom</field>
+        <field name="model_id" ref="is_jura_energie_solaire_18.model_is_suivi_temps_saisie"/>
+        <field name="binding_model_id" ref="is_jura_energie_solaire_18.model_is_suivi_temps_saisie"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="state">code</field>
+        <field name="code">
+saisies = records if records else env['is.suivi.temps.saisie'].search([])
+saisies._compute_name()
         </field>
     </record>
 

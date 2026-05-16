@@ -55,6 +55,17 @@
             <xpath expr="//field[@name='partner_ref']" position="after">
                 <field name="is_centrale_id"/>
             </xpath>
+
+            <!-- Champs Livraison -->
+            <xpath expr="//field[@name='is_objet']" position="after">
+                <field name="is_livraison_type"/>
+                <field name="is_livraison_adresse" readonly="1"/>
+                <field name="is_livraison_contact_id"
+                       invisible="is_livraison_type != 'centrale'"
+                       domain="[('parent_id', '=', is_livraison_client_id)]"
+                       string="Contact de livraison"/>
+                <field name="is_livraison_client_id" invisible="1"/>
+            </xpath>
             <!-- Champ Centrale dans les lignes -->
             <xpath expr="//field[@name='order_line']/list/field[@name='product_qty']" position="before">
                 <field name="is_centrale_id" optional="show" widget="many2one_clickable"/>
