@@ -625,7 +625,8 @@
         <field name="res_model">is.centrale</field>
         <field name="view_mode">list,form,kanban,activity</field>
         <field name="search_view_id" ref="view_is_centrale_search"/>
-        <field name="context">{"search_default_chantier_en_cours": 1}</field>
+        <field name="context">{}</field>
+        <!-- <field name="context">{"search_default_chantier_en_cours": 1}</field> -->
     </record>
 
     <!-- Action serveur pour afficher les centrales sur Google Maps -->
