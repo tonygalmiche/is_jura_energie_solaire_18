@@ -382,7 +382,7 @@ class IsSuiviTempsSaisie(models.Model):
                 res['temps_pose'] = horaires['temps_pose']
         else:
             horaires = self._get_horaires_from_calendar(user_id, date)
-            if 'temps_pose' in fields_list:
+            if horaires and 'temps_pose' in fields_list:
                 res['temps_pose'] = horaires['temps_pose']
 
         # Pré-remplir les lignes à partir du jour précédent (sauf si lundi)
@@ -399,9 +399,10 @@ class IsSuiviTempsSaisie(models.Model):
             horaires = self._get_horaires_from_calendar(self.utilisateur_id.id, self.date)
             
             # Mettre à jour les champs
-            self.heure_debut = horaires['heure_debut']
-            self.heure_fin = horaires['heure_fin']
-            self.temps_pose = horaires['temps_pose']
+            if horaires:
+                self.heure_debut = horaires['heure_debut']
+                self.heure_fin = horaires['heure_fin']
+                self.temps_pose = horaires['temps_pose']
             
             # Recharger les lignes à partir du jour précédent (sauf si lundi)
             # On recharge toujours si le formulaire est nouveau (pas d'id)
