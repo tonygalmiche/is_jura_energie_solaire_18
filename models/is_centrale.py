@@ -1158,7 +1158,7 @@ class IsCentrale(models.Model):
                     'product_id': line.panneau_id.id,
                     'name': line.panneau_id.display_name,
                     'product_qty': line.quantite,
-                    'price_unit': 0,
+                    'price_unit': line.panneau_id.standard_price,
                     'is_centrale_id': self.id,
                 })
 
@@ -1174,7 +1174,7 @@ class IsCentrale(models.Model):
                     'product_id': line.systeme_integration_id.id,
                     'name': line.systeme_integration_id.display_name,
                     'product_qty': line.quantite,
-                    'price_unit': 0,
+                    'price_unit': line.systeme_integration_id.standard_price,
                     'is_centrale_id': self.id,
                 })
 
@@ -1190,7 +1190,7 @@ class IsCentrale(models.Model):
                     'product_id': line.onduleur_id.id,
                     'name': line.onduleur_id.display_name,
                     'product_qty': line.quantite,
-                    'price_unit': 0,
+                    'price_unit': line.onduleur_id.standard_price,
                     'is_centrale_id': self.id,
                 })
 
@@ -1206,7 +1206,7 @@ class IsCentrale(models.Model):
                     'product_id': line.produit_id.id,
                     'name': line.produit_id.display_name,
                     'product_qty': line.quantite,
-                    'price_unit': 0,
+                    'price_unit': line.produit_id.standard_price,
                     'is_centrale_id': self.id,
                 })
 
@@ -1222,7 +1222,7 @@ class IsCentrale(models.Model):
                     'product_id': line.optimiseur_id.id,
                     'name': line.optimiseur_id.display_name,
                     'product_qty': line.quantite,
-                    'price_unit': 0,
+                    'price_unit': line.optimiseur_id.standard_price,
                     'is_centrale_id': self.id,
                 })
 
@@ -1238,7 +1238,7 @@ class IsCentrale(models.Model):
                     'product_id': line.coffret_id.id,
                     'name': line.coffret_id.display_name,
                     'product_qty': line.quantite,
-                    'price_unit': 0,
+                    'price_unit': line.coffret_id.standard_price,
                     'is_centrale_id': self.id,
                 })
 
@@ -1254,7 +1254,7 @@ class IsCentrale(models.Model):
                     'product_id': line.type_cable_id.id,
                     'name': line.type_cable_id.display_name,
                     'product_qty': line.longueur,
-                    'price_unit': 0,
+                    'price_unit': line.type_cable_id.standard_price,
                     'is_centrale_id': self.id,
                 })
 
@@ -1270,7 +1270,7 @@ class IsCentrale(models.Model):
                     'product_id': line.produit_id.id,
                     'name': line.produit_id.display_name,
                     'product_qty': line.quantite,
-                    'price_unit': 0,
+                    'price_unit': line.produit_id.standard_price,
                     'is_centrale_id': self.id,
                 })
 
