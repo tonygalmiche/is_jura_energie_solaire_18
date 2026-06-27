@@ -189,22 +189,30 @@
 
                 <!-- Tarification -->
                 <div class="section-title">Tarification</div>
-                <table class="info-table">
-                    <tr t-if="o.affaire_id">
-                        <td class="info-label">Affaire :</td>
-                        <td><span t-field="o.affaire_id.name"/></td>
+                <table class="info-table" style="border-collapse: collapse;">
+                    <tr t-if="o.affaire_id" style="border-bottom: 1px solid #ccc;">
+                        <td class="info-label" style="padding: 3px 5px;">Affaire :</td>
+                        <td style="padding: 3px 5px;"><span t-field="o.affaire_id.name"/></td>
                     </tr>
-                    <tr t-if="o.affaire_formule_id">
-                        <td class="info-label">Formule appliquée :</td>
-                        <td><span t-field="o.affaire_formule_id.limite_kwc"/> kWc</td>
+                    <tr t-if="o.affaire_formule_id" style="border-bottom: 1px solid #ccc;">
+                        <td class="info-label" style="padding: 3px 5px;">Formule appliquée :</td>
+                        <td style="padding: 3px 5px;"><span t-field="o.affaire_formule_id.limite_kwc"/> kWc</td>
                     </tr>
-                    <tr>
-                        <td class="info-label">Tarif :</td>
-                        <td><span t-field="o.affaire_euro_par_kwc"/> €/kWc</td>
+                    <tr style="border-bottom: 1px solid #ccc;">
+                        <td class="info-label" style="padding: 3px 5px;">Tarif :</td>
+                        <td style="padding: 3px 5px;"><span t-field="o.affaire_euro_par_kwc"/> €/kWc</td>
                     </tr>
-                    <tr>
-                        <td class="info-label"><strong>Montant annuel de la maintenance :</strong></td>
-                        <td><strong><span t-field="o.montant_maintenance" t-options='{"widget": "monetary", "display_currency": company.currency_id}'/></strong></td>
+                    <tr style="border-bottom: 1px solid #ccc;">
+                        <td class="info-label" style="padding: 3px 5px;">Montant annuel HT :</td>
+                        <td style="padding: 3px 5px;"><span t-field="o.montant_maintenance_applique" t-options='{"widget": "monetary", "display_currency": company.currency_id}'/></td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #ccc;">
+                        <td class="info-label" style="padding: 3px 5px;">TVA<t t-if="o.tva_id"> (<span t-field="o.tva_id.name"/>)</t> :</td>
+                        <td style="padding: 3px 5px;"><span t-field="o.montant_tva" t-options='{"widget": "monetary", "display_currency": company.currency_id}'/></td>
+                    </tr>
+                    <tr style="border-bottom: 2px solid #000;">
+                        <td class="info-label" style="padding: 3px 5px;"><strong>Montant annuel TTC :</strong></td>
+                        <td style="padding: 3px 5px;"><strong><span t-field="o.montant_maintenance_ttc" t-options='{"widget": "monetary", "display_currency": company.currency_id}'/></strong></td>
                     </tr>
                 </table>
 

@@ -96,7 +96,7 @@
         <field name="arch" type="xml">
             <form>
                 <header>
-                    <button name="action_print_contrat_maintenance" string="Contrat de Maintenance" type="object" class="oe_highlight" invisible="secteur != 'gp'"/>
+                    <button name="action_print_contrat_maintenance" string="Contrat de Maintenance" type="object" class="oe_highlight" invisible="secteur != 'gp'" icon="fa-print"/>
                 </header>
                 <style>
                     .o_form_view .o_form_sheet_bg > .o_form_sheet{
@@ -479,6 +479,9 @@
                                     <field name="affaire_euro_par_kwc"/>
                                     <field name="montant_maintenance"/>
                                     <field name="montant_maintenance_applique"/>
+                                    <field name="tva_id"/>
+                                    <field name="montant_tva"/>
+                                    <field name="montant_maintenance_ttc"/>
                                 </group>
                              </group>
                              <group>

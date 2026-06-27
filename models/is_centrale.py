@@ -502,10 +502,32 @@ class IsCentrale(models.Model):
         store=True,
     )
     montant_maintenance_applique = fields.Float(
-        string="Montant maintenance appliqué",
+        string="Montant maintenance appliqué (HT)",
         compute="_compute_montant_maintenance_applique",
         store=True,
         readonly=False,
+    )
+    tva_id = fields.Many2one(
+        'account.tax',
+        string="TVA",
+        domain=[('type_tax_use', '=', 'sale')],
+        default=lambda self: self.env['account.tax'].search([
+            ('type_tax_use', '=', 'sale'),
+            ('amount', '=', 20.0),
+            ('amount_type', '=', 'percent'),
+        ], limit=1),
+    )
+    montant_tva = fields.Float(
+        string="Montant TVA",
+        compute="_compute_montant_ttc",
+        store=True,
+        digits=(10, 2),
+    )
+    montant_maintenance_ttc = fields.Float(
+        string="Montant TTC",
+        compute="_compute_montant_ttc",
+        store=True,
+        digits=(10, 2),
     )
     maintenance_statut = fields.Selection(
         [
@@ -780,6 +802,14 @@ class IsCentrale(models.Model):
         for record in self:
             if not record.montant_maintenance_applique:
                 record.montant_maintenance_applique = record.montant_maintenance
+
+    @api.depends('montant_maintenance_applique', 'tva_id', 'tva_id.amount')
+    def _compute_montant_ttc(self):
+        for record in self:
+            taux = record.tva_id.amount if record.tva_id and record.tva_id.amount_type == 'percent' else 0.0
+            montant_tva = record.montant_maintenance_applique * taux / 100
+            record.montant_tva = montant_tva
+            record.montant_maintenance_ttc = record.montant_maintenance_applique + montant_tva
 
     @api.depends('onduleur_ids.puissance_totale', 'bridage_onduleur')
     def _compute_puissance_onduleur_totale(self):
