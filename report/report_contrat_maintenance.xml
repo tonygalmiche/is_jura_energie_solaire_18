@@ -200,7 +200,7 @@
                     </tr>
                     <tr style="border-bottom: 1px solid #ccc;">
                         <td class="info-label" style="padding: 3px 5px;">Tarif :</td>
-                        <td style="padding: 3px 5px;"><span t-field="o.affaire_euro_par_kwc"/> €/kWc</td>
+                        <td style="padding: 3px 5px;"><span t-field="o.affaire_euro_par_kwc_applique"/> €/kWc</td>
                     </tr>
                     <tr style="border-bottom: 1px solid #ccc;">
                         <td class="info-label" style="padding: 3px 5px;">Montant annuel HT :</td>

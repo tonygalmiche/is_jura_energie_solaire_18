@@ -507,6 +507,12 @@ class IsCentrale(models.Model):
         store=True,
         readonly=False,
     )
+    affaire_euro_par_kwc_applique = fields.Float(
+        string="€/kWc appliqué",
+        compute="_compute_affaire_euro_par_kwc_applique",
+        store=True,
+        digits=(16, 2),
+    )
     tva_id = fields.Many2one(
         'account.tax',
         string="TVA",
@@ -802,6 +808,14 @@ class IsCentrale(models.Model):
         for record in self:
             if not record.montant_maintenance_applique:
                 record.montant_maintenance_applique = record.montant_maintenance
+
+    @api.depends('montant_maintenance_applique', 'puissance_panneau_totale')
+    def _compute_affaire_euro_par_kwc_applique(self):
+        for record in self:
+            if record.puissance_panneau_totale:
+                record.affaire_euro_par_kwc_applique = round(record.montant_maintenance_applique / record.puissance_panneau_totale, 2)
+            else:
+                record.affaire_euro_par_kwc_applique = 0.0
 
     @api.depends('montant_maintenance_applique', 'tva_id', 'tva_id.amount')
     def _compute_montant_ttc(self):

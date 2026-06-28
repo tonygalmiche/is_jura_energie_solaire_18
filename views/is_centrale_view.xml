@@ -479,6 +479,7 @@
                                     <field name="affaire_euro_par_kwc"/>
                                     <field name="montant_maintenance"/>
                                     <field name="montant_maintenance_applique"/>
+                                    <field name="affaire_euro_par_kwc_applique"/>
                                     <field name="tva_id"/>
                                     <field name="montant_tva"/>
                                     <field name="montant_maintenance_ttc"/>
