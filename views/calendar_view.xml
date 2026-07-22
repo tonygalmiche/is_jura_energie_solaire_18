@@ -107,50 +107,188 @@
         </field>
     </record>
 
+    <!-- Vue Gantt (exemple) : planning par équipe des centrales GP -->
+    <record id="is_view_gantt_calendar_centrale" model="ir.ui.view">
+        <field name="name">is.view.gantt.calendar.centrale</field>
+        <field name="model">calendar.event</field>
+        <field name="arch" type="xml">
+            <gantt date_start="start" date_stop="stop" color="is_equipe_id" default_scale="week" default_group_by="is_equipe_id" column_count="25">
+                <field name="is_centrale_id" string="Chantier" width="200"/>
+                <field name="is_client_id" string="Client" width="200"/>
+                <field name="is_centrale_secteur" string="Secteur" width="60"/>
+            </gantt>
+        </field>
+    </record>
+
     <!-- Actions calendrier filtrées par secteur centrale -->
     <record id="is_calendar_centrale_gp_action" model="ir.actions.act_window">
         <field name="name">Calendrier Centrales GP</field>
         <field name="res_model">calendar.event</field>
-        <field name="view_mode">calendar,list,form</field>
-        <field name="view_id" ref="is_view_calendar_centrale"/>
+        <field name="view_mode">gantt,calendar,list,form</field>
         <field name="search_view_id" ref="is_view_calendar_event_search"/>
         <field name="context">{'search_default_filter_centrale_gp': 1}</field>
+    </record>
+
+    <record id="is_calendar_centrale_gp_action_view_gantt" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">gantt</field>
+        <field name="view_id" ref="is_view_gantt_calendar_centrale"/>
+        <field name="act_window_id" ref="is_calendar_centrale_gp_action"/>
+    </record>
+
+    <record id="is_calendar_centrale_gp_action_view_calendar" model="ir.actions.act_window.view">
+        <field name="sequence" eval="2"/>
+        <field name="view_mode">calendar</field>
+        <field name="view_id" ref="is_view_calendar_centrale"/>
+        <field name="act_window_id" ref="is_calendar_centrale_gp_action"/>
+    </record>
+
+    <record id="is_calendar_centrale_gp_action_view_list" model="ir.actions.act_window.view">
+        <field name="sequence" eval="3"/>
+        <field name="view_mode">list</field>
+        <field name="act_window_id" ref="is_calendar_centrale_gp_action"/>
+    </record>
+
+    <record id="is_calendar_centrale_gp_action_view_form" model="ir.actions.act_window.view">
+        <field name="sequence" eval="4"/>
+        <field name="view_mode">form</field>
+        <field name="act_window_id" ref="is_calendar_centrale_gp_action"/>
     </record>
 
     <record id="is_calendar_centrale_re_action" model="ir.actions.act_window">
         <field name="name">Calendrier Centrales RE</field>
         <field name="res_model">calendar.event</field>
-        <field name="view_mode">calendar,list,form</field>
-        <field name="view_id" ref="is_view_calendar_centrale"/>
+        <field name="view_mode">gantt,calendar,list,form</field>
         <field name="search_view_id" ref="is_view_calendar_event_search"/>
         <field name="context">{'search_default_filter_centrale_re': 1}</field>
+    </record>
+
+    <record id="is_calendar_centrale_re_action_view_gantt" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">gantt</field>
+        <field name="view_id" ref="is_view_gantt_calendar_centrale"/>
+        <field name="act_window_id" ref="is_calendar_centrale_re_action"/>
+    </record>
+
+    <record id="is_calendar_centrale_re_action_view_calendar" model="ir.actions.act_window.view">
+        <field name="sequence" eval="2"/>
+        <field name="view_mode">calendar</field>
+        <field name="view_id" ref="is_view_calendar_centrale"/>
+        <field name="act_window_id" ref="is_calendar_centrale_re_action"/>
+    </record>
+
+    <record id="is_calendar_centrale_re_action_view_list" model="ir.actions.act_window.view">
+        <field name="sequence" eval="3"/>
+        <field name="view_mode">list</field>
+        <field name="act_window_id" ref="is_calendar_centrale_re_action"/>
+    </record>
+
+    <record id="is_calendar_centrale_re_action_view_form" model="ir.actions.act_window.view">
+        <field name="sequence" eval="4"/>
+        <field name="view_mode">form</field>
+        <field name="act_window_id" ref="is_calendar_centrale_re_action"/>
     </record>
 
     <record id="is_calendar_centrale_th_action" model="ir.actions.act_window">
         <field name="name">Calendrier Centrales TH</field>
         <field name="res_model">calendar.event</field>
-        <field name="view_mode">calendar,list,form</field>
-        <field name="view_id" ref="is_view_calendar_centrale"/>
+        <field name="view_mode">gantt,calendar,list,form</field>
         <field name="search_view_id" ref="is_view_calendar_event_search"/>
         <field name="context">{'search_default_filter_centrale_th': 1}</field>
+    </record>
+
+    <record id="is_calendar_centrale_th_action_view_gantt" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">gantt</field>
+        <field name="view_id" ref="is_view_gantt_calendar_centrale"/>
+        <field name="act_window_id" ref="is_calendar_centrale_th_action"/>
+    </record>
+
+    <record id="is_calendar_centrale_th_action_view_calendar" model="ir.actions.act_window.view">
+        <field name="sequence" eval="2"/>
+        <field name="view_mode">calendar</field>
+        <field name="view_id" ref="is_view_calendar_centrale"/>
+        <field name="act_window_id" ref="is_calendar_centrale_th_action"/>
+    </record>
+
+    <record id="is_calendar_centrale_th_action_view_list" model="ir.actions.act_window.view">
+        <field name="sequence" eval="3"/>
+        <field name="view_mode">list</field>
+        <field name="act_window_id" ref="is_calendar_centrale_th_action"/>
+    </record>
+
+    <record id="is_calendar_centrale_th_action_view_form" model="ir.actions.act_window.view">
+        <field name="sequence" eval="4"/>
+        <field name="view_mode">form</field>
+        <field name="act_window_id" ref="is_calendar_centrale_th_action"/>
     </record>
 
     <record id="is_calendar_centrale_si_action" model="ir.actions.act_window">
         <field name="name">Calendrier Centrales SI</field>
         <field name="res_model">calendar.event</field>
-        <field name="view_mode">calendar,list,form</field>
-        <field name="view_id" ref="is_view_calendar_centrale"/>
+        <field name="view_mode">gantt,calendar,list,form</field>
         <field name="search_view_id" ref="is_view_calendar_event_search"/>
         <field name="context">{'search_default_filter_centrale_si': 1}</field>
+    </record>
+
+    <record id="is_calendar_centrale_si_action_view_gantt" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">gantt</field>
+        <field name="view_id" ref="is_view_gantt_calendar_centrale"/>
+        <field name="act_window_id" ref="is_calendar_centrale_si_action"/>
+    </record>
+
+    <record id="is_calendar_centrale_si_action_view_calendar" model="ir.actions.act_window.view">
+        <field name="sequence" eval="2"/>
+        <field name="view_mode">calendar</field>
+        <field name="view_id" ref="is_view_calendar_centrale"/>
+        <field name="act_window_id" ref="is_calendar_centrale_si_action"/>
+    </record>
+
+    <record id="is_calendar_centrale_si_action_view_list" model="ir.actions.act_window.view">
+        <field name="sequence" eval="3"/>
+        <field name="view_mode">list</field>
+        <field name="act_window_id" ref="is_calendar_centrale_si_action"/>
+    </record>
+
+    <record id="is_calendar_centrale_si_action_view_form" model="ir.actions.act_window.view">
+        <field name="sequence" eval="4"/>
+        <field name="view_mode">form</field>
+        <field name="act_window_id" ref="is_calendar_centrale_si_action"/>
     </record>
 
     <record id="is_calendar_centrale_irve_action" model="ir.actions.act_window">
         <field name="name">Calendrier Centrales IRVE</field>
         <field name="res_model">calendar.event</field>
-        <field name="view_mode">calendar,list,form</field>
-        <field name="view_id" ref="is_view_calendar_centrale"/>
+        <field name="view_mode">gantt,calendar,list,form</field>
         <field name="search_view_id" ref="is_view_calendar_event_search"/>
         <field name="context">{'search_default_filter_centrale_irve': 1}</field>
+    </record>
+
+    <record id="is_calendar_centrale_irve_action_view_gantt" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">gantt</field>
+        <field name="view_id" ref="is_view_gantt_calendar_centrale"/>
+        <field name="act_window_id" ref="is_calendar_centrale_irve_action"/>
+    </record>
+
+    <record id="is_calendar_centrale_irve_action_view_calendar" model="ir.actions.act_window.view">
+        <field name="sequence" eval="2"/>
+        <field name="view_mode">calendar</field>
+        <field name="view_id" ref="is_view_calendar_centrale"/>
+        <field name="act_window_id" ref="is_calendar_centrale_irve_action"/>
+    </record>
+
+    <record id="is_calendar_centrale_irve_action_view_list" model="ir.actions.act_window.view">
+        <field name="sequence" eval="3"/>
+        <field name="view_mode">list</field>
+        <field name="act_window_id" ref="is_calendar_centrale_irve_action"/>
+    </record>
+
+    <record id="is_calendar_centrale_irve_action_view_form" model="ir.actions.act_window.view">
+        <field name="sequence" eval="4"/>
+        <field name="view_mode">form</field>
+        <field name="act_window_id" ref="is_calendar_centrale_irve_action"/>
     </record>
 
     <!-- Vue calendrier SAV/Maintenance : js_class standard + quick_create désactivé -->
