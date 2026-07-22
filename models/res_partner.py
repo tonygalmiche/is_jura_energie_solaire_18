@@ -26,10 +26,14 @@ class ResPartner(models.Model):
     is_forme_juridique_id = fields.Many2one('is.forme.juridique', string="Forme juridique")
     is_contacts_html = fields.Html(compute='_compute_contacts_html', store=False, string="Tableau des contacts")
 
-    @api.depends('child_ids.name', 'child_ids.function', 'child_ids.phone', 'child_ids.mobile', 'child_ids.email')
+    @api.depends(
+        'name', 'phone', 'mobile', 'email',
+        'child_ids.name', 'child_ids.function', 'child_ids.phone', 'child_ids.mobile', 'child_ids.email',
+    )
     def _compute_contacts_html(self):
         for partner in self:
-            contacts = partner.child_ids
+            company_has_info = bool(partner.phone or partner.mobile or partner.email)
+            contacts = (partner if company_has_info else partner.browse()) + partner.child_ids
             if contacts:
                 def get_tel(child):
                     return child.mobile or child.phone or ''
@@ -46,9 +50,9 @@ class ResPartner(models.Model):
                     for key, label, getter in columns
                     if any(getter(c) for c in contacts)
                 ]
-                header = ''.join(f'<th style="white-space:nowrap">{label}</th>' for _, label, _ in visible_cols)
+                header = ''.join(f'<th style="white-space:nowrap;padding-left:8px;padding-right:8px">{label}</th>' for _, label, _ in visible_cols)
                 rows = ''.join(
-                    '<tr>' + ''.join(f'<td>{getter(child)}</td>' for _, _, getter in visible_cols) + '</tr>'
+                    '<tr>' + ''.join(f'<td style="padding-left:8px;padding-right:8px">{getter(child)}</td>' for _, _, getter in visible_cols) + '</tr>'
                     for child in contacts
                 )
                 partner.is_contacts_html = (

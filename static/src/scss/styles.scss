@@ -38,6 +38,13 @@
 }
 
 
+// N'affiche que le bouton d'ajout du widget d'upload de photos (many2many_binary),
+// la liste des fichiers déjà attachés est masquée (la galerie ci-dessous suffit)
+.is_photo_upload .o_attachments {
+    display: none;
+}
+
+
 // Styles pour les couleurs d'alerte de maintenance dans le kanban
 .o_kanban_view .oe_kanban_card {
     &.oe_kanban_color_3 {

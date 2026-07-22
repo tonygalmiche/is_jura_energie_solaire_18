@@ -143,6 +143,17 @@ class PurchaseOrderLine(models.Model):
 
     is_centrale_id = fields.Many2one("is.centrale", string="Centrale", index=True)
     date_order = fields.Datetime(related="order_id.date_order", string="Date commande", store=True)
+    is_price_subtotal_actif = fields.Monetary(
+        string="Montant",
+        compute='_compute_is_price_subtotal_actif',
+        currency_field='currency_id',
+        store=True,
+    )
+
+    @api.depends('price_subtotal', 'state')
+    def _compute_is_price_subtotal_actif(self):
+        for line in self:
+            line.is_price_subtotal_actif = 0 if line.state == 'cancel' else line.price_subtotal
 
     @api.onchange('product_id')
     def _onchange_product_id_set_centrale(self):

@@ -303,7 +303,7 @@
                                 <field name="edf_informations"/>                            
                             </group>
                         </page>
-                        <page string="Informations techniques" invisible="secteur in ['th']">
+                        <page string="Infos techniques" invisible="secteur in ['th']">
                             <group string="Informations techniques">
                                 <group>
                                     <field name="type_communication"/>
@@ -565,10 +565,62 @@
                                     <field name="date_planned" string="Date prévue"/>
                                     <field name="product_qty" string="Quantité"/>
                                     <field name="price_unit" string="Prix"/>
-                                    <field name="price_subtotal" string="Montant" sum="Total"/>
-                                    <field name="state"/>
+                                    <field name="is_price_subtotal_actif" string="Montant" sum="Total"/>
+                                    <field name="state" widget="badge"
+                                        decoration-info="state in ('draft','sent','to approve')"
+                                        decoration-warning="state == 'purchase'"
+                                        decoration-success="state in ('livre','done')"
+                                        decoration-danger="state == 'cancel'"
+                                    />
                                     <field name="currency_id" column_invisible="1"/>
                                 </list>
+                            </field>
+                        </page>
+                        <page string="Photos">
+                            <!--
+                                Galerie de photos (champ photo_ids, many2many vers ir.attachment).
+                                Le champ est affiché deux fois avec deux rôles différents :
+
+                                1) Bouton d'ajout uniquement (widget many2many_binary) :
+                                   - permet d'ouvrir directement l'explorateur de fichiers de
+                                     l'ordinateur (clic → sélection → upload), comme demandé.
+                                   - sa liste de fichiers déjà attachés (affichée par défaut par
+                                     ce widget) est masquée en CSS via la classe "is_photo_upload"
+                                     (règle ".is_photo_upload .o_attachments" dans styles.scss),
+                                     car elle faisait doublon avec la galerie ci-dessous et
+                                     prenait trop de place.
+
+                                2) Galerie kanban en lecture avec vraies vignettes :
+                                   - widget="image" sur le champ "datas" pour afficher la photo
+                                     réelle (et non une icône générique de type de fichier).
+                                   - options="{'link': False, 'create': False}" + kanban
+                                     create="false" : masque le bouton "Ajouter" propre au
+                                     kanban x2many (pour un many2many, c'est l'action "link" qui
+                                     contrôle ce bouton, pas "create" seul).
+                                   - le clic sur l'image ouvre /web/image/<id> dans un nouvel
+                                     onglet (photo en grand) au lieu d'ouvrir la fiche de
+                                     l'ir.attachment (peu utile pour l'utilisateur).
+                                   - une croix rouge (<a type="delete">) en haut à droite de
+                                     chaque vignette permet de retirer la photo de la galerie
+                                     (unlink du many2many, ne supprime pas l'attachment).
+                            -->
+                            <field name="photo_ids" nolabel="1" class="is_photo_upload" widget="many2many_binary" options="{'accepted_file_extensions': 'image/*'}"/>
+                            <field name="photo_ids" nolabel="1" options="{'link': False, 'create': False}">
+                                <kanban create="false">
+                                    <templates>
+                                        <t t-name="card">
+                                            <div class="text-center position-relative">
+                                                <a type="delete" class="fa fa-times-circle position-absolute top-0 end-0 text-danger bg-white rounded-circle" title="Supprimer" role="img" aria-label="Supprimer" style="font-size: 1.2rem; z-index: 1;"/>
+                                                <a t-attf-href="/web/image/#{record.id.raw_value}" target="_blank">
+                                                    <field name="datas" widget="image" class="o_kanban_image" options="{'size': [200, 200]}"/>
+                                                </a>
+                                                <div class="text-truncate">
+                                                    <field name="name"/>
+                                                </div>
+                                            </div>
+                                        </t>
+                                    </templates>
+                                </kanban>
                             </field>
                         </page>
                     </notebook>

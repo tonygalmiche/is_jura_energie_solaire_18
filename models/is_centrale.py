@@ -319,7 +319,7 @@ class IsCentraleSystemeIntegration(models.Model):
     centrale_id              = fields.Many2one('is.centrale', 'Centrale', required=True, ondelete='cascade')
     sequence                 = fields.Integer("Ordre")
     systeme_integration_id   = fields.Many2one('product.product', string="Système d'intégration")
-    quantite                 = fields.Integer("Quantité")
+    quantite                 = fields.Float("Quantité", digits=(10, 4))
 
 
 class IsCentraleRaccordementElectrique(models.Model):
@@ -549,6 +549,7 @@ class IsCentrale(models.Model):
 
     maintenance_date_signature = fields.Date("Date de Signature", tracking=True)
     contrat_signe_ids = fields.Many2many('ir.attachment', 'is_centrale_contrat_signe_rel', 'centrale_id', 'attachment_id', string="Contrat de maintenance signé")
+    photo_ids = fields.Many2many('ir.attachment', 'is_centrale_photo_rel', 'centrale_id', 'attachment_id', string="Photos", domain=[('mimetype', 'like', 'image')])
     maintenance_ids = fields.One2many('is.maintenance', 'centrale_id', string="Maintenances")
     projet_id                = fields.Many2one('project.project', string="Projet")
     localisation             = fields.Char("Localisation", tracking=True)
@@ -1176,6 +1177,17 @@ class IsCentrale(models.Model):
             'context': {'default_is_centrale_id': self.id},
         }
 
+    def _get_purchase_price_unit(self, product, partner):
+        """Prix fournisseur si trouvé pour le partenaire, sinon premier prix fournisseur trouvé, sinon le coût."""
+        if not product:
+            return 0.0
+        supplierinfo = product.seller_ids.filtered(lambda s: s.partner_id == partner)
+        if not supplierinfo:
+            supplierinfo = product.seller_ids
+        if supplierinfo:
+            return supplierinfo[0].price
+        return product.standard_price
+
     def action_create_purchase_from_it(self):
         """Crée une commande d'achat avec tous les articles de l'onglet Informations techniques."""
         self.ensure_one()
@@ -1202,7 +1214,7 @@ class IsCentrale(models.Model):
                     'product_id': line.panneau_id.id,
                     'name': line.panneau_id.display_name,
                     'product_qty': line.quantite,
-                    'price_unit': line.panneau_id.standard_price,
+                    'price_unit': self._get_purchase_price_unit(line.panneau_id, partner),
                     'is_centrale_id': self.id,
                 })
 
@@ -1218,7 +1230,7 @@ class IsCentrale(models.Model):
                     'product_id': line.systeme_integration_id.id,
                     'name': line.systeme_integration_id.display_name,
                     'product_qty': line.quantite,
-                    'price_unit': line.systeme_integration_id.standard_price,
+                    'price_unit': self._get_purchase_price_unit(line.systeme_integration_id, partner),
                     'is_centrale_id': self.id,
                 })
 
@@ -1234,7 +1246,7 @@ class IsCentrale(models.Model):
                     'product_id': line.onduleur_id.id,
                     'name': line.onduleur_id.display_name,
                     'product_qty': line.quantite,
-                    'price_unit': line.onduleur_id.standard_price,
+                    'price_unit': self._get_purchase_price_unit(line.onduleur_id, partner),
                     'is_centrale_id': self.id,
                 })
 
@@ -1250,7 +1262,7 @@ class IsCentrale(models.Model):
                     'product_id': line.produit_id.id,
                     'name': line.produit_id.display_name,
                     'product_qty': line.quantite,
-                    'price_unit': line.produit_id.standard_price,
+                    'price_unit': self._get_purchase_price_unit(line.produit_id, partner),
                     'is_centrale_id': self.id,
                 })
 
@@ -1266,7 +1278,7 @@ class IsCentrale(models.Model):
                     'product_id': line.optimiseur_id.id,
                     'name': line.optimiseur_id.display_name,
                     'product_qty': line.quantite,
-                    'price_unit': line.optimiseur_id.standard_price,
+                    'price_unit': self._get_purchase_price_unit(line.optimiseur_id, partner),
                     'is_centrale_id': self.id,
                 })
 
@@ -1282,7 +1294,7 @@ class IsCentrale(models.Model):
                     'product_id': line.coffret_id.id,
                     'name': line.coffret_id.display_name,
                     'product_qty': line.quantite,
-                    'price_unit': line.coffret_id.standard_price,
+                    'price_unit': self._get_purchase_price_unit(line.coffret_id, partner),
                     'is_centrale_id': self.id,
                 })
 
@@ -1298,7 +1310,7 @@ class IsCentrale(models.Model):
                     'product_id': line.type_cable_id.id,
                     'name': line.type_cable_id.display_name,
                     'product_qty': line.longueur,
-                    'price_unit': line.type_cable_id.standard_price,
+                    'price_unit': self._get_purchase_price_unit(line.type_cable_id, partner),
                     'is_centrale_id': self.id,
                 })
 
@@ -1314,7 +1326,7 @@ class IsCentrale(models.Model):
                     'product_id': line.produit_id.id,
                     'name': line.produit_id.display_name,
                     'product_qty': line.quantite,
-                    'price_unit': line.produit_id.standard_price,
+                    'price_unit': self._get_purchase_price_unit(line.produit_id, partner),
                     'is_centrale_id': self.id,
                 })
 
