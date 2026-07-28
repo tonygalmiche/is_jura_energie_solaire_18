@@ -34,6 +34,19 @@
         <field name="parent_id" ref="module_category_jes"/>
     </record>
 
+    <!-- Sous-catégorie Facturation -->
+    <record id="module_category_jes_facturation" model="ir.module.category">
+        <field name="name">Facturation</field>
+        <field name="sequence">5</field>
+        <field name="parent_id" ref="module_category_jes"/>
+    </record>
+
+    <!-- Groupe Suivi facturation -->
+    <record id="group_suivi_facturation" model="res.groups">
+        <field name="name">Suivi facturation</field>
+        <field name="category_id" ref="module_category_jes_facturation"/>
+    </record>
+
     <!-- Sous-catégorie Contacts -->
     <record id="module_category_jes_contacts" model="ir.module.category">
         <field name="name">Contacts</field>

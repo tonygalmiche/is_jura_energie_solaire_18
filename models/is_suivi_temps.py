@@ -191,6 +191,17 @@ class IsSuiviTemps(models.Model):
         for record in self:
             record.duree_hors_deplacement = record.duree - (record.heure_route or 0.0)
 
+    def action_open(self):
+        """Ouvrir la fiche du suivi du temps"""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'is.suivi.temps',
+            'res_id': self.id,
+            'view_mode': 'form',
+            'target': 'current',
+        }
+
     @api.constrains('date_debut', 'date_fin')
     def _check_dates(self):
         for record in self:

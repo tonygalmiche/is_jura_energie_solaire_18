@@ -369,6 +369,34 @@ class IsCentraleAutre(models.Model):
     quantite     = fields.Integer("Quantité")
 
 
+class IsCentraleFacture(models.Model):
+    _name = 'is.centrale.facture'
+    _description = "Suivi des factures des centrales"
+    _order = 'date,id'
+
+    centrale_id     = fields.Many2one('is.centrale', 'Centrale', required=True, ondelete='cascade')
+    secteur         = fields.Selection(related='centrale_id.secteur', string="Secteur", store=True)
+    date_devis      = fields.Date(related='centrale_id.date_devis', string="Date devis", store=True)
+    montant_devis   = fields.Float(related='centrale_id.montant_devis', string="Montant devis", store=True, digits=(10, 2))
+    date            = fields.Date("Date facture")
+    type            = fields.Selection(
+        [
+            ('facture', 'Facture'),
+            ('avoir', 'Avoir'),
+        ],
+        string="Type",
+        default='facture',
+    )
+    numero_facture  = fields.Char("N°facture")
+    avancement      = fields.Float("Avancement (%)", digits=(10, 1))
+    montant_ht      = fields.Float("Montant HT", digits=(10, 2))
+    montant_regle   = fields.Float("Montant réglé", digits=(10, 2))
+    date_reglement  = fields.Date("Date règlement")
+    total_facture   = fields.Float(related='centrale_id.total_facture', string="Total facturé", store=True, digits=(10, 2))
+    pourcentage_facture = fields.Float(related='centrale_id.pourcentage_facture', string="Facturé / Montant devis (%)", store=True, digits=(10, 1))
+    facturation_100_pourcent = fields.Boolean(related='centrale_id.facturation_100_pourcent', string="Facturation à 100%", store=True)
+
+
 class IsMailActivity(models.Model):
     _inherit = 'mail.activity'
 
@@ -560,6 +588,8 @@ class IsCentrale(models.Model):
     is_client_contacts_html = fields.Html(related='client_id.is_contacts_html', store=False, string="Tableau des contacts")
     lead_ids = fields.One2many('crm.lead', 'is_centrale_id', string="Opportunités")
     sav_ids = fields.One2many('is.sav', 'centrale_id', string="SAVs", tracking=True)
+    suivi_temps_ids = fields.One2many('is.suivi.temps', 'centrale_id', string="Suivis du temps")
+    facture_ids = fields.One2many('is.centrale.facture', 'centrale_id', string="Suivi des factures")
     purchase_line_ids = fields.One2many('purchase.order.line', 'is_centrale_id', string="Lignes d'achats")
     purchase_order_count  = fields.Integer(compute='_compute_purchase_order_count')
     calendar_event_ids    = fields.One2many('calendar.event', 'is_centrale_id', string='Réunion')
@@ -579,6 +609,49 @@ class IsCentrale(models.Model):
         store=True,
         readonly=True,
         digits=(3, 2),
+    )
+
+    # Onglet "Suivi facturation"
+    prix_ht_vendu_crm = fields.Float(
+        string="Prix HT Vendu (CRM)",
+        compute="_compute_prix_ht_vendu_crm",
+        store=True,
+        digits=(10, 2),
+    )
+    prix_ht_vendu_applique = fields.Float(
+        string="Prix HT Vendu appliqué",
+        compute="_compute_prix_ht_vendu_applique",
+        store=True,
+        readonly=False,
+        digits=(10, 2),
+    )
+    date_devis = fields.Date("Date devis")
+    montant_devis = fields.Float("Montant devis", digits=(10, 2))
+    nb_heure_vendu = fields.Float("Nombre d'heures vendu", digits=(10, 2))
+    nb_heure_realise = fields.Float(
+        string="Nombre d'heures réalisé",
+        compute="_compute_nb_heure_realise",
+        store=True,
+        digits=(10, 2),
+    )
+    ratio_heure_pourcentage = fields.Float(
+        string="Ratio heures réalisées / vendues (%)",
+        compute="_compute_ratio_heure_pourcentage",
+        store=True,
+        digits=(10, 1),
+    )
+    facturation_100_pourcent = fields.Boolean("Facturation à 100%")
+    total_facture = fields.Float(
+        string="Total facturé",
+        compute="_compute_total_facture",
+        store=True,
+        digits=(10, 2),
+    )
+    pourcentage_facture = fields.Float(
+        string="Facturé / Montant devis (%)",
+        compute="_compute_pourcentage_facture",
+        store=True,
+        digits=(10, 1),
     )
 
     # Onglet "DP/PC"
@@ -825,6 +898,44 @@ class IsCentrale(models.Model):
             montant_tva = record.montant_maintenance_applique * taux / 100
             record.montant_tva = montant_tva
             record.montant_maintenance_ttc = record.montant_maintenance_applique + montant_tva
+
+    @api.depends('lead_ids.expected_revenue', 'lead_ids.stage_id.is_won')
+    def _compute_prix_ht_vendu_crm(self):
+        for record in self:
+            leads_gagnes = record.lead_ids.filtered(lambda l: l.stage_id.is_won)
+            record.prix_ht_vendu_crm = sum(leads_gagnes.mapped('expected_revenue'))
+
+    @api.depends('prix_ht_vendu_crm')
+    def _compute_prix_ht_vendu_applique(self):
+        for record in self:
+            if not record.prix_ht_vendu_applique:
+                record.prix_ht_vendu_applique = record.prix_ht_vendu_crm
+
+    @api.depends('suivi_temps_ids.duree')
+    def _compute_nb_heure_realise(self):
+        for record in self:
+            record.nb_heure_realise = sum(record.suivi_temps_ids.mapped('duree'))
+
+    @api.depends('nb_heure_vendu', 'nb_heure_realise')
+    def _compute_ratio_heure_pourcentage(self):
+        for record in self:
+            if record.nb_heure_vendu:
+                record.ratio_heure_pourcentage = round(record.nb_heure_realise / record.nb_heure_vendu * 100, 1)
+            else:
+                record.ratio_heure_pourcentage = 0.0
+
+    @api.depends('facture_ids.montant_ht')
+    def _compute_total_facture(self):
+        for record in self:
+            record.total_facture = sum(record.facture_ids.mapped('montant_ht'))
+
+    @api.depends('total_facture', 'montant_devis')
+    def _compute_pourcentage_facture(self):
+        for record in self:
+            if record.montant_devis:
+                record.pourcentage_facture = round(record.total_facture / record.montant_devis * 100, 1)
+            else:
+                record.pourcentage_facture = 0.0
 
     @api.depends('onduleur_ids.puissance_totale', 'bridage_onduleur')
     def _compute_puissance_onduleur_totale(self):
@@ -1164,6 +1275,17 @@ class IsCentrale(models.Model):
     def _compute_purchase_order_count(self):
         for rec in self:
             rec.purchase_order_count = len(rec.purchase_line_ids.mapped('order_id'))
+
+    def action_view_suivi_temps(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Suivis du temps',
+            'res_model': 'is.suivi.temps',
+            'view_mode': 'list,form',
+            'domain': [('centrale_id', '=', self.id)],
+            'context': {'default_centrale_id': self.id},
+        }
 
     def action_view_purchase_orders(self):
         self.ensure_one()

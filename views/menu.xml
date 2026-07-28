@@ -49,6 +49,15 @@
     <menuitem id="is_centrale_kanban_maintenance_menu" name="Kanban Maintenance" parent="is_centrale_main_menu" action="is_centrale_kanban_maintenance_action" sequence="38"/>
     <menuitem id="is_centrale_activity_menu" name="Activités" parent="is_centrale_main_menu" action="is_centrale_activity_action" sequence="39"/>
 
+    <!-- JES / Suivi facturation -->
+    <menuitem id="is_centrale_facture_main_menu" name="Suivi facturation" parent="is_crm_root_menu" sequence="11" groups="is_jura_energie_solaire_18.group_suivi_facturation"/>
+    <menuitem id="is_centrale_facturation_menu"  name="Suivi facturation" parent="is_centrale_facture_main_menu" action="is_centrale_facturation_action" sequence="5"/>
+    <menuitem id="is_centrale_facture_gp_menu"   name="GP"   parent="is_centrale_facture_main_menu" action="is_centrale_facture_gp_action"   sequence="10"/>
+    <menuitem id="is_centrale_facture_re_menu"   name="RE"   parent="is_centrale_facture_main_menu" action="is_centrale_facture_re_action"   sequence="20"/>
+    <menuitem id="is_centrale_facture_th_menu"   name="TH"   parent="is_centrale_facture_main_menu" action="is_centrale_facture_th_action"   sequence="30"/>
+    <menuitem id="is_centrale_facture_si_menu"   name="SI"   parent="is_centrale_facture_main_menu" action="is_centrale_facture_si_action"   sequence="40"/>
+    <menuitem id="is_centrale_facture_irve_menu" name="IRVE" parent="is_centrale_facture_main_menu" action="is_centrale_facture_irve_action" sequence="50"/>
+
     <!-- JES / Calendriers -->
     <menuitem id="is_calendrier_main_menu" name="Calendriers" parent="is_crm_root_menu" sequence="15"/>
     <menuitem id="is_calendrier_gp_menu"          name="Centrales GP"   parent="is_calendrier_main_menu" action="is_calendar_centrale_gp_action"   sequence="10"/>
