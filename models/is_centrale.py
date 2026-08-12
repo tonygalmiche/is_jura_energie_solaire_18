@@ -256,7 +256,7 @@ class IsCentraleOnduleur(models.Model):
     puissance_onduleur = fields.Float('Puissance onduleur (kVA)', compute='_compute', store=True, readonly=True)
     puissance_totale   = fields.Float('Puissance totale (kVA)'  , compute='_compute', store=True, readonly=True)
     numero_serie       = fields.Char("Numéro de série")
-    date_debut_garantie = fields.Date("Date début garantie")
+    date_debut_garantie = fields.Date("Date fin garantie")
     annee_garantie     = fields.Char("Année de garantie", compute='_compute_annee_garantie', store=True, readonly=True)
     garantie_ids       = fields.Many2many('ir.attachment', 'is_centrale_onduleur_garantie_rel', 'onduleur_id', 'attachment_id', string="Papiers de garantie")
  
