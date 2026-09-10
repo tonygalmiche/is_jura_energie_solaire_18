@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from odoo import fields, models, api  
+from odoo import fields, models, api
+from odoo.tools import html_escape
 
 
 class calendar_event(models.Model):
@@ -22,6 +23,25 @@ class calendar_event(models.Model):
                 or False
             )
     is_contacts_html    = fields.Html(related='is_centrale_id.is_client_contacts_html', store=False, string='')
+    is_participants_html = fields.Html(string='Participants', compute='_compute_is_participants_html', store=False, sanitize=False)
+
+    @api.depends('partner_ids.name', 'user_id.partner_id')
+    def _compute_is_participants_html(self):
+        for rec in self:
+            organizer_partner = rec.user_id.partner_id
+            parts = []
+            for partner in rec.partner_ids:
+                name = html_escape(partner.name or '')
+                if partner == organizer_partner:
+                    parts.append('<b>%s</b>' % name)
+                else:
+                    parts.append(name)
+            if parts:
+                rec.is_participants_html = (
+                    '<i class="fa fa-address-book me-1" title="Participants"></i>' + ', '.join(parts)
+                )
+            else:
+                rec.is_participants_html = False
     is_adresse          = fields.Char(string='Adresse', compute='_compute_is_adresse', store=False)
     is_maps_url         = fields.Char(string='Maps', compute='_compute_is_maps_url', store=False)
 

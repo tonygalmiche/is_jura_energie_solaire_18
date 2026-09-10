@@ -81,6 +81,72 @@
         </field>
     </record>
 
+    <!--
+        Vue Kanban "carte de rendez-vous" façon planning journalier.
+        Champs de la maquette non disponibles sur calendar.event (à ajouter si besoin) :
+          - Camion / véhicule affecté à l'intervention
+          - Nacelle réservée (indicateur booléen)
+          - Puissance du prospect (ex: "Prospect PV 6 kWc")
+        En attendant, la carte réutilise les champs déjà présents sur le modèle
+        (lieu, équipe, client) pour se rapprocher au maximum du visuel demandé.
+    -->
+    <record id="is_view_calendar_event_kanban" model="ir.ui.view">
+        <field name="name">is.view.calendar.event.kanban</field>
+        <field name="model">calendar.event</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_mobile" default_order="start" quick_create="false">
+                <field name="name"/>
+                <field name="start"/>
+                <field name="stop"/>
+                <field name="allday"/>
+                <field name="duration"/>
+                <field name="location"/>
+                <field name="is_adresse"/>
+                <field name="is_equipe_id"/>
+                <field name="is_client_id"/>
+                <field name="is_sav_id"/>
+                <field name="is_maintenance_id"/>
+                <field name="is_centrale_id"/>
+                <field name="opportunity_id"/>
+                <field name="is_participants_html"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="d-flex">
+                            <div class="text-muted me-3" style="min-width: 56px;">
+                                <div t-attf-class="{{luxon.DateTime.fromISO(record.start.raw_value).hasSame(luxon.DateTime.local(), 'day') ? 'fw-bold text-dark fs-5' : 'small fw-bold'}}" t-esc="luxon.DateTime.fromISO(record.start.raw_value).toFormat('dd/MM')"/>
+                                <div t-if="!record.allday.raw_value" class="fw-bold text-dark fs-5" t-esc="luxon.DateTime.fromISO(record.start.raw_value).toFormat('HH:mm')"/>
+                                <div class="small">
+                                    <t t-if="record.allday.raw_value">Journée</t>
+                                    <t t-else="1" t-esc="(Math.floor(record.duration.raw_value) &lt; 10 ? '0' : '') + Math.floor(record.duration.raw_value) + ':' + (Math.round((record.duration.raw_value % 1) * 60) &lt; 10 ? '0' : '') + Math.round((record.duration.raw_value % 1) * 60)"/>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1">
+                                <span t-if="record.is_sav_id.raw_value" class="badge rounded-pill bg-info text-dark mb-1">SAV</span>
+                                <span t-elif="record.is_maintenance_id.raw_value" class="badge rounded-pill bg-secondary mb-1">MAINTENANCE</span>
+                                <span t-elif="record.is_centrale_id.raw_value" class="badge rounded-pill bg-success mb-1">POSE / CHANTIER</span>
+                                <span t-elif="record.opportunity_id.raw_value" class="badge rounded-pill bg-warning text-dark mb-1">RDV COMMERCIAL</span>
+                                <field name="name" class="fw-bold d-block"/>
+                                <div t-if="record.is_adresse.raw_value || record.location.raw_value" class="text-muted small">
+                                    <i class="fa fa-map-marker me-1" title="Adresse"/>
+                                    <t t-esc="record.is_adresse.raw_value || record.location.raw_value"/>
+                                </div>
+                                <div t-if="record.is_equipe_id.raw_value" class="text-muted small">
+                                    <i class="fa fa-users me-1" title="Équipe"/><field name="is_equipe_id"/>
+                                </div>
+                                <div t-if="record.is_client_id.raw_value" class="text-muted small">
+                                    <i class="fa fa-user me-1" title="Client"/><field name="is_client_id"/>
+                                </div>
+                                <div t-if="record.is_participants_html.raw_value" class="text-muted small">
+                                    <t t-out="record.is_participants_html.raw_value"/>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
     <!-- Vue calendrier dédiée aux centrales : couleur par équipe, filtre équipes -->
     <record id="is_view_calendar_centrale" model="ir.ui.view">
         <field name="name">is.view.calendar.centrale</field>
@@ -124,7 +190,7 @@
     <record id="is_calendar_centrale_gp_action" model="ir.actions.act_window">
         <field name="name">Calendrier Centrales GP</field>
         <field name="res_model">calendar.event</field>
-        <field name="view_mode">gantt,calendar,list,form</field>
+        <field name="view_mode">gantt,calendar,kanban,list,form</field>
         <field name="search_view_id" ref="is_view_calendar_event_search"/>
         <field name="context">{'search_default_filter_centrale_gp': 1}</field>
     </record>
@@ -155,10 +221,17 @@
         <field name="act_window_id" ref="is_calendar_centrale_gp_action"/>
     </record>
 
+    <record id="is_calendar_centrale_gp_action_view_kanban" model="ir.actions.act_window.view">
+        <field name="sequence" eval="5"/>
+        <field name="view_mode">kanban</field>
+        <field name="view_id" ref="is_view_calendar_event_kanban"/>
+        <field name="act_window_id" ref="is_calendar_centrale_gp_action"/>
+    </record>
+
     <record id="is_calendar_centrale_re_action" model="ir.actions.act_window">
         <field name="name">Calendrier Centrales RE</field>
         <field name="res_model">calendar.event</field>
-        <field name="view_mode">gantt,calendar,list,form</field>
+        <field name="view_mode">gantt,calendar,kanban,list,form</field>
         <field name="search_view_id" ref="is_view_calendar_event_search"/>
         <field name="context">{'search_default_filter_centrale_re': 1}</field>
     </record>
@@ -189,10 +262,17 @@
         <field name="act_window_id" ref="is_calendar_centrale_re_action"/>
     </record>
 
+    <record id="is_calendar_centrale_re_action_view_kanban" model="ir.actions.act_window.view">
+        <field name="sequence" eval="5"/>
+        <field name="view_mode">kanban</field>
+        <field name="view_id" ref="is_view_calendar_event_kanban"/>
+        <field name="act_window_id" ref="is_calendar_centrale_re_action"/>
+    </record>
+
     <record id="is_calendar_centrale_th_action" model="ir.actions.act_window">
         <field name="name">Calendrier Centrales TH</field>
         <field name="res_model">calendar.event</field>
-        <field name="view_mode">gantt,calendar,list,form</field>
+        <field name="view_mode">gantt,calendar,kanban,list,form</field>
         <field name="search_view_id" ref="is_view_calendar_event_search"/>
         <field name="context">{'search_default_filter_centrale_th': 1}</field>
     </record>
@@ -223,10 +303,17 @@
         <field name="act_window_id" ref="is_calendar_centrale_th_action"/>
     </record>
 
+    <record id="is_calendar_centrale_th_action_view_kanban" model="ir.actions.act_window.view">
+        <field name="sequence" eval="5"/>
+        <field name="view_mode">kanban</field>
+        <field name="view_id" ref="is_view_calendar_event_kanban"/>
+        <field name="act_window_id" ref="is_calendar_centrale_th_action"/>
+    </record>
+
     <record id="is_calendar_centrale_si_action" model="ir.actions.act_window">
         <field name="name">Calendrier Centrales SI</field>
         <field name="res_model">calendar.event</field>
-        <field name="view_mode">gantt,calendar,list,form</field>
+        <field name="view_mode">gantt,calendar,kanban,list,form</field>
         <field name="search_view_id" ref="is_view_calendar_event_search"/>
         <field name="context">{'search_default_filter_centrale_si': 1}</field>
     </record>
@@ -257,10 +344,17 @@
         <field name="act_window_id" ref="is_calendar_centrale_si_action"/>
     </record>
 
+    <record id="is_calendar_centrale_si_action_view_kanban" model="ir.actions.act_window.view">
+        <field name="sequence" eval="5"/>
+        <field name="view_mode">kanban</field>
+        <field name="view_id" ref="is_view_calendar_event_kanban"/>
+        <field name="act_window_id" ref="is_calendar_centrale_si_action"/>
+    </record>
+
     <record id="is_calendar_centrale_irve_action" model="ir.actions.act_window">
         <field name="name">Calendrier Centrales IRVE</field>
         <field name="res_model">calendar.event</field>
-        <field name="view_mode">gantt,calendar,list,form</field>
+        <field name="view_mode">gantt,calendar,kanban,list,form</field>
         <field name="search_view_id" ref="is_view_calendar_event_search"/>
         <field name="context">{'search_default_filter_centrale_irve': 1}</field>
     </record>
@@ -291,6 +385,13 @@
         <field name="act_window_id" ref="is_calendar_centrale_irve_action"/>
     </record>
 
+    <record id="is_calendar_centrale_irve_action_view_kanban" model="ir.actions.act_window.view">
+        <field name="sequence" eval="5"/>
+        <field name="view_mode">kanban</field>
+        <field name="view_id" ref="is_view_calendar_event_kanban"/>
+        <field name="act_window_id" ref="is_calendar_centrale_irve_action"/>
+    </record>
+
     <!-- Vue calendrier SAV/Maintenance : js_class standard + quick_create désactivé -->
     <record id="is_view_calendar_sav_maintenance" model="ir.ui.view">
         <field name="name">is.view.calendar.sav.maintenance</field>
@@ -308,7 +409,7 @@
     <record id="is_calendar_sav_action" model="ir.actions.act_window">
         <field name="name">Calendrier SAV</field>
         <field name="res_model">calendar.event</field>
-        <field name="view_mode">calendar,list,form</field>
+        <field name="view_mode">calendar,kanban,list,form</field>
         <field name="view_id" ref="is_view_calendar_sav_maintenance"/>
         <field name="search_view_id" ref="is_view_calendar_event_search"/>
         <field name="context">{'search_default_filter_sav': 1}</field>
@@ -317,10 +418,20 @@
     <record id="is_calendar_maintenance_action" model="ir.actions.act_window">
         <field name="name">Calendrier Maintenance</field>
         <field name="res_model">calendar.event</field>
-        <field name="view_mode">calendar,list,form</field>
+        <field name="view_mode">calendar,kanban,list,form</field>
         <field name="view_id" ref="is_view_calendar_sav_maintenance"/>
         <field name="search_view_id" ref="is_view_calendar_event_search"/>
         <field name="context">{'search_default_filter_maintenance': 1}</field>
+    </record>
+
+    <!-- Vue Kanban globale : tous les calendriers, à partir d'aujourd'hui uniquement -->
+    <record id="is_calendar_all_kanban_action" model="ir.actions.act_window">
+        <field name="name">Vue Kanban</field>
+        <field name="res_model">calendar.event</field>
+        <field name="view_mode">kanban,calendar,list,form</field>
+        <field name="view_id" ref="is_view_calendar_event_kanban"/>
+        <field name="search_view_id" ref="is_view_calendar_event_search"/>
+        <field name="domain">[('start', '>=', context_today().strftime('%Y-%m-%d 00:00:00')), ('start', '&lt;=', (context_today() + relativedelta(days=100)).strftime('%Y-%m-%d 23:59:59'))]</field>
     </record>
 
 </odoo>

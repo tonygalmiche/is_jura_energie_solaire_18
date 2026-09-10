@@ -67,6 +67,7 @@
     <menuitem id="is_calendrier_irve_menu"        name="Centrales IRVE" parent="is_calendrier_main_menu" action="is_calendar_centrale_irve_action" sequence="50"/>
     <menuitem id="is_calendrier_sav_menu"         name="SAV"            parent="is_calendrier_main_menu" action="is_calendar_sav_action"           sequence="60"/>
     <menuitem id="is_calendrier_maintenance_menu" name="Maintenance"    parent="is_calendrier_main_menu" action="is_calendar_maintenance_action"   sequence="70"/>
+    <menuitem id="is_calendrier_kanban_menu"      name="Vue Kanban"     parent="is_calendrier_main_menu" action="is_calendar_all_kanban_action"    sequence="80"/>
 
     <!-- JES / SAV -->
     <menuitem id="is_sav_main_menu"   name="SAV"        parent="is_crm_root_menu" sequence="20"/>
