@@ -12,6 +12,17 @@ class calendar_event(models.Model):
     is_centrale_secteur = fields.Selection(related='is_centrale_id.secteur', string='Secteur centrale', store=True)
     is_equipe_id        = fields.Many2one('is.calendrier.equipe', 'Équipe', tracking=True)
     is_client_id        = fields.Many2one('res.partner', string='Client', compute='_compute_is_client_id', store=True)
+    is_contacts_html    = fields.Html(related='is_centrale_id.is_client_contacts_html', store=False, string='')
+    is_all_attendee_partner_ids = fields.Many2many(
+        'res.partner',
+        relation='calendar_event_is_all_attendee_partner_rel',
+        string='Organisateur + Participants',
+        compute='_compute_is_all_attendee_partner_ids',
+        store=True,
+    )
+    is_participants_html = fields.Html(string='Participants', compute='_compute_is_participants_html', store=False, sanitize=False)
+    is_adresse          = fields.Char(string='Adresse', compute='_compute_is_adresse', store=False)
+    is_maps_url         = fields.Char(string='Maps', compute='_compute_is_maps_url', store=False)
 
     @api.depends('is_centrale_id.client_id', 'is_maintenance_id.client_id', 'is_sav_id.client_id')
     def _compute_is_client_id(self):
@@ -22,15 +33,18 @@ class calendar_event(models.Model):
                 or rec.is_sav_id.client_id
                 or False
             )
-    is_contacts_html    = fields.Html(related='is_centrale_id.is_client_contacts_html', store=False, string='')
-    is_participants_html = fields.Html(string='Participants', compute='_compute_is_participants_html', store=False, sanitize=False)
 
-    @api.depends('partner_ids.name', 'user_id.partner_id')
+    @api.depends('partner_ids', 'user_id.partner_id')
+    def _compute_is_all_attendee_partner_ids(self):
+        for rec in self:
+            rec.is_all_attendee_partner_ids = rec.partner_ids | rec.user_id.partner_id
+
+    @api.depends('is_all_attendee_partner_ids.name', 'user_id.partner_id')
     def _compute_is_participants_html(self):
         for rec in self:
             organizer_partner = rec.user_id.partner_id
             parts = []
-            for partner in rec.partner_ids:
+            for partner in rec.is_all_attendee_partner_ids:
                 name = html_escape(partner.name or '')
                 if partner == organizer_partner:
                     parts.append('<b>%s</b>' % name)
@@ -42,8 +56,6 @@ class calendar_event(models.Model):
                 )
             else:
                 rec.is_participants_html = False
-    is_adresse          = fields.Char(string='Adresse', compute='_compute_is_adresse', store=False)
-    is_maps_url         = fields.Char(string='Maps', compute='_compute_is_maps_url', store=False)
 
     @api.depends('is_centrale_id.adresse', 'is_maintenance_id.centrale_id.adresse', 'is_sav_id.adresse')
     def _compute_is_adresse(self):

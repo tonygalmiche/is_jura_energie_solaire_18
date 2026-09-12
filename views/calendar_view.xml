@@ -25,6 +25,9 @@
         <field name="model">calendar.event</field>
         <field name="inherit_id" ref="calendar.view_calendar_event_tree"/>
         <field name="arch" type="xml">
+            <field name="partner_ids" position="after">
+                <field name="is_all_attendee_partner_ids" optional="hide" widget="many2many_tags" string="Organisateur ou participant"/>
+            </field>
             <field name="location" position="after">
                 <field name="is_client_id" optional="show" widget="many2one_clickable"/>
                 <field name="is_contacts_html" optional="hide"/>
@@ -42,6 +45,9 @@
         <field name="model">calendar.event</field>
         <field name="inherit_id" ref="calendar.view_calendar_event_search"/>
         <field name="arch" type="xml">
+            <field name="partner_ids" position="after">
+                <field name="is_all_attendee_partner_ids" string="Organisateur ou participant"/>
+            </field>
             <field name="location" position="after">
                 <field name="is_sav_id"/>
                 <field name="is_maintenance_id"/>
