@@ -179,7 +179,7 @@
                 <field name="technicien_id"/>
                 <field name="client_id"/>
                 <templates>
-                    <t t-name="card" class="flex-row">
+                    <t t-name="card">
                         <div t-attf-class="oe_kanban_card oe_kanban_global_click
                             #{record.couleur_alerte.raw_value == 'vert' ? 'oe_kanban_color_3' : ''}
                             #{record.couleur_alerte.raw_value == 'jaune' ? 'oe_kanban_color_4' : ''}
