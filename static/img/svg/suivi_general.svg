@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 460" width="720" height="460">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f4a460"/>
+      <stop offset="1" stop-color="#e08a3c"/>
+    </linearGradient>
+    <style>
+      .title { font-family: 'Segoe UI', Arial, sans-serif; font-weight: 700; }
+      .card-title { font-family: 'Segoe UI', Arial, sans-serif; font-weight: 700; }
+    </style>
+  </defs>
+
+  <!-- Fond blanc -->
+  <rect x="0" y="0" width="720" height="460" rx="28" fill="#ffffff"/>
+  <rect x="1" y="1" width="718" height="458" rx="27" fill="none" stroke="#e7e9ef" stroke-width="2"/>
+
+  <!-- Pointillés décoratifs -->
+  <g fill="#c9d6f2">
+    <circle cx="34" cy="34" r="3"/><circle cx="50" cy="34" r="3"/><circle cx="66" cy="34" r="3"/>
+    <circle cx="34" cy="50" r="3"/><circle cx="50" cy="50" r="3"/><circle cx="66" cy="50" r="3"/>
+    <circle cx="34" cy="66" r="3"/><circle cx="50" cy="66" r="3"/><circle cx="66" cy="66" r="3"/>
+  </g>
+  <g fill="#c9d6f2">
+    <circle cx="654" cy="34" r="3"/><circle cx="670" cy="34" r="3"/><circle cx="686" cy="34" r="3"/>
+    <circle cx="654" cy="50" r="3"/><circle cx="670" cy="50" r="3"/><circle cx="686" cy="50" r="3"/>
+    <circle cx="654" cy="66" r="3"/><circle cx="670" cy="66" r="3"/><circle cx="686" cy="66" r="3"/>
+  </g>
+
+  <!-- Titre -->
+  <text x="360" y="62" text-anchor="middle" class="title" font-size="30" fill="#1f2a44" letter-spacing="1">SUIVI GÉNÉRAL</text>
+
+  <!-- Carte couleur avec icône -->
+  <rect x="40" y="110" width="640" height="300" rx="18" fill="url(#bg)"/>
+  <circle cx="360" cy="215" r="55" fill="#ffffff"/>
+  <g fill="none" stroke="#e08a3c" stroke-width="8" stroke-linecap="round">
+    <path d="M328 235 a34 34 0 0 1 64 0"/>
+  </g>
+  <g stroke="#e08a3c" stroke-width="5" stroke-linecap="round">
+    <line x1="360" y1="235" x2="382" y2="211"/>
+  </g>
+  <circle cx="360" cy="235" r="6" fill="#e08a3c"/>
+  <text x="360" y="330" text-anchor="middle" class="card-title" font-size="28" fill="#ffffff">Suivi Général</text>
+</svg>
