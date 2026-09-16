@@ -28,6 +28,24 @@ class crm_lead(models.Model):
     is_date_changement_etat = fields.Datetime("Date de dernier changement d'état", readonly=False, tracking=True)
     is_date_premiere_reunion  = fields.Date("Date de première réunion", readonly=True, tracking=True)
     is_delai_prise_en_compte  = fields.Integer("Délai de prise en compte de la demande (jours)", readonly=True, tracking=True)
+    is_gagne = fields.Integer(
+        "Gagné", compute='_compute_is_gagne_perdu', store=True,
+        help="1 si l'opportunité est gagnée, 0 sinon. Utilisé pour calculer un taux de conversion (somme = nombre de gagnées).",
+    )
+    is_perdu = fields.Integer(
+        "Perdu", compute='_compute_is_gagne_perdu', store=True,
+        help="1 si l'opportunité est perdue, 0 sinon. Utilisé pour calculer un taux de conversion (somme = nombre de perdues).",
+    )
+
+    @api.depends('stage_id', 'stage_id.is_won', 'active')
+    def _compute_is_gagne_perdu(self):
+        # Mutuellement exclusifs : une opportunité archivée est comptée comme perdue,
+        # même si son étape affiche encore "Gagné" (ex. incohérence en base suite à un
+        # déplacement Kanban sans passer par le bouton "Marquer gagné"). Une opportunité
+        # gagnée doit donc être active.
+        for lead in self:
+            lead.is_perdu = 1 if not lead.active else 0
+            lead.is_gagne = 1 if (lead.active and lead.stage_id.is_won) else 0
     is_devis_signe_ids = fields.Many2many(
         'ir.attachment',
         'crm_lead_devis_signe_rel',
@@ -51,8 +69,12 @@ class crm_lead(models.Model):
     )
 
     def write(self, vals):
-        # Mettre à jour la date de changement d'état si stage_id est modifié
-        if 'stage_id' in vals:
+        # Mettre à jour la date de changement d'état si stage_id est modifié, ou si
+        # l'opportunité se clôture (gagnée ou perdue) sans changement d'étape associé
+        # (ex: "Marquer perdu" ne modifie que active/probability, jamais stage_id -
+        # même logique de détection de clôture que le champ natif date_closed).
+        closing = vals.get('probability', 0) >= 100 or ('active' in vals and not vals.get('active'))
+        if 'stage_id' in vals or closing:
             vals['is_date_changement_etat'] = fields.Datetime.now()
         return super(crm_lead, self).write(vals)
 
@@ -112,6 +134,15 @@ class crm_lead(models.Model):
             'view_mode': 'form',
             'views': [(False, 'form')],
         }
+
+    def action_recalcul_gagne_perdu(self):
+        """Action serveur : force le recalcul de is_gagne/is_perdu pour les leads sélectionnés,
+        et renseigne is_date_changement_etat quand il est vide sur un dossier déjà clôturé
+        (rattrapage des anciennes pertes marquées avant la correction du write())."""
+        self._compute_is_gagne_perdu()
+        for lead in self:
+            if not lead.is_date_changement_etat and (lead.is_gagne or lead.is_perdu):
+                lead.is_date_changement_etat = lead.date_closed or lead.write_date
 
     def action_recalcul_premiere_reunion(self):
         """Action serveur : recalcule la date de première réunion et le délai pour les leads sélectionnés."""

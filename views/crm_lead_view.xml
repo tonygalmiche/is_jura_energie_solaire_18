@@ -61,6 +61,8 @@
             </field>
             <field name="stage_id" position="after">
                 <field name="active"      optional="hide" />
+                <field name="is_gagne"    optional="hide" />
+                <field name="is_perdu"    optional="hide" />
                 <field name="create_date" optional="hide" />
                 <field name="create_uid"  optional="hide" />
                 <field name="write_date"  optional="hide" />
@@ -80,6 +82,7 @@
             </xpath>
             <xpath expr="//filter[@name='filter_lost']" position="after">
                 <separator/>
+                <filter string="Gagnée ou perdue" name="filter_gagnee_ou_perdue" domain="['|', ('is_gagne', '=', 1), ('is_perdu', '=', 1)]" context="{'active_test': False}"/>
                 <filter string="Archivé" name="archive" domain="[('active', '=', False)]"/>
                 <filter string="Créé depuis 30 jours" name="created_last_30_days" domain="[('create_date', '&gt;=', (context_today() - datetime.timedelta(days=30)).strftime('%Y-%m-%d'))]"/>
                 <filter string="Changement d'état depuis 30 jours" name="state_change_last_30_days" domain="[('is_date_changement_etat', '&gt;=', (context_today() - datetime.timedelta(days=30)).strftime('%Y-%m-%d'))]"/>
@@ -95,6 +98,16 @@
         <field name="binding_view_types">list,form</field>
         <field name="state">code</field>
         <field name="code">if records: records.action_recalcul_premiere_reunion()</field>
+    </record>
+
+    <!-- Action serveur : recalculer Gagné/Perdu -->
+    <record id="action_recalcul_gagne_perdu" model="ir.actions.server">
+        <field name="name">Recalculer Gagné/Perdu</field>
+        <field name="model_id" ref="crm.model_crm_lead"/>
+        <field name="binding_model_id" ref="crm.model_crm_lead"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="state">code</field>
+        <field name="code">if records: records.action_recalcul_gagne_perdu()</field>
     </record>
 
     <!-- Vues pour is.provenance.client -->
