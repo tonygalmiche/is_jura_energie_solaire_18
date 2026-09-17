@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="report_bon_intervention_document">
+        <t t-call="web.external_layout">
+            <t t-set="o" t-value="o.with_context(lang=o.client_id.lang or 'fr_FR')"/>
+            <t t-set="company" t-value="o.env.company"/>
+            <div class="page">
+                <style>
+                    .bi-title {
+                        text-align: left;
+                        font-size: 18pt;
+                        font-weight: bold;
+                        margin-bottom: 10px;
+                    }
+                    .bi-grid {
+                        width: 100%;
+                        border-collapse: collapse !important;
+                        border-spacing: 0 !important;
+                        margin-bottom: 4px;
+                    }
+                    .bi-grid td {
+                        padding: 3px 4px !important;
+                        margin: 0 !important;
+                        vertical-align: top;
+                        line-height: 1.2 !important;
+                    }
+                    .bi-grid td.bi-label {
+                        width: 220px;
+                        white-space: nowrap;
+                    }
+                    .bi-grid td.bi-value {
+                        font-weight: bold;
+                    }
+                    .bi-grid td span, .bi-grid td t {
+                        line-height: 1.2 !important;
+                    }
+                    .bi-table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin-top: 6px;
+                        margin-bottom: 10px;
+                    }
+                    .bi-table th, .bi-table td {
+                        border: 1px solid #000;
+                        padding: 2px 6px !important;
+                        margin: 0 !important;
+                        line-height: 1.2 !important;
+                    }
+                    .bi-table td p {
+                        margin: 0 !important;
+                        line-height: 1.2 !important;
+                    }
+                    .bi-signature-box {
+                        border: 1px solid #000;
+                        height: 100px;
+                        width: 260px;
+                        margin-top: 6px;
+                    }
+                    .footer .border-top,
+                    .footer .o_footer_content,
+                    .o_footer_content {
+                        border-top: none !important;
+                    }
+                    .bi-grid td p, .bi-description p {
+                        margin: 0 !important;
+                        line-height: 1.2 !important;
+                    }
+                </style>
+
+                <div class="bi-title">BON D'INTERVENTION N°<span t-field="o.numero"/></div>
+                <hr style="margin: 4px 0 10px 0;"/>
+
+                <table class="bi-grid">
+                    <tr t-if="o.date">
+                        <td class="bi-label">Date :</td>
+                        <td class="bi-value"><span t-field="o.date"/></td>
+                    </tr>
+                    <tr t-if="o.intervenant_ids">
+                        <td class="bi-label">Intervenant :</td>
+                        <td class="bi-value"><t t-esc="', '.join(o.intervenant_ids.mapped('name'))"/></td>
+                    </tr>
+                    <tr t-if="o.secteur">
+                        <td class="bi-label">Secteur :</td>
+                        <td class="bi-value"><span t-field="o.secteur"/></td>
+                    </tr>
+                    <tr t-if="o.client_id.name">
+                        <td class="bi-label">Nom du client ou Raison Sociale :</td>
+                        <td class="bi-value"><span t-field="o.client_id.name"/></td>
+                    </tr>
+                    <tr t-if="o.client_id.name">
+                        <td class="bi-label">Contact :</td>
+                        <td class="bi-value"><span t-field="o.client_id.name"/></td>
+                    </tr>
+                    <tr t-if="o.client_id.street or o.client_id.zip or o.client_id.city">
+                        <td class="bi-label">Adresse :</td>
+                        <td class="bi-value">
+                            <span t-field="o.client_id.street"/>
+                            <t t-if="o.client_id.street2">, <span t-field="o.client_id.street2"/></t>
+                            <t t-if="o.client_id.zip or o.client_id.city">
+                                - <span t-field="o.client_id.zip"/> <span t-field="o.client_id.city"/>
+                            </t>
+                        </td>
+                    </tr>
+                    <tr t-if="o.client_id.phone">
+                        <td class="bi-label">Téléphone :</td>
+                        <td class="bi-value"><span t-field="o.client_id.phone"/></td>
+                    </tr>
+                    <tr t-if="o.client_id.email">
+                        <td class="bi-label">Mail :</td>
+                        <td class="bi-value"><span t-field="o.client_id.email"/></td>
+                    </tr>
+                </table>
+
+                <div style="margin-top: 8px;"><strong>Description de l'intervention :</strong></div>
+                <div class="bi-description" style="font-weight: bold; line-height: 1.2 !important; white-space: pre-line; margin: 2px 0 10px 0;"><t t-esc="o.description"/></div>
+
+                <t t-if="o.fourniture_ids">
+                    <t t-set="show_reference" t-value="any(o.fourniture_ids.mapped('reference'))"/>
+                    <div style="margin-top: 4px;"><strong>Fourniture :</strong></div>
+                    <table class="bi-table">
+                        <thead>
+                            <tr>
+                                <th t-if="show_reference">Référence</th>
+                                <th>Désignation</th>
+                                <th style="text-align: right;">Quantité</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="o.fourniture_ids" t-as="ligne">
+                                <td t-if="show_reference"><span t-field="ligne.reference"/></td>
+                                <td><span t-field="ligne.designation"/></td>
+                                <td style="text-align: right;"><span t-field="ligne.quantite"/></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </t>
+
+                <table class="bi-grid">
+                    <tr t-if="o.duree">
+                        <td class="bi-label">Durée de l'intervention :</td>
+                        <td class="bi-value"><span t-field="o.duree" t-options="{'widget': 'float_time'}"/></td>
+                    </tr>
+                    <tr t-if="o.temps_trajet">
+                        <td class="bi-label">Temps de trajet :</td>
+                        <td class="bi-value"><span t-field="o.temps_trajet" t-options="{'widget': 'float_time'}"/></td>
+                    </tr>
+                </table>
+
+                <div style="page-break-inside: avoid; margin-top: 20px;">
+                    <div>Nom du signataire :</div>
+                    <table style="width: 100%; margin-top: 0;">
+                        <tr>
+                            <td style="width: 50%; vertical-align: top;">
+                                <div class="bi-signature-box" style="margin-top: 2px;"></div>
+                            </td>
+                            <td style="width: 50%; vertical-align: top;">
+                                <div style="border: 1px solid #000; padding: 6px; width: 260px;">
+                                    <strong t-field="company.name"/><br/>
+                                    <span t-field="company.street"/><br/>
+                                    <span t-field="company.zip"/> <span t-field="company.city"/><br/>
+                                    <span t-field="company.phone"/><br/>
+                                    <span t-field="company.email"/>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+            </div>
+        </t>
+    </template>
+
+    <template id="report_bon_intervention">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="is_jura_energie_solaire_18.report_bon_intervention_document"/>
+            </t>
+        </t>
+    </template>
+
+    <record id="action_report_bon_intervention" model="ir.actions.report">
+        <field name="name">Bon d'intervention</field>
+        <field name="model">is.sav.intervention</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">is_jura_energie_solaire_18.report_bon_intervention</field>
+        <field name="report_file">is_jura_energie_solaire_18.report_bon_intervention</field>
+        <field name="print_report_name">'Bon_intervention_%s' % object.numero</field>
+        <field name="binding_model_id" ref="model_is_sav_intervention"/>
+        <field name="binding_type">report</field>
+    </record>
+
+</odoo>

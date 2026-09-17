@@ -120,6 +120,40 @@ class IsSav(models.Model):
     meeting_display_date  = fields.Date(compute="_compute_meeting_display")
     meeting_display_label = fields.Char(compute="_compute_meeting_display")
     autres_sav_ids        = fields.One2many('is.sav', compute='_compute_autres_sav_ids', string='Autres SAV')
+    intervention_ids      = fields.One2many('is.sav.intervention', 'sav_id', string="Interventions")
+    intervention_count    = fields.Integer(compute='_compute_intervention_count')
+
+    @api.depends('intervention_ids')
+    def _compute_intervention_count(self):
+        for record in self:
+            record.intervention_count = len(record.intervention_ids)
+
+    def action_view_interventions(self):
+        """Ouvre la liste des interventions SAV liées (et permet d'en créer)"""
+        self.ensure_one()
+        list_view = self.env.ref('is_jura_energie_solaire_18.is_sav_intervention_list_view')
+        form_view = self.env.ref('is_jura_energie_solaire_18.is_sav_intervention_form_view')
+        action = {
+            'type': 'ir.actions.act_window',
+            'name': 'Interventions',
+            'res_model': 'is.sav.intervention',
+            'view_mode': 'list,form',
+            'views': [(list_view.id, 'list'), (form_view.id, 'form')],
+            'domain': [('sav_id', '=', self.id)],
+            'context': {'default_sav_id': self.id},
+        }
+        if self.intervention_count == 0:
+            action.update({
+                'view_mode': 'form',
+                'views': [(form_view.id, 'form')],
+            })
+        elif self.intervention_count == 1:
+            action.update({
+                'view_mode': 'form',
+                'views': [(form_view.id, 'form')],
+                'res_id': self.intervention_ids.id,
+            })
+        return action
 
 
     @api.depends('centrale_id')

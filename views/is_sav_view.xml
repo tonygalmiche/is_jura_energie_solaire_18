@@ -48,6 +48,12 @@
                                 <field name="meeting_display_date" class="o_stat_value" invisible="not meeting_display_date"/>
                             </div>
                         </button>
+                        <button name="action_view_interventions" type="object" class="oe_stat_button" icon="fa-wrench">
+                            <div class="o_stat_info">
+                                <span class="o_stat_value"><field name="intervention_count"/></span>
+                                <span class="o_stat_text">Interventions</span>
+                            </div>
+                        </button>
                     </div>
                     <group>
                         <group>

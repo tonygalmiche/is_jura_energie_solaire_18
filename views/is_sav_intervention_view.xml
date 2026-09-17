@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="seq_is_sav_intervention" model="ir.sequence">
+        <field name="name">Intervention SAV</field>
+        <field name="code">is.sav.intervention</field>
+        <field name="prefix"></field>
+        <field name="padding">5</field>
+        <field name="number_increment">1</field>
+    </record>
+
+    <record id="is_sav_intervention_list_view" model="ir.ui.view">
+        <field name="name">is.sav.intervention.list</field>
+        <field name="model">is.sav.intervention</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="numero"/>
+                <field name="date"/>
+                <field name="centrale_id" optional="hide"/>
+                <field name="secteur" optional="hide"/>
+                <field name="client_id" optional="hide"/>
+                <field name="intervenant_ids" widget="many2many_tags" optional="show"/>
+                <field name="description" optional="show"/>
+                <field name="heure_debut" widget="float_time" optional="show"/>
+                <field name="heure_fin" widget="float_time" optional="show"/>
+                <field name="temps_trajet" widget="float_time" optional="show"/>
+                <field name="duree" widget="float_time" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="is_sav_intervention_list_view_menu" model="ir.ui.view">
+        <field name="name">is.sav.intervention.list.menu</field>
+        <field name="model">is.sav.intervention</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="numero"/>
+                <field name="sav_id" widget="many2one_clickable" optional="show"/>
+                <field name="date"/>
+                <field name="centrale_id" optional="show"/>
+                <field name="secteur" optional="show"/>
+                <field name="client_id" optional="show"/>
+                <field name="intervenant_ids" widget="many2many_tags" optional="show"/>
+                <field name="description" optional="show"/>
+                <field name="heure_debut" widget="float_time" optional="show"/>
+                <field name="heure_fin" widget="float_time" optional="show"/>
+                <field name="temps_trajet" widget="float_time" optional="show"/>
+                <field name="duree" widget="float_time" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="is_sav_intervention_form_view" model="ir.ui.view">
+        <field name="name">is.sav.intervention.form</field>
+        <field name="model">is.sav.intervention</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_print_bon_intervention" string="Imprimer le bon d'intervention" type="object" class="oe_highlight" icon="fa-print"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="numero" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="sav_id"/>
+                            <field name="centrale_id" readonly="1"/>
+                            <field name="secteur" readonly="1"/>
+                            <field name="client_id" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="date"/>
+                            <field name="intervenant_ids" widget="many2many_tags"/>
+                            <field name="heure_debut" widget="float_time"/>
+                            <field name="heure_fin" widget="float_time"/>
+                            <field name="temps_trajet" widget="float_time"/>
+                            <field name="duree" widget="float_time" readonly="1"/>
+                        </group>
+                    </group>
+                    <group string="Description de l'intervention">
+                        <field name="description" nolabel="1"/>
+                    </group>
+                    <group string="Fourniture">
+                        <field name="fourniture_ids" nolabel="1">
+                            <list editable="bottom">
+                                <field name="product_id"/>
+                                <field name="reference"/>
+                                <field name="designation"/>
+                                <field name="quantite"/>
+                            </list>
+                        </field>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="is_sav_intervention_action" model="ir.actions.act_window">
+        <field name="name">Interventions SAV</field>
+        <field name="res_model">is.sav.intervention</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('is_sav_intervention_list_view_menu')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('is_sav_intervention_form_view')})]"/>
+    </record>
+
+</odoo>
