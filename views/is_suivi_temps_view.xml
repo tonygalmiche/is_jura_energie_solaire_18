@@ -184,6 +184,7 @@
                                 <!-- <field name="absence"/> -->
                                 <field name="conge_type_id"/>
                                 <field name="duree" sum="Total"/>
+                                <field name="sav_intervention_id" optional="show"/>
                                 <field name="suivi_temps_id" optional="hide"/>
                                 <field name="suivi_heure_debut" optional="hide"/>
                                 <field name="suivi_heure_fin" optional="hide"/>

@@ -674,6 +674,7 @@ class IsSuiviTempsSaisieLigne(models.Model):
 
     duree = fields.Float(string='Durée', required=True, help='Durée en heures')
     suivi_temps_id = fields.Many2one('is.suivi.temps', string='Suivi du temps lié', readonly=True, index=True, copy=False)
+    sav_intervention_id = fields.Many2one('is.sav.intervention', string="Bon d'intervention", readonly=True, index=True, copy=False, ondelete='set null')
     suivi_heure_debut = fields.Float(string='Suivi heure début', related='suivi_temps_id.heure_debut', readonly=True, store=False)
     suivi_heure_fin = fields.Float(string='Suivi heure fin', related='suivi_temps_id.heure_fin', readonly=True, store=False)
 

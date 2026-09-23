@@ -1,10 +1,23 @@
 # -*- coding: utf-8 -*-
 from odoo import fields, models, api
 from odoo.exceptions import ValidationError, UserError
+from markupsafe import Markup
 
 
 # Champs pouvant être modifiés sur un bon d'intervention validé (changement d'état et chatter)
 _CHAMPS_MODIFIABLES_SI_VALIDE = {'state', 'message_main_attachment_id'}
+
+
+def _format_heure(heures):
+    """8.5 -> '8h30'"""
+    minutes = int(round(heures * 60))
+    return "%dh%02d" % (minutes // 60, minutes % 60)
+
+
+def _lien(record):
+    """Lien cliquable vers un enregistrement, pour le chatter"""
+    return Markup('<a href="#" data-oe-model="%s" data-oe-id="%s">%s</a>') % (
+        record._name, record.id, record.display_name)
 
 
 class IsSavIntervention(models.Model):
@@ -86,10 +99,107 @@ class IsSavIntervention(models.Model):
         return super().unlink()
 
     def action_valider(self):
-        self.write({'state': 'valide'})
+        for rec in self.filtered(lambda r: r.state == 'en_cours'):
+            rec._ajouter_suivi_temps()
+            rec.write({'state': 'valide'})
 
     def action_remettre_en_cours(self):
-        self.write({'state': 'en_cours'})
+        for rec in self.filtered(lambda r: r.state == 'valide'):
+            rec._supprimer_suivi_temps()
+            rec.write({'state': 'en_cours'})
+
+    def _get_commentaire_suivi_temps(self):
+        return "SAV %s - Bon d'intervention %s" % (self.sav_id.name, self.numero)
+
+    def _ajouter_suivi_temps(self):
+        """Ajoute le temps du bon dans la saisie journalière de chaque intervenant :
+        création de la saisie si elle n'existe pas, sinon ajout d'une ligne SAV
+        et allongement de la journée de la durée du bon"""
+        self.ensure_one()
+        if not self.heure_debut or not self.heure_fin:
+            raise UserError("Les heures de début et de fin sont obligatoires pour valider le bon d'intervention.")
+        Saisie = self.env['is.suivi.temps.saisie'].sudo()
+        duree = self.heure_fin - self.heure_debut
+        commentaire = self._get_commentaire_suivi_temps()
+        vals_ligne = {
+            'type_travail': 'sav',
+            'centrale_id': self.centrale_id.id,
+            'duree': duree,
+            'sav_intervention_id': self.id,
+        }
+        messages = []
+        for user in self.intervenant_ids:
+            saisie = Saisie.search([('utilisateur_id', '=', user.id), ('date', '=', self.date)], limit=1)
+            try:
+                if not saisie:
+                    saisie = Saisie.create({
+                        'utilisateur_id': user.id,
+                        'date': self.date,
+                        'heure_debut': self.heure_debut,
+                        'heure_fin': self.heure_fin,
+                        'temps_pose': 0.0,
+                        'heure_route': self.temps_trajet,
+                        'commentaire': commentaire,
+                        'ligne_ids': [(0, 0, vals_ligne)],
+                    })
+                    messages.append(Markup("%s : saisie créée (%s de SAV) %s") % (
+                        user.name, _format_heure(duree), _lien(saisie)))
+                    continue
+                heure_fin = saisie.heure_fin + duree
+                if heure_fin > 24:
+                    raise ValidationError("L'ajout de %.2fh ferait dépasser minuit (heure de fin de la saisie)." % duree)
+                sequence = max(saisie.ligne_ids.mapped('sequence') or [0]) + 10
+                saisie.write({
+                    'heure_fin': heure_fin,
+                    'heure_route': (saisie.heure_route or 0.0) + (self.temps_trajet or 0.0),
+                    'commentaire': "\n".join(filter(None, [saisie.commentaire, commentaire])),
+                    'ligne_ids': [(0, 0, dict(vals_ligne, sequence=sequence))],
+                })
+                messages.append(Markup("%s : saisie mise à jour (ajout de %s de SAV, fin de journée à %s) %s") % (
+                    user.name, _format_heure(duree), _format_heure(heure_fin), _lien(saisie)))
+            except ValidationError as e:
+                raise ValidationError(
+                    "Impossible de mettre à jour le suivi du temps de %s le %s :\n%s"
+                    % (user.name, self.date.strftime('%d/%m/%Y'), e.args[0])
+                )
+        self._poster_message_suivi_temps("Suivi du temps mis à jour", messages)
+
+    def _poster_message_suivi_temps(self, titre, messages):
+        if messages:
+            self.message_post(body=Markup("<p><b>%s le %s :</b></p><ul>%s</ul>") % (
+                titre,
+                self.date.strftime('%d/%m/%Y'),
+                Markup("").join(Markup("<li>%s</li>") % m for m in messages),
+            ))
+
+    def _supprimer_suivi_temps(self):
+        """Retire le temps du bon des saisies journalières : suppression de la ligne SAV
+        (et de la saisie si elle ne contenait que cette ligne), sinon réduction de la journée"""
+        self.ensure_one()
+        lignes = self.env['is.suivi.temps.saisie.ligne'].sudo().search([('sav_intervention_id', '=', self.id)])
+        commentaire = self._get_commentaire_suivi_temps()
+        messages = []
+        for ligne in lignes:
+            saisie = ligne.saisie_id
+            user_name = saisie.utilisateur_id.name
+            if saisie.ligne_ids == ligne:
+                saisie.unlink()
+                messages.append(Markup("%s : saisie supprimée (elle ne contenait que ce bon)") % user_name)
+                continue
+            lignes_commentaire = (saisie.commentaire or '').split("\n")
+            if commentaire in lignes_commentaire:
+                lignes_commentaire.remove(commentaire)
+            duree = ligne.duree
+            heure_fin = saisie.heure_fin - duree
+            saisie.write({
+                'heure_fin': heure_fin,
+                'heure_route': max((saisie.heure_route or 0.0) - (self.temps_trajet or 0.0), 0.0),
+                'commentaire': "\n".join(lignes_commentaire) or False,
+                'ligne_ids': [(2, ligne.id)],
+            })
+            messages.append(Markup("%s : saisie mise à jour (retrait de %s de SAV, fin de journée à %s) %s") % (
+                user_name, _format_heure(duree), _format_heure(heure_fin), _lien(saisie)))
+        self._poster_message_suivi_temps("Suivi du temps retiré", messages)
 
     def action_print_bon_intervention(self):
         self.ensure_one()
