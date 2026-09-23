@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 from odoo import fields, models, api
-from odoo.exceptions import ValidationError
+from odoo.exceptions import ValidationError, UserError
+
+
+# Champs pouvant être modifiés sur un bon d'intervention validé (changement d'état et chatter)
+_CHAMPS_MODIFIABLES_SI_VALIDE = {'state', 'message_main_attachment_id'}
 
 
 class IsSavIntervention(models.Model):
@@ -11,6 +15,17 @@ class IsSavIntervention(models.Model):
     _rec_name = 'numero'
 
     numero = fields.Char(string="Numéro", copy=False, readonly=True, default='Nouveau')
+    state = fields.Selection(
+        [
+            ('en_cours', 'En cours'),
+            ('valide',   'Validé'),
+        ],
+        string="Etat",
+        default='en_cours',
+        required=True,
+        copy=False,
+        tracking=True,
+    )
     sav_id = fields.Many2one('is.sav', string="SAV", required=True, ondelete='cascade', index=True)
 
     # Informations automatiques reprises du SAV
@@ -60,6 +75,22 @@ class IsSavIntervention(models.Model):
                 vals['numero'] = self.env['ir.sequence'].next_by_code('is.sav.intervention') or 'Nouveau'
         return super().create(vals_list)
 
+    def write(self, vals):
+        if set(vals) - _CHAMPS_MODIFIABLES_SI_VALIDE and any(rec.state == 'valide' for rec in self):
+            raise UserError("Un bon d'intervention validé n'est plus modifiable.")
+        return super().write(vals)
+
+    def unlink(self):
+        if any(rec.state == 'valide' for rec in self):
+            raise UserError("Un bon d'intervention validé ne peut pas être supprimé.")
+        return super().unlink()
+
+    def action_valider(self):
+        self.write({'state': 'valide'})
+
+    def action_remettre_en_cours(self):
+        self.write({'state': 'en_cours'})
+
     def action_print_bon_intervention(self):
         self.ensure_one()
         return self.env.ref('is_jura_energie_solaire_18.action_report_bon_intervention').report_action(self)
@@ -76,6 +107,24 @@ class IsSavInterventionFourniture(models.Model):
     reference = fields.Char(string="Référence")
     designation = fields.Char(string="Désignation", required=True)
     quantite = fields.Float(string="Quantité", default=1.0)
+
+    def _check_intervention_modifiable(self):
+        if any(rec.intervention_id.state == 'valide' for rec in self):
+            raise UserError("Les fournitures d'un bon d'intervention validé ne sont plus modifiables.")
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        records = super().create(vals_list)
+        records._check_intervention_modifiable()
+        return records
+
+    def write(self, vals):
+        self._check_intervention_modifiable()
+        return super().write(vals)
+
+    def unlink(self):
+        self._check_intervention_modifiable()
+        return super().unlink()
 
     @api.onchange('product_id')
     def _onchange_product_id(self):

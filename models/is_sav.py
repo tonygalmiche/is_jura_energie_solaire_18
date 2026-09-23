@@ -336,9 +336,19 @@ class IsSav(models.Model):
 
     @api.constrains('state', 'info_intervention')
     def _check_termine(self):
-        """Un SAV ne peut être terminé que s'il a un bon d'intervention ou des informations d'intervention"""
+        """Un SAV ne peut être terminé que s'il a un bon d'intervention ou des informations d'intervention,
+        et s'il n'a aucun bon d'intervention en cours"""
         for record in self:
-            if record.state == 'termine' and not record.intervention_ids and not (record.info_intervention or '').strip():
+            if record.state != 'termine':
+                continue
+            en_cours = record.intervention_ids.filtered(lambda i: i.state == 'en_cours')
+            if en_cours:
+                raise ValidationError(
+                    "Le SAV '%s' ne peut pas passer à 'Terminé' : "
+                    "le(s) bon(s) d'intervention %s est/sont encore en cours. "
+                    "Il faut soit le(s) valider, soit le(s) supprimer." % (record.name, ", ".join(en_cours.mapped('numero')))
+                )
+            if not record.intervention_ids and not (record.info_intervention or '').strip():
                 raise ValidationError(
                     "Le SAV '%s' ne peut pas passer à 'Terminé' : "
                     "il faut soit créer un bon d'intervention, soit renseigner le champ 'Informations intervention'." % record.name
