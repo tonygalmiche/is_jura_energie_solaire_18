@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from odoo import fields, models, api
+from odoo.exceptions import ValidationError
 from odoo.tools import html_escape
 from datetime import datetime, timedelta
 import pytz
@@ -65,6 +66,7 @@ class IsSav(models.Model):
     ticket_number   = fields.Char(string="N°Ticket", size=40, tracking=True)
     description     = fields.Text(string="Description", tracking=True)
     info_depannage  = fields.Text(string="Informations Dépannage", tracking=True)
+    info_intervention = fields.Text(string="Informations intervention", tracking=True)
     state = fields.Selection(
         SAV_STATE_SELECTION,
         string="Statut",
@@ -331,6 +333,16 @@ class IsSav(models.Model):
         for line in self._fields['state'].selection:
             mylist.append(line[0])
         return mylist
+
+    @api.constrains('state', 'info_intervention')
+    def _check_termine(self):
+        """Un SAV ne peut être terminé que s'il a un bon d'intervention ou des informations d'intervention"""
+        for record in self:
+            if record.state == 'termine' and not record.intervention_ids and not (record.info_intervention or '').strip():
+                raise ValidationError(
+                    "Le SAV '%s' ne peut pas passer à 'Terminé' : "
+                    "il faut soit créer un bon d'intervention, soit renseigner le champ 'Informations intervention'." % record.name
+                )
 
     def write(self, vals):
         """Surcharge de write pour mettre à jour date_resolution et sous_statut automatiquement"""

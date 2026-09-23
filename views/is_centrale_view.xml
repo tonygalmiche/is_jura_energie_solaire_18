@@ -457,6 +457,7 @@
                                     <field name="ticket_number"    optional="show"/>
                                     <field name="description"      optional="show"/>
                                     <field name="info_depannage"   optional="show"/>
+                                    <field name="info_intervention" optional="show"/>
                                     <field name="state"            optional="show"  widget="badge"
                                         decoration-info="state == 'pas_commence'"
                                         decoration-warning="state in ('en_cours','en_etude')"
