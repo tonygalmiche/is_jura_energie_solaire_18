@@ -341,18 +341,18 @@ class IsSav(models.Model):
         for record in self:
             if record.state != 'termine':
                 continue
-            en_cours = record.intervention_ids.filtered(lambda i: i.state == 'en_cours')
-            if en_cours:
-                raise ValidationError(
-                    "Le SAV '%s' ne peut pas passer à 'Terminé' : "
-                    "le(s) bon(s) d'intervention %s est/sont encore en cours. "
-                    "Il faut soit le(s) valider, soit le(s) supprimer." % (record.name, ", ".join(en_cours.mapped('numero')))
-                )
-            if not record.intervention_ids and not (record.info_intervention or '').strip():
-                raise ValidationError(
-                    "Le SAV '%s' ne peut pas passer à 'Terminé' : "
-                    "il faut soit créer un bon d'intervention, soit renseigner le champ 'Informations intervention'." % record.name
-                )
+            # en_cours = record.intervention_ids.filtered(lambda i: i.state == 'en_cours')
+            # if en_cours:
+            #     raise ValidationError(
+            #         "Le SAV '%s' ne peut pas passer à 'Terminé' : "
+            #         "le(s) bon(s) d'intervention %s est/sont encore en cours. "
+            #         "Il faut soit le(s) valider, soit le(s) supprimer." % (record.name, ", ".join(en_cours.mapped('numero')))
+            #     )
+            # if not record.intervention_ids and not (record.info_intervention or '').strip():
+            #     raise ValidationError(
+            #         "Le SAV '%s' ne peut pas passer à 'Terminé' : "
+            #         "il faut soit créer un bon d'intervention, soit renseigner le champ 'Informations intervention'." % record.name
+            #     )
 
     def write(self, vals):
         """Surcharge de write pour mettre à jour date_resolution et sous_statut automatiquement"""
