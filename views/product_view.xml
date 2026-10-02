@@ -72,6 +72,7 @@
                 <field name="is_marque"/>
                 <field name="is_puissance_kva"/>
                 <field name="is_puissance_w"/>
+                <field name="is_capacite_kwh"/>
             </field> 
             <group name="internal_notes" position="before">
                 <group>
@@ -94,6 +95,7 @@
                 <field name="is_marque"     optional="show"/>
                 <field name="is_puissance_kva" optional="show"/>
                 <field name="is_puissance_w"   optional="show"/>
+                <field name="is_capacite_kwh"  optional="show"/>
             </field>
         </field>
     </record> 

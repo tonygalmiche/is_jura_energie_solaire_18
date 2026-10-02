@@ -310,9 +310,13 @@
                                     <field name="nature_entrale"/>
                                     <field name="prm"/>
                                     <field name="loget"/>
+                                </group>
+                                <group>
+                                    <field name="amperage_disjoncteur_branchement"/>
                                     <field name="coffret_dc"/>
--                                    <field name="nb_champs_solaire"/>
+                                    <field name="nb_champs_solaire"/>
                                     <field name="presence_optimiseur"/>
+                                    <field name="presence_batterie"/>
                                 </group>
                             </group>
                             <group string="Panneaux" invisible="secteur in ['th']">
@@ -378,6 +382,20 @@
                                     </field>
                                 </group>
                              </group>
+                            <group string="Batteries" invisible="presence_batterie==False">
+                                <group>
+                                    <field name="batterie_ids" nolabel="1" colspan="2">
+                                        <list editable="bottom">
+                                            <field name="sequence"          widget="handle"/>
+                                            <field name="batterie_id"       optional="show"/>
+                                            <field name="quantite"          optional="show" sum="Total"/>
+                                            <field name="capacite_batterie" optional="show"/>
+                                            <field name="capacite_totale"   optional="show" sum="Total"/>
+                                        </list>
+                                    </field>
+                                    <field name="capacite_systeme"/>
+                                </group>
+                            </group>
                             <group string="Protections électriques" invisible="secteur in ['th']">
                                 <group>
                                     <field name="coffret_ids" nolabel="1">

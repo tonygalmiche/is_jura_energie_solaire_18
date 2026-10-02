@@ -309,7 +309,29 @@ class IsCentraleOptimiseur(models.Model):
     sequence           = fields.Integer("Ordre")
     optimiseur_id      = fields.Many2one('product.product', string="Optimiseur")
     quantite           = fields.Integer("Quantité")
- 
+
+
+class IsCentraleBatterie(models.Model):
+    _name='is.centrale.batterie'
+    _description = "Batteries des centrales"
+    _order='sequence,id'
+
+    centrale_id       = fields.Many2one('is.centrale', 'Centrale', required=True, ondelete='cascade')
+    sequence          = fields.Integer("Ordre")
+    batterie_id       = fields.Many2one('product.product', string="Produit")
+    quantite          = fields.Integer("Quantité", default=1)
+    capacite_batterie = fields.Float('Capacité (kWh)'        , compute='_compute', store=True, readonly=True)
+    capacite_totale   = fields.Float('Capacité totale (kWh)' , compute='_compute', store=True, readonly=True)
+
+    @api.depends('batterie_id','batterie_id.product_tmpl_id.is_capacite_kwh','quantite')
+    def _compute(self):
+        for obj in self:
+            capacite_batterie = 0
+            if obj.batterie_id:
+                capacite_batterie = obj.batterie_id.product_tmpl_id.is_capacite_kwh
+            obj.capacite_batterie = capacite_batterie
+            obj.capacite_totale   = capacite_batterie * obj.quantite
+
 
 class IsCentraleSystemeIntegration(models.Model):
     _name='is.centrale.systeme.integration'
@@ -811,6 +833,7 @@ class IsCentrale(models.Model):
     accessoire_onduleur_ids = fields.One2many('is.centrale.accessoire.onduleur', 'centrale_id', 'Accessoires onduleurs')
     bridage_onduleur = fields.Integer("Bridage onduleur (kVA)", tracking=True)
     coffret_ids  = fields.One2many('is.centrale.coffret' , 'centrale_id', 'Protections électriques')
+    amperage_disjoncteur_branchement = fields.Integer("Ampérage disjoncteur de branchement (A)", tracking=True)
     type_communication = fields.Selection(
         [
             ('wifi'      , 'Wi-Fi'),
@@ -841,6 +864,9 @@ class IsCentrale(models.Model):
     coffret_dc          = fields.Boolean("Coffret DC", default=False, tracking=True)
     nb_champs_solaire   = fields.Integer("Nombre de champs solaire", tracking=True)
     presence_optimiseur = fields.Boolean("Présence d’optimiseur", default=False, tracking=True)
+    presence_batterie   = fields.Boolean("Présence batterie", default=False, tracking=True)
+    batterie_ids        = fields.One2many('is.centrale.batterie' , 'centrale_id', 'Batteries')
+    capacite_systeme    = fields.Float("Capacité du système (kWh)", compute='_compute_capacite_systeme', store=True, readonly=True)
     optimiseur_ids      = fields.One2many('is.centrale.optimiseur' , 'centrale_id', 'Optimiseurs')
     systeme_integration_ids = fields.One2many('is.centrale.systeme.integration', 'centrale_id', "Système d'intégration")
     cable_electrique_ids    = fields.One2many('is.centrale.cable.electrique', 'centrale_id', "Câbles électriques")
@@ -953,6 +979,11 @@ class IsCentrale(models.Model):
             record.puissance_panneau_totale = sum(
                 panneau.puissance_totale for panneau in record.panneau_ids
             )
+
+    @api.depends('batterie_ids.capacite_totale')
+    def _compute_capacite_systeme(self):
+        for record in self:
+            record.capacite_systeme = sum(record.batterie_ids.mapped('capacite_totale'))
 
     @api.depends('localisation')
     def _compute_localisation_google_maps_url(self):
@@ -1401,6 +1432,22 @@ class IsCentrale(models.Model):
                     'name': line.optimiseur_id.display_name,
                     'product_qty': line.quantite,
                     'price_unit': self._get_purchase_price_unit(line.optimiseur_id, partner),
+                    'is_centrale_id': self.id,
+                })
+
+        # Section Batteries
+        if self.batterie_ids.filtered(lambda l: l.batterie_id and l.quantite):
+            lines.append({'order_id': order.id, 'display_type': 'line_section', 'name': 'Batteries', 'product_qty': 0})
+
+        # Batteries
+        for line in self.batterie_ids:
+            if line.batterie_id and line.quantite:
+                lines.append({
+                    'order_id': order.id,
+                    'product_id': line.batterie_id.id,
+                    'name': line.batterie_id.display_name,
+                    'product_qty': line.quantite,
+                    'price_unit': self._get_purchase_price_unit(line.batterie_id, partner),
                     'is_centrale_id': self.id,
                 })
 
