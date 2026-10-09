@@ -14,6 +14,13 @@
                         <span class="o_stat_text">Centrale</span>
                     </div>
                 </button>
+                <field name="is_sav_read_ok" invisible="1"/>
+                <button class="oe_stat_button" type="object" name="action_open_sav"
+                    icon="fa-wrench" invisible="not is_sav_read_ok">
+                    <div class="o_stat_info">
+                        <span class="o_stat_text">SAV</span>
+                    </div>
+                </button>
             </xpath>
             <xpath expr="//notebook" position="before">
                 <group>

@@ -25,6 +25,8 @@ class crm_lead(models.Model):
     is_adresse      = fields.Char("Adresse", size=60, tracking=True, required=False)
     is_localisation = fields.Char("Localisation", tracking=True)
     is_centrale_id  = fields.Many2one('is.centrale', string="Centrale", tracking=True)
+    is_sav_id       = fields.Many2one('is.sav', string="SAV", compute='_compute_is_sav_id') # Lien stocké sur is.sav.lead_id
+    is_sav_read_ok  = fields.Boolean(compute='_compute_is_sav_id')
     is_date_changement_etat = fields.Datetime("Date de dernier changement d'état", readonly=False, tracking=True)
     is_date_premiere_reunion  = fields.Date("Date de première réunion", readonly=True, tracking=True)
     is_delai_prise_en_compte  = fields.Integer("Délai de prise en compte de la demande (jours)", readonly=True, tracking=True)
@@ -67,6 +69,25 @@ class crm_lead(models.Model):
         'attachment_id',
         string="Etude",
     )
+
+    def _compute_is_sav_id(self):
+        # sudo : trouver le SAV même si l'utilisateur n'y a pas accès (bouton masqué via is_sav_read_ok)
+        savs = self.env['is.sav'].sudo().search([('lead_id', 'in', self.ids)])
+        sav_by_lead = {sav.lead_id.id: sav.sudo(False) for sav in savs}
+        for lead in self:
+            sav = sav_by_lead.get(lead.id, self.env['is.sav'])
+            lead.is_sav_id = sav
+            lead.is_sav_read_ok = bool(sav) and sav.has_access('read')
+
+    def action_open_sav(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'is.sav',
+            'res_id': self.is_sav_id.id,
+            'view_mode': 'form',
+            'views': [(False, 'form')],
+        }
 
     def write(self, vals):
         # Mettre à jour la date de changement d'état si stage_id est modifié, ou si

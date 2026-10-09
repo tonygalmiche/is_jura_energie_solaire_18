@@ -2,6 +2,7 @@
 from odoo import fields, models, api
 from odoo.exceptions import ValidationError
 from odoo.tools import html_escape
+from markupsafe import Markup
 from datetime import datetime, timedelta
 import pytz
 from .is_centrale import SECTEUR_SELECTION
@@ -124,11 +125,57 @@ class IsSav(models.Model):
     autres_sav_ids        = fields.One2many('is.sav', compute='_compute_autres_sav_ids', string='Autres SAV')
     intervention_ids      = fields.One2many('is.sav.intervention', 'sav_id', string="Interventions")
     intervention_count    = fields.Integer(compute='_compute_intervention_count')
+    lead_id               = fields.Many2one('crm.lead', string="Opportunité", tracking=True, copy=False, index=True)
+    lead_create_ok        = fields.Boolean(compute='_compute_lead_access')
+    lead_read_ok          = fields.Boolean(compute='_compute_lead_access')
+
+    _sql_constraints = [
+        ('lead_id_uniq', 'unique(lead_id)', "Cette opportunité est déjà liée à un autre SAV."),
+    ]
 
     @api.depends('intervention_ids')
     def _compute_intervention_count(self):
         for record in self:
             record.intervention_count = len(record.intervention_ids)
+
+    @api.depends('lead_id')
+    def _compute_lead_access(self):
+        """Affichage des boutons Créer / Voir l'opportunité selon les droits de l'utilisateur"""
+        create_ok = self.env['crm.lead'].has_access('create')
+        for record in self:
+            # La création écrit aussi lead_id sur le SAV
+            record.lead_create_ok = create_ok and record.has_access('write')
+            record.lead_read_ok = bool(record.lead_id) and record.lead_id.has_access('read')
+
+    def action_create_lead(self):
+        """Crée l'opportunité CRM (sous-secteur SAV) liée à ce SAV"""
+        self.ensure_one()
+        if self.lead_id:
+            return self.lead_id.action_open_lead()
+        lead = self.env['crm.lead'].create({
+            'name': self.name,
+            'type': 'opportunity',
+            'partner_id': self.client_id.id,
+            'is_secteur': self.secteur,
+            'is_sous_secteur': 'sav',
+            'is_adresse': self.adresse,
+            'is_localisation': self.localisation,
+            'is_centrale_id': self.centrale_id.id,
+            'description': self.description,
+        })
+        self.lead_id = lead.id
+        lead.message_post(
+            body=Markup(f'<p>Opportunité créée depuis le SAV : <a href="#" data-oe-model="is.sav" data-oe-id="{self.id}">{html_escape(self.name)}</a></p>')
+        )
+        self.message_post(
+            body=Markup(f'<p>Opportunité créée : <a href="#" data-oe-model="crm.lead" data-oe-id="{lead.id}">{html_escape(lead.name)}</a></p>')
+        )
+        return lead.action_open_lead()
+
+    def action_open_lead(self):
+        """Ouvre l'opportunité CRM liée au SAV"""
+        self.ensure_one()
+        return self.lead_id.action_open_lead()
 
     def action_view_interventions(self):
         """Ouvre la liste des interventions SAV liées (et permet d'en créer)"""
