@@ -29,4 +29,18 @@
     <record id="project_todo.menu_todo_todos" model="ir.ui.menu">
         <field name="groups_id" eval="[Command.set([ref('sales_team.group_sale_salesman_all_leads')])]"/>
     </record>
+
+    <!-- Groupe volontairement vide : sert à masquer les menus standard non utilisés (Tableaux de bord...), y compris aux administrateurs -->
+    <record id="is_afficher_menus_non_utilises_group" model="res.groups">
+        <field name="name">Afficher les menus non utilisés</field>
+        <field name="category_id" ref="module_category_jes"/>
+    </record>
+
+    <!-- Menus non utilisés, réservés au groupe vide « Afficher les menus non utilisés » -->
+    <record id="spreadsheet_dashboard.spreadsheet_dashboard_menu_root" model="ir.ui.menu">
+        <field name="groups_id" eval="[Command.set([ref('is_afficher_menus_non_utilises_group')])]"/>
+    </record>
+    <record id="utm.menu_link_tracker_root" model="ir.ui.menu">
+        <field name="groups_id" eval="[Command.set([ref('is_afficher_menus_non_utilises_group')])]"/>
+    </record>
 </odoo>

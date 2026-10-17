@@ -22,6 +22,8 @@ Module Odoo 18 pour Jura Energie Solaire
         "is_attachment_search",
         "is_gantt_view",
         "hr_holidays", # Congés
+        "spreadsheet_dashboard", # Menu "Tableaux de bord" masqué
+        "utm", # Menu "Suivi des liens" masqué
     ],
     "data" : [
         "security/is_suivi_temps_security.xml",
