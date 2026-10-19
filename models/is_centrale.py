@@ -994,23 +994,34 @@ class IsCentrale(models.Model):
             else:
                 record.localisation_google_maps_url = False
 
+    def _creer_premiere_maintenance(self):
+        """Crée la première maintenance (1 an après la date de signature) si la centrale n'en a pas encore"""
+        for record in self:
+            if not record.maintenance_date_signature:
+                continue
+            # Vérifier qu'il n'existe pas déjà une maintenance pour cette centrale
+            existing_maintenance = self.env['is.maintenance'].search([
+                ('centrale_id', '=', record.id),
+            ], limit=1)
+            if not existing_maintenance:
+                self.env['is.maintenance'].create({
+                    'centrale_id': record.id,
+                    'date_prevue': record.maintenance_date_signature + relativedelta(years=1),
+                    'technicien_id': self.env.user.id,
+                })
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        records = super(IsCentrale, self).create(vals_list)
+        # Si maintenance_date_signature est renseignée dès la création, créer une fiche de maintenance
+        records._creer_premiere_maintenance()
+        return records
+
     def write(self, vals):
         res = super(IsCentrale, self).write(vals)
         # Si maintenance_date_signature est renseignée, créer une fiche de maintenance
         if 'maintenance_date_signature' in vals and vals['maintenance_date_signature']:
-            for record in self:
-                # Vérifier qu'il n'existe pas déjà une maintenance pour cette centrale
-                existing_maintenance = self.env['is.maintenance'].search([
-                    ('centrale_id', '=', record.id),
-                ], limit=1)
-                if not existing_maintenance:
-                    date_signature = fields.Date.from_string(vals['maintenance_date_signature'])
-                    date_prevue = date_signature + relativedelta(years=1)
-                    self.env['is.maintenance'].create({
-                        'centrale_id': record.id,
-                        'date_prevue': date_prevue,
-                        'technicien_id': self.env.user.id,
-                    })
+            self._creer_premiere_maintenance()
         # Si crd_recu est renseigné, créer 5 activités d'alerte
         if 'crd_recu' in vals and vals['crd_recu']:
             activity_type = self.env.ref('mail.mail_activity_data_todo', raise_if_not_found=False)
