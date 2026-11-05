@@ -15,8 +15,10 @@ class ResPartner(models.Model):
 
     is_client_a_risque = fields.Selection(
         [
-            ('oui', 'Oui'),
             ('non', 'Non'),
+            ('oui', 'Oui'),
+            ('facture_non_paye', 'Facture non payé'),
+            ('litige_en_cours', 'Litige en cours'),
         ],
         string="Client à risque",
         tracking=True,

@@ -25,6 +25,8 @@
                 <field name="puissance_onduleur_totale" optional="hide"/>
 
                 <field name="client_id" optional="show" widget="many2one_clickable"/>
+                <field name="client_a_risque" optional="hide" widget="badge"
+                    decoration-danger="client_a_risque and client_a_risque != 'non'"/>
 
 
                 <field name="dp_etat" optional="show" widget="badge" decoration-success="dp_etat == 'obtenu'"/>
@@ -140,6 +142,11 @@
                             <group>
                                 <group>
                                     <field name="client_id"/>
+                                </group>
+                                <group invisible="not client_id">
+                                    <field name="client_a_risque" widget="badge"
+                                        decoration-success="client_a_risque == 'non'"
+                                        decoration-danger="client_a_risque and client_a_risque != 'non'"/>
                                 </group>
                             </group>
                             <group invisible="not is_client_contacts_html">

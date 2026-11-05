@@ -94,7 +94,7 @@
                 </field>
                 <field name="complete_name" position="after">
                     <field name="is_client_a_risque" optional="show"  widget="badge"
-                        decoration-danger="is_client_a_risque == 'oui'"
+                        decoration-danger="is_client_a_risque and is_client_a_risque != 'non'"
                     />
                     <field name="is_capital_social" optional="hide"/>
                     <field name="is_lieu_rcs" optional="hide"/>

@@ -9,7 +9,7 @@
                 <field name="secteur"         optional="show"/>
                 <field name="centrale_id"     optional="show" widget="many2one_clickable"/>
                 <field name="maintenance_date_signature" optional="hide" string="Date signature maintenance ⭐"/>
-                <field name="is_client_a_risque" optional="show" widget="badge" decoration-danger="is_client_a_risque == 'oui'"/>
+                <field name="is_client_a_risque" optional="show" widget="badge" decoration-danger="is_client_a_risque and is_client_a_risque != 'non'"/>
                 <field name="date_demande"    optional="show"/>
                 <field name="degre_urgence"   optional="show"  widget="badge"
                     decoration-info="degre_urgence == 'non_urgent'"
@@ -101,6 +101,11 @@
                                 <group>
                                     <field name="client_id"/>
                                 </group>
+                                <group invisible="not client_id">
+                                    <field name="is_client_a_risque" widget="badge"
+                                        decoration-success="is_client_a_risque == 'non'"
+                                        decoration-danger="is_client_a_risque and is_client_a_risque != 'non'"/>
+                                </group>
                             </group>
                             <group invisible="not is_client_contacts_html">
                                 <field name="is_client_contacts_html" nolabel="1" readonly="1"/>
@@ -170,8 +175,8 @@
                             <div>
                                 <field name="client_id"/>
                             </div>
-                            <div t-if="record.is_client_a_risque.raw_value == 'oui'" style="background-color: #dc3545; color: white; padding: 3px 6px; border-radius: 3px; font-size: 12px; text-align: center; margin: 2px 0; font-weight: bold;">
-                                Client à risque
+                            <div t-if="record.is_client_a_risque.raw_value and record.is_client_a_risque.raw_value != 'non'" style="background-color: #dc3545; color: white; padding: 3px 6px; border-radius: 3px; font-size: 12px; text-align: center; margin: 2px 0; font-weight: bold;">
+                                Client à risque<t t-if="record.is_client_a_risque.raw_value != 'oui'"> : <t t-esc="record.is_client_a_risque.value"/></t>
                             </div>
                             <div style="display: flex; justify-content: space-between; align-items: center;">
                                 <div style="font-style: italic; color: #6c757d;" title="Date de demande du SAV">
@@ -217,7 +222,7 @@
                 <filter string="SI" name="secteur_si" domain="[('secteur','=','si')]"/>
                 <filter string="PV" name="secteur_pv" domain="[('secteur','in',['re','gp'])]"/>
                 <separator/>
-                <filter string="Clients à risque" name="clients_a_risque" domain="[('is_client_a_risque','=','oui')]"/>
+                <filter string="Clients à risque" name="clients_a_risque" domain="[('is_client_a_risque','in',['oui','facture_non_paye','litige_en_cours'])]"/>
                 <group expand="0" string="Grouper par">
                     <filter string="Centrale" name="group_by_centrale" context="{'group_by': 'centrale_id'}"/>
                     <filter string="Secteur" name="group_by_secteur" context="{'group_by': 'secteur'}"/>

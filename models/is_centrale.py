@@ -607,6 +607,7 @@ class IsCentrale(models.Model):
     adresse                  = fields.Char("Adresse", size=60, tracking=True)
     client_id                = fields.Many2one('res.partner', string="Client", tracking=True)
     client_child_ids = fields.One2many(related="client_id.child_ids")
+    client_a_risque  = fields.Selection(related="client_id.is_client_a_risque", string="Client à risque")
     is_client_contacts_html = fields.Html(related='client_id.is_contacts_html', store=False, string="Tableau des contacts")
     lead_ids = fields.One2many('crm.lead', 'is_centrale_id', string="Opportunités")
     sav_ids = fields.One2many('is.sav', 'centrale_id', string="SAVs", tracking=True)
