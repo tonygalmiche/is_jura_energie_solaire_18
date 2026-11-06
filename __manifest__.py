@@ -18,7 +18,6 @@ Module Odoo 18 pour Jura Energie Solaire
         "crm",
         "hr_timesheet",
         "l10n_fr_account",
-        "web_chatter_position",
         "is_attachment_search",
         "is_gantt_view",
         "hr_holidays", # Congés
