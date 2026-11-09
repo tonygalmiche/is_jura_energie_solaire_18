@@ -429,11 +429,13 @@ class IsSav(models.Model):
         if not users:
             return
         centrale = Markup(" (centrale %s)") % self.centrale_id.name if self.centrale_id else ""
-        body = Markup("Vous avez été ajouté comme intervenant sur le SAV <b>%s</b>%s.") % (self.name, centrale)
-        self.with_context(is_notification_odoo_seulement=True).message_notify(
-            partner_ids=users.partner_id.ids,
-            subject="SAV attribué : %s" % self.name,
+        body = Markup("SAV <b>%s</b>%s attribué à %s.") % (self.name, centrale, ", ".join(users.mapped('name')))
+        # Note interne : visible dans le chatter, notifie seulement les intervenants ajoutés
+        self.with_context(is_notification_odoo_seulement=True).message_post(
             body=body,
+            partner_ids=users.partner_id.ids,
+            message_type='comment',
+            subtype_xmlid='mail.mt_note',
         )
 
     def _notify_get_recipients(self, message, msg_vals, **kwargs):
