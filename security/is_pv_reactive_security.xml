@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Sous-catégorie PV Reactive -->
+    <record id="module_category_jes_pv_reactive" model="ir.module.category">
+        <field name="name">PV Reactive</field>
+        <field name="sequence">30</field>
+        <field name="parent_id" ref="module_category_jes"/>
+    </record>
+
+    <!-- Groupe PV Reactive : compte XML-RPC utilisé par l'application PV Reactive -->
+    <record id="group_pv_reactive" model="res.groups">
+        <field name="name">PV Reactive</field>
+        <field name="category_id" ref="module_category_jes_pv_reactive"/>
+        <field name="comment">Accès XML-RPC de l'application PV Reactive : centrales, équipements, maintenances et SAV.</field>
+    </record>
+</odoo>
