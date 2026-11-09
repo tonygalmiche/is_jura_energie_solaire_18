@@ -63,7 +63,7 @@ class IsSav(models.Model):
         default='non_urgent'
     )
     date_resolution = fields.Date(string="Date de résolution", tracking=True)
-    intervenant_ids = fields.Many2many('res.partner', string="Intervenants", tracking=True)
+    intervenant_ids = fields.Many2many('res.users', string="Intervenants", domain=[('share', '=', False)], tracking=True)
     ticket_number   = fields.Char(string="N°Ticket", size=40, tracking=True)
     description     = fields.Text(string="Description", tracking=True)
     info_depannage  = fields.Text(string="Informations Dépannage", tracking=True)
