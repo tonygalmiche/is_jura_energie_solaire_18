@@ -401,6 +401,13 @@ class IsSav(models.Model):
             #         "il faut soit créer un bon d'intervention, soit renseigner le champ 'Informations intervention'." % record.name
             #     )
 
+    @api.model_create_multi
+    def create(self, vals_list):
+        records = super().create(vals_list)
+        for record in records:
+            record._notifier_intervenants(record.intervenant_ids)
+        return records
+
     def write(self, vals):
         """Surcharge de write pour mettre à jour date_resolution et sous_statut automatiquement"""
         # Si le statut passe à 'termine' et que date_resolution est vide
@@ -408,5 +415,33 @@ class IsSav(models.Model):
             for record in self:
                 if not record.date_resolution and 'date_resolution' not in vals:
                     vals['date_resolution'] = fields.Date.today()
-        return super(IsSav, self).write(vals)
+        anciens = {record.id: record.intervenant_ids for record in self} if 'intervenant_ids' in vals else {}
+        res = super(IsSav, self).write(vals)
+        for record in self.filtered(lambda r: r.id in anciens):
+            record._notifier_intervenants(record.intervenant_ids - anciens[record.id])
+        return res
+
+    def _notifier_intervenants(self, users):
+        """Notification dans la boîte de réception Odoo (jamais de mail) aux intervenants ajoutés.
+        Celui qui fait l'ajout ne reçoit rien (il sait déjà qu'il s'est ajouté)."""
+        self.ensure_one()
+        users = users.filtered(lambda u: u.active and u != self.env.user)
+        if not users:
+            return
+        centrale = Markup(" (centrale %s)") % self.centrale_id.name if self.centrale_id else ""
+        body = Markup("Vous avez été ajouté comme intervenant sur le SAV <b>%s</b>%s.") % (self.name, centrale)
+        self.with_context(is_notification_odoo_seulement=True).message_notify(
+            partner_ids=users.partner_id.ids,
+            subject="SAV attribué : %s" % self.name,
+            body=body,
+        )
+
+    def _notify_get_recipients(self, message, msg_vals, **kwargs):
+        """Notification des intervenants : boîte de réception Odoo, même si l'utilisateur a choisi le mail"""
+        recipients = super()._notify_get_recipients(message, msg_vals, **kwargs)
+        if self.env.context.get('is_notification_odoo_seulement'):
+            for recipient in recipients:
+                if recipient.get('notif') == 'email' and recipient.get('type') == 'user':
+                    recipient['notif'] = 'inbox'
+        return recipients
 
