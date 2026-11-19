@@ -6,9 +6,9 @@ from .is_sav import _ODOO_COLORS
 
 
 # Champs pouvant être modifiés sur un bon d'intervention validé
-# (changement d'état, facturation, effacement de la signature à la remise en cours et chatter)
+# (changement d'état, facturation, e-mail d'envoi, effacement de la signature à la remise en cours et chatter)
 _CHAMPS_MODIFIABLES_SI_VALIDE = {
-    'state', 'facturation', 'signature', 'signataire', 'date_signature', 'message_main_attachment_id',
+    'state', 'facturation', 'email', 'signature', 'signataire', 'date_signature', 'message_main_attachment_id',
 }
 
 
@@ -37,6 +37,11 @@ class IsSavIntervention(models.Model):
     centrale_id = fields.Many2one(related='sav_id.centrale_id', string="Centrale", readonly=True)
     secteur = fields.Selection(related='sav_id.secteur', string="Secteur", readonly=True)
     client_id = fields.Many2one(related='sav_id.client_id', string="Client", readonly=True)
+    email = fields.Char(
+        string="E-mail du client",
+        compute='_compute_email', store=True, readonly=False,
+        help="Adresse utilisée par défaut pour l'envoi du bon par e-mail (reprise du client, modifiable)",
+    )
 
     date = fields.Date(string="Date", required=True, default=fields.Date.today)
     intervenant_ids = fields.Many2many(
@@ -68,6 +73,11 @@ class IsSavIntervention(models.Model):
     heure_fin = fields.Float(string="Heure de fin (trajet inclus)")
     duree = fields.Float(string="Durée intervention")
     temps_trajet = fields.Float(string="Temps de trajet")
+
+    @api.depends('client_id')
+    def _compute_email(self):
+        for rec in self:
+            rec.email = rec.client_id.email or False
 
     @api.depends('zone_id', 'zone_id.name', 'zone_id.color')
     def _compute_zone_html(self):

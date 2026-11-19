@@ -92,6 +92,7 @@
                             <field name="centrale_id" readonly="1"/>
                             <field name="secteur" readonly="1"/>
                             <field name="client_id" readonly="1"/>
+                            <field name="email" widget="email"/>
                         </group>
                         <group>
                             <field name="date" readonly="state == 'valide'"/>

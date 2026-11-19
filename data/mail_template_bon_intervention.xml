@@ -7,7 +7,7 @@
             <field name="name">Bon d'intervention : envoi au client</field>
             <field name="model_id" ref="model_is_sav_intervention"/>
             <field name="email_from">{{ user.company_id.email_formatted }}</field>
-            <field name="partner_to">{{ object.client_id.id or '' }}</field>
+            <field name="email_to">{{ object.email or '' }}</field>
             <field name="subject">Bon d'intervention N°{{ object.numero }} - {{ user.company_id.name }}</field>
             <field name="report_template_ids" eval="[(4, ref('is_jura_energie_solaire_18.action_report_bon_intervention'))]"/>
             <field name="lang">{{ object.client_id.lang }}</field>
