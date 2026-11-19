@@ -5,8 +5,11 @@ from odoo.tools import html_escape
 from .is_sav import _ODOO_COLORS
 
 
-# Champs pouvant être modifiés sur un bon d'intervention validé (changement d'état, facturation et chatter)
-_CHAMPS_MODIFIABLES_SI_VALIDE = {'state', 'facturation', 'message_main_attachment_id'}
+# Champs pouvant être modifiés sur un bon d'intervention validé
+# (changement d'état, facturation, effacement de la signature à la remise en cours et chatter)
+_CHAMPS_MODIFIABLES_SI_VALIDE = {
+    'state', 'facturation', 'signature', 'signataire', 'date_signature', 'message_main_attachment_id',
+}
 
 
 class IsSavIntervention(models.Model):
@@ -56,6 +59,9 @@ class IsSavIntervention(models.Model):
         tracking=True,
     )
     description = fields.Text(string="Description de l'intervention", required=True)
+    signataire = fields.Char(string="Nom du signataire", copy=False)
+    signature = fields.Image(string="Signature du client", max_width=1024, max_height=1024, copy=False)
+    date_signature = fields.Datetime(string="Date de signature", readonly=True, copy=False)
     fourniture_ids = fields.One2many('is.sav.intervention.fourniture', 'intervention_id', string="Fourniture")
     # Heures et temps de trajet : plus saisis (masqués), conservés pour les anciens bons
     heure_debut = fields.Float(string="Heure de début (trajet inclus)")
@@ -89,15 +95,24 @@ class IsSavIntervention(models.Model):
         for vals in vals_list:
             if vals.get('numero', 'Nouveau') == 'Nouveau':
                 vals['numero'] = self.env['ir.sequence'].next_by_code('is.sav.intervention') or 'Nouveau'
+            if vals.get('signature'):
+                vals['date_signature'] = fields.Datetime.now()
         return super().create(vals_list)
 
+    def _est_verrouille(self):
+        """Bon validé : plus modifiable, sauf remise en cours"""
+        self.ensure_one()
+        return self.state == 'valide'
+
     def write(self, vals):
-        if set(vals) - _CHAMPS_MODIFIABLES_SI_VALIDE and any(rec.state == 'valide' for rec in self):
+        if set(vals) - _CHAMPS_MODIFIABLES_SI_VALIDE and any(rec._est_verrouille() for rec in self):
             raise UserError("Un bon d'intervention validé n'est plus modifiable.")
+        if 'signature' in vals:
+            vals['date_signature'] = fields.Datetime.now() if vals['signature'] else False
         return super().write(vals)
 
     def unlink(self):
-        if any(rec.state == 'valide' for rec in self):
+        if any(rec._est_verrouille() for rec in self):
             raise UserError("Un bon d'intervention validé ne peut pas être supprimé.")
         return super().unlink()
 
@@ -109,7 +124,11 @@ class IsSavIntervention(models.Model):
         a_valider.write({'state': 'valide'})
 
     def action_remettre_en_cours(self):
-        self.filtered(lambda r: r.state == 'valide').write({'state': 'en_cours'})
+        """Repasse le bon en cours et efface la signature : le client devra signer à nouveau"""
+        self.filtered(lambda r: r._est_verrouille()).write({
+            'state': 'en_cours',
+            'signature': False,
+        })
 
     def action_print_bon_intervention(self):
         self.ensure_one()
@@ -129,7 +148,7 @@ class IsSavInterventionFourniture(models.Model):
     quantite = fields.Float(string="Quantité", default=1.0)
 
     def _check_intervention_modifiable(self):
-        if any(rec.intervention_id.state == 'valide' for rec in self):
+        if any(rec.intervention_id._est_verrouille() for rec in self):
             raise UserError("Les fournitures d'un bon d'intervention validé ne sont plus modifiables.")
 
     @api.model_create_multi

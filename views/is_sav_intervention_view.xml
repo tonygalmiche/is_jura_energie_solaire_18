@@ -24,6 +24,8 @@
                 <field name="zone_html" widget="html" string="Zone d'intervention" optional="show"/>
                 <field name="description" optional="show"/>
                 <field name="duree" widget="float_time" optional="show"/>
+                <field name="signataire" optional="show"/>
+                <field name="date_signature" optional="show"/>
                 <field name="state" widget="badge" optional="show"
                     decoration-info="state == 'en_cours'"
                     decoration-success="state == 'valide'"
@@ -53,6 +55,8 @@
                 <field name="zone_html" widget="html" string="Zone d'intervention" optional="show"/>
                 <field name="description" optional="show"/>
                 <field name="duree" widget="float_time" optional="show"/>
+                <field name="signataire" optional="show"/>
+                <field name="date_signature" optional="show"/>
                 <field name="state" widget="badge" optional="show"
                     decoration-info="state == 'en_cours'"
                     decoration-success="state == 'valide'"
@@ -108,6 +112,13 @@
                                 <field name="quantite"/>
                             </list>
                         </field>
+                    </group>
+                    <group string="Signature du client">
+                        <group>
+                            <field name="signataire" readonly="state == 'valide'"/>
+                            <field name="signature" widget="signature" options="{'full_name': 'signataire'}" readonly="state == 'valide'"/>
+                            <field name="date_signature" invisible="not date_signature"/>
+                        </group>
                     </group>
                 </sheet>
                 <chatter/>
