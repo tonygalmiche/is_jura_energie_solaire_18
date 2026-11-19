@@ -21,9 +21,6 @@
                 <field name="client_id" optional="hide"/>
                 <field name="intervenant_ids" widget="many2many_tags" optional="show"/>
                 <field name="description" optional="show"/>
-                <field name="heure_debut" widget="float_time" optional="show"/>
-                <field name="heure_fin" widget="float_time" optional="show"/>
-                <field name="temps_trajet" widget="float_time" optional="show"/>
                 <field name="duree" widget="float_time" optional="show"/>
                 <field name="state" widget="badge" optional="show"
                     decoration-info="state == 'en_cours'"
@@ -46,9 +43,6 @@
                 <field name="client_id" optional="show"/>
                 <field name="intervenant_ids" widget="many2many_tags" optional="show"/>
                 <field name="description" optional="show"/>
-                <field name="heure_debut" widget="float_time" optional="show"/>
-                <field name="heure_fin" widget="float_time" optional="show"/>
-                <field name="temps_trajet" widget="float_time" optional="show"/>
                 <field name="duree" widget="float_time" optional="show"/>
                 <field name="state" widget="badge" optional="show"
                     decoration-info="state == 'en_cours'"
@@ -83,10 +77,7 @@
                         <group>
                             <field name="date" readonly="state == 'valide'"/>
                             <field name="intervenant_ids" widget="many2many_tags" readonly="state == 'valide'"/>
-                            <field name="heure_debut" widget="float_time" readonly="state == 'valide'"/>
-                            <field name="heure_fin" widget="float_time" readonly="state == 'valide'"/>
-                            <field name="temps_trajet" widget="float_time" readonly="state == 'valide'"/>
-                            <field name="duree" widget="float_time" readonly="1"/>
+                            <field name="duree" widget="float_time" readonly="state == 'valide'"/>
                         </group>
                     </group>
                     <group string="Description de l'intervention">

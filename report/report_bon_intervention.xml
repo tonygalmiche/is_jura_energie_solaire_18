@@ -141,10 +141,6 @@
                         <td class="bi-label">Durée de l'intervention :</td>
                         <td class="bi-value"><span t-field="o.duree" t-options="{'widget': 'float_time'}"/></td>
                     </tr>
-                    <tr t-if="o.temps_trajet">
-                        <td class="bi-label">Temps de trajet :</td>
-                        <td class="bi-value"><span t-field="o.temps_trajet" t-options="{'widget': 'float_time'}"/></td>
-                    </tr>
                 </table>
 
                 <div style="page-break-inside: avoid; margin-top: 20px;">

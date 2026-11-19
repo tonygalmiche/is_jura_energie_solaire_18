@@ -42,31 +42,17 @@ class IsSavIntervention(models.Model):
     )
     description = fields.Text(string="Description de l'intervention", required=True)
     fourniture_ids = fields.One2many('is.sav.intervention.fourniture', 'intervention_id', string="Fourniture")
+    # Heures et temps de trajet : plus saisis (masqués), conservés pour les anciens bons
     heure_debut = fields.Float(string="Heure de début (trajet inclus)")
     heure_fin = fields.Float(string="Heure de fin (trajet inclus)")
-    duree = fields.Float(string="Durée intervention", compute='_compute_duree', store=True)
+    duree = fields.Float(string="Durée intervention")
     temps_trajet = fields.Float(string="Temps de trajet")
-
-    @api.depends('heure_debut', 'heure_fin', 'temps_trajet')
-    def _compute_duree(self):
-        for rec in self:
-            rec.duree = max(rec.heure_fin - rec.heure_debut - (rec.temps_trajet or 0.0), 0.0)
 
     @api.constrains('intervenant_ids')
     def _check_intervenant_ids(self):
         for rec in self:
             if not rec.intervenant_ids:
                 raise ValidationError("Veuillez indiquer au moins un intervenant.")
-
-    @api.constrains('heure_debut', 'heure_fin', 'temps_trajet')
-    def _check_heures(self):
-        for rec in self:
-            if not rec.heure_debut and not rec.heure_fin:
-                continue
-            if rec.heure_fin <= rec.heure_debut:
-                raise ValidationError("L'heure de fin doit être supérieure à l'heure de début.")
-            if rec.heure_fin - rec.heure_debut - (rec.temps_trajet or 0.0) <= 0.0:
-                raise ValidationError("La durée de l'intervention (après déduction du temps de trajet) doit être supérieure à 0.")
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -86,7 +72,11 @@ class IsSavIntervention(models.Model):
         return super().unlink()
 
     def action_valider(self):
-        self.filtered(lambda r: r.state == 'en_cours').write({'state': 'valide'})
+        a_valider = self.filtered(lambda r: r.state == 'en_cours')
+        sans_duree = a_valider.filtered(lambda r: r.duree <= 0.0)
+        if sans_duree:
+            raise UserError("Veuillez indiquer la durée de l'intervention avant de valider (%s)." % ", ".join(sans_duree.mapped('numero')))
+        a_valider.write({'state': 'valide'})
 
     def action_remettre_en_cours(self):
         self.filtered(lambda r: r.state == 'valide').write({'state': 'en_cours'})
