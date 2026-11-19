@@ -40,6 +40,7 @@ class IsSavIntervention(models.Model):
     email = fields.Char(
         string="E-mail du client",
         compute='_compute_email', store=True, readonly=False,
+        copy=False,  # recalculé depuis le client à la duplication (copié par défaut, car stocké et modifiable)
         help="Adresse utilisée par défaut pour l'envoi du bon par e-mail (reprise du client, modifiable)",
     )
 
