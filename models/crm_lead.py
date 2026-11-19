@@ -25,7 +25,7 @@ class crm_lead(models.Model):
     is_adresse      = fields.Char("Adresse", size=60, tracking=True, required=False)
     is_localisation = fields.Char("Localisation", tracking=True)
     is_centrale_id  = fields.Many2one('is.centrale', string="Centrale", tracking=True)
-    is_sav_id       = fields.Many2one('is.sav', string="SAV", compute='_compute_is_sav_id') # Lien stocké sur is.sav.lead_id
+    is_sav_id       = fields.Many2one('is.sav', string="SAV", compute='_compute_is_sav_id', search='_search_is_sav_id') # Lien stocké sur is.sav.lead_id
     is_sav_read_ok  = fields.Boolean(compute='_compute_is_sav_id')
     is_date_changement_etat = fields.Datetime("Date de dernier changement d'état", readonly=False, tracking=True)
     is_date_premiere_reunion  = fields.Date("Date de première réunion", readonly=True, tracking=True)
@@ -78,6 +78,16 @@ class crm_lead(models.Model):
             sav = sav_by_lead.get(lead.id, self.env['is.sav'])
             lead.is_sav_id = sav
             lead.is_sav_read_ok = bool(sav) and sav.has_access('read')
+
+    def _search_is_sav_id(self, operator, value):
+        """Recherche sur le SAV lié (lien stocké sur is.sav.lead_id), ex. opportunités sans SAV : [('is_sav_id', '=', False)]"""
+        # sudo : tenir compte de tous les SAV, même ceux auxquels l'utilisateur n'a pas accès
+        Sav = self.env['is.sav'].sudo()
+        if operator in ('=', '!=') and not value:
+            lead_ids = Sav.search([('lead_id', '!=', False)]).mapped('lead_id').ids
+            return [('id', 'not in' if operator == '=' else 'in', lead_ids)]
+        lead_ids = Sav.search([('lead_id', '!=', False), ('id', operator, value)]).mapped('lead_id').ids
+        return [('id', 'in', lead_ids)]
 
     def action_open_sav(self):
         self.ensure_one()

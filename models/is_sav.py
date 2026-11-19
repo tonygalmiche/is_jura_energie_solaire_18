@@ -128,6 +128,7 @@ class IsSav(models.Model):
     lead_id               = fields.Many2one('crm.lead', string="Opportunité", tracking=True, copy=False, index=True)
     lead_create_ok        = fields.Boolean(compute='_compute_lead_access')
     lead_read_ok          = fields.Boolean(compute='_compute_lead_access')
+    crm_access_ok         = fields.Boolean(compute='_compute_lead_access')  # Champ « Opportunité » masqué sans accès au CRM
 
     _sql_constraints = [
         ('lead_id_uniq', 'unique(lead_id)', "Cette opportunité est déjà liée à un autre SAV."),
@@ -142,7 +143,9 @@ class IsSav(models.Model):
     def _compute_lead_access(self):
         """Affichage des boutons Créer / Voir l'opportunité selon les droits de l'utilisateur"""
         create_ok = self.env['crm.lead'].has_access('create')
+        read_ok = self.env['crm.lead'].has_access('read')
         for record in self:
+            record.crm_access_ok = read_ok
             # La création écrit aussi lead_id sur le SAV
             record.lead_create_ok = create_ok and record.has_access('write')
             record.lead_read_ok = bool(record.lead_id) and record.lead_id.has_access('read')
