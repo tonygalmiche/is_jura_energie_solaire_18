@@ -87,8 +87,8 @@
         <field name="arch" type="xml">
             <list>
                 <field name="sequence" widget="handle"/>
-                <field name="maintenance_id" widget="many2one_clickable"/>
-                <field name="centrale_id" widget="many2one_clickable"/>
+                <field name="maintenance_id" widget="many2one"/>
+                <field name="centrale_id" widget="many2one"/>
                 <field name="name"/>
                 <field name="onduleur_id"/>
                 <field name="numero_ordre"/>

@@ -78,7 +78,7 @@
                 <field name="is_sous_secteur"         optional="show" widget="badge"/>
                 <field name="is_adresse"              optional="show"/>
                 <field name="is_localisation"         optional="show" />
-                <field name="is_centrale_id"          optional="show"  widget="many2one_clickable"/>
+                <field name="is_centrale_id"          optional="show"  widget="many2one"/>
                 <field name="is_date_changement_etat"    optional="show" />
                 <field name="is_date_premiere_reunion"   optional="show" />
                 <field name="is_delai_prise_en_compte"   optional="show" />

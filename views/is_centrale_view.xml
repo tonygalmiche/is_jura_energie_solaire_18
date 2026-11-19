@@ -24,7 +24,7 @@
                 <field name="puissance_panneau_totale" optional="hide"/>
                 <field name="puissance_onduleur_totale" optional="hide"/>
 
-                <field name="client_id" optional="show" widget="many2one_clickable"/>
+                <field name="client_id" optional="show" widget="many2one"/>
                 <field name="client_a_risque" optional="hide" widget="badge"
                     decoration-danger="client_a_risque and client_a_risque != 'non'"/>
 
@@ -622,7 +622,7 @@
                         <page string="Achats" invisible="not purchase_line_ids"  groups="purchase.group_purchase_user" >
                             <field name="purchase_line_ids" nolabel="1" readonly="1">
                                 <list>
-                                    <field name="order_id" widget="many2one_clickable"/>
+                                    <field name="order_id" widget="many2one"/>
                                     <field name="date_order" string="Date"/>
                                     <field name="product_id"/>
                                     <field name="date_planned" string="Date prévue"/>
@@ -1553,7 +1553,7 @@
         <field name="model">is.centrale.facture</field>
         <field name="arch" type="xml">
             <list create="false">
-                <field name="centrale_id" string="Dossier" widget="many2one_clickable"/>
+                <field name="centrale_id" string="Dossier" widget="many2one"/>
                 <field name="date_devis"/>
                 <field name="montant_devis"/>
                 <field name="date"/>

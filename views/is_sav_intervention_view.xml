@@ -45,7 +45,7 @@
         <field name="arch" type="xml">
             <list>
                 <field name="numero"/>
-                <field name="sav_id" widget="many2one_clickable" optional="show"/>
+                <field name="sav_id" widget="many2one" optional="show"/>
                 <field name="date"/>
                 <field name="centrale_id" optional="show"/>
                 <field name="secteur" optional="show"/>
