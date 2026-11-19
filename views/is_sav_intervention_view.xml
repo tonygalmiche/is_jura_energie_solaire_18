@@ -20,6 +20,7 @@
                 <field name="secteur" optional="hide"/>
                 <field name="client_id" optional="hide"/>
                 <field name="intervenant_ids" widget="many2many_tags" optional="show"/>
+                <field name="zone_id" optional="show"/>
                 <field name="description" optional="show"/>
                 <field name="duree" widget="float_time" optional="show"/>
                 <field name="state" widget="badge" optional="show"
@@ -42,6 +43,7 @@
                 <field name="secteur" optional="show"/>
                 <field name="client_id" optional="show"/>
                 <field name="intervenant_ids" widget="many2many_tags" optional="show"/>
+                <field name="zone_id" optional="show"/>
                 <field name="description" optional="show"/>
                 <field name="duree" widget="float_time" optional="show"/>
                 <field name="state" widget="badge" optional="show"
@@ -77,6 +79,7 @@
                         <group>
                             <field name="date" readonly="state == 'valide'"/>
                             <field name="intervenant_ids" widget="many2many_tags" readonly="state == 'valide'"/>
+                            <field name="zone_id" options="{'no_create': True, 'no_open': True}" readonly="state == 'valide'"/>
                             <field name="duree" widget="float_time" readonly="state == 'valide'"/>
                         </group>
                     </group>
@@ -99,10 +102,35 @@
         </field>
     </record>
 
+    <record id="is_sav_intervention_search_view" model="ir.ui.view">
+        <field name="name">is.sav.intervention.search</field>
+        <field name="model">is.sav.intervention</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="numero"/>
+                <field name="sav_id"/>
+                <field name="centrale_id"/>
+                <field name="client_id"/>
+                <field name="intervenant_ids"/>
+                <field name="zone_id"/>
+                <filter string="En cours" name="en_cours" domain="[('state', '=', 'en_cours')]"/>
+                <filter string="Validé"   name="valide"   domain="[('state', '=', 'valide')]"/>
+                <separator/>
+                <filter string="Sans zone d'intervention" name="sans_zone" domain="[('zone_id', '=', False)]"/>
+                <group expand="0" string="Regrouper par">
+                    <filter string="Zone d'intervention" name="group_by_zone"  context="{'group_by': 'zone_id'}"/>
+                    <filter string="Etat"                name="group_by_state" context="{'group_by': 'state'}"/>
+                    <filter string="Date"                name="group_by_date"  context="{'group_by': 'date'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
     <record id="is_sav_intervention_action" model="ir.actions.act_window">
         <field name="name">Interventions SAV</field>
         <field name="res_model">is.sav.intervention</field>
         <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="is_sav_intervention_search_view"/>
         <field name="view_ids" eval="[(5, 0, 0),
             (0, 0, {'view_mode': 'list', 'view_id': ref('is_sav_intervention_list_view_menu')}),
             (0, 0, {'view_mode': 'form', 'view_id': ref('is_sav_intervention_form_view')})]"/>

@@ -80,6 +80,10 @@
                         <td class="bi-label">Intervenant :</td>
                         <td class="bi-value"><t t-esc="', '.join(o.intervenant_ids.mapped('name'))"/></td>
                     </tr>
+                    <tr t-if="o.zone_id">
+                        <td class="bi-label">Zone d'intervention :</td>
+                        <td class="bi-value"><span t-field="o.zone_id.name"/></td>
+                    </tr>
                     <tr t-if="o.secteur">
                         <td class="bi-label">Secteur :</td>
                         <td class="bi-value"><span t-field="o.secteur"/></td>

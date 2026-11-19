@@ -40,6 +40,7 @@ class IsSavIntervention(models.Model):
         domain=[('share', '=', False)],
         required=True,
     )
+    zone_id = fields.Many2one('is.sav.intervention.zone', string="Zone d'intervention")
     description = fields.Text(string="Description de l'intervention", required=True)
     fourniture_ids = fields.One2many('is.sav.intervention.fourniture', 'intervention_id', string="Fourniture")
     # Heures et temps de trajet : plus saisis (masqués), conservés pour les anciens bons
@@ -121,3 +122,13 @@ class IsSavInterventionFourniture(models.Model):
         if self.product_id:
             self.reference = self.product_id.default_code
             self.designation = self.product_id.name
+
+
+class IsSavInterventionZone(models.Model):
+    _name = 'is.sav.intervention.zone'
+    _description = "Zone d'intervention"
+    _order = 'sequence, name'
+
+    sequence = fields.Integer(string="Séquence", default=10)
+    name = fields.Char(string="Zone d'intervention", required=True)
+    active = fields.Boolean(string="Actif", default=True)
