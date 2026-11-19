@@ -79,6 +79,7 @@
                     <button name="action_valider" string="Valider" type="object" class="oe_highlight" icon="fa-check" invisible="state != 'en_cours'"/>
                     <button name="action_remettre_en_cours" string="Remettre en cours" type="object" icon="fa-undo" invisible="state != 'valide'"/>
                     <button name="action_print_bon_intervention" string="Imprimer le bon d'intervention" type="object" icon="fa-print"/>
+                    <button name="action_envoyer_mail" string="Envoyer par e-mail" type="object" icon="fa-envelope"/>
                     <field name="state" widget="statusbar"/>
                 </header>
                 <sheet>

@@ -130,6 +130,26 @@ class IsSavIntervention(models.Model):
             'signature': False,
         })
 
+    def action_envoyer_mail(self):
+        """Ouvre l'assistant d'envoi avec le modèle du bon d'intervention (PDF joint)"""
+        self.ensure_one()
+        template = self.env.ref('is_jura_energie_solaire_18.mail_template_bon_intervention', raise_if_not_found=False)
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'mail.compose.message',
+            'view_mode': 'form',
+            'views': [(False, 'form')],
+            'target': 'new',
+            'context': {
+                'default_model': self._name,
+                'default_res_ids': self.ids,
+                'default_composition_mode': 'comment',
+                'default_template_id': template.id if template else False,
+                'default_email_layout_xmlid': 'mail.mail_notification_light',
+                'force_email': True,
+            },
+        }
+
     def action_print_bon_intervention(self):
         self.ensure_one()
         return self.env.ref('is_jura_energie_solaire_18.action_report_bon_intervention').report_action(self)
