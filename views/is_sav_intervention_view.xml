@@ -20,12 +20,18 @@
                 <field name="secteur" optional="hide"/>
                 <field name="client_id" optional="hide"/>
                 <field name="intervenant_ids" widget="many2many_tags" optional="show"/>
-                <field name="zone_id" optional="show"/>
+                <field name="zone_id" column_invisible="1"/>
+                <field name="zone_html" widget="html" string="Zone d'intervention" optional="show"/>
                 <field name="description" optional="show"/>
                 <field name="duree" widget="float_time" optional="show"/>
                 <field name="state" widget="badge" optional="show"
                     decoration-info="state == 'en_cours'"
                     decoration-success="state == 'valide'"
+                />
+                <field name="facturation" widget="badge" optional="show"
+                    decoration-warning="facturation == 'a_facturer'"
+                    decoration-muted="facturation == 'ne_pas_facturer'"
+                    decoration-info="facturation == 'a_definir'"
                 />
             </list>
         </field>
@@ -43,12 +49,18 @@
                 <field name="secteur" optional="show"/>
                 <field name="client_id" optional="show"/>
                 <field name="intervenant_ids" widget="many2many_tags" optional="show"/>
-                <field name="zone_id" optional="show"/>
+                <field name="zone_id" column_invisible="1"/>
+                <field name="zone_html" widget="html" string="Zone d'intervention" optional="show"/>
                 <field name="description" optional="show"/>
                 <field name="duree" widget="float_time" optional="show"/>
                 <field name="state" widget="badge" optional="show"
                     decoration-info="state == 'en_cours'"
                     decoration-success="state == 'valide'"
+                />
+                <field name="facturation" widget="badge" optional="show"
+                    decoration-warning="facturation == 'a_facturer'"
+                    decoration-muted="facturation == 'ne_pas_facturer'"
+                    decoration-info="facturation == 'a_definir'"
                 />
             </list>
         </field>
@@ -80,6 +92,7 @@
                             <field name="date" readonly="state == 'valide'"/>
                             <field name="intervenant_ids" widget="many2many_tags" readonly="state == 'valide'"/>
                             <field name="zone_id" options="{'no_create': True, 'no_open': True}" readonly="state == 'valide'"/>
+                            <field name="facturation"/>
                             <field name="duree" widget="float_time" readonly="state == 'valide'"/>
                         </group>
                     </group>
@@ -117,8 +130,13 @@
                 <filter string="Validé"   name="valide"   domain="[('state', '=', 'valide')]"/>
                 <separator/>
                 <filter string="Sans zone d'intervention" name="sans_zone" domain="[('zone_id', '=', False)]"/>
+                <separator/>
+                <filter string="À facturer"      name="a_facturer"      domain="[('facturation', '=', 'a_facturer')]"/>
+                <filter string="Ne pas facturer" name="ne_pas_facturer" domain="[('facturation', '=', 'ne_pas_facturer')]"/>
+                <filter string="À définir"       name="a_definir"       domain="[('facturation', '=', 'a_definir')]"/>
                 <group expand="0" string="Regrouper par">
                     <filter string="Zone d'intervention" name="group_by_zone"  context="{'group_by': 'zone_id'}"/>
+                    <filter string="Facturation"         name="group_by_facturation" context="{'group_by': 'facturation'}"/>
                     <filter string="Etat"                name="group_by_state" context="{'group_by': 'state'}"/>
                     <filter string="Date"                name="group_by_date"  context="{'group_by': 'date'}"/>
                 </group>

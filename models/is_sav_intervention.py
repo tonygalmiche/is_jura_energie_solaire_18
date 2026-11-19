@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 from odoo import fields, models, api
 from odoo.exceptions import ValidationError, UserError
+from odoo.tools import html_escape
+from .is_sav import _ODOO_COLORS
 
 
-# Champs pouvant être modifiés sur un bon d'intervention validé (changement d'état et chatter)
-_CHAMPS_MODIFIABLES_SI_VALIDE = {'state', 'message_main_attachment_id'}
+# Champs pouvant être modifiés sur un bon d'intervention validé (changement d'état, facturation et chatter)
+_CHAMPS_MODIFIABLES_SI_VALIDE = {'state', 'facturation', 'message_main_attachment_id'}
 
 
 class IsSavIntervention(models.Model):
@@ -41,6 +43,18 @@ class IsSavIntervention(models.Model):
         required=True,
     )
     zone_id = fields.Many2one('is.sav.intervention.zone', string="Zone d'intervention")
+    zone_html = fields.Html(compute='_compute_zone_html', string="Zone d'intervention (couleur)", sanitize=False)
+    facturation = fields.Selection(
+        [
+            ('a_facturer',      'À facturer'),
+            ('ne_pas_facturer', 'Ne pas facturer'),
+            ('a_definir',       'À définir'),
+        ],
+        string="Facturation",
+        default='a_definir',
+        required=True,
+        tracking=True,
+    )
     description = fields.Text(string="Description de l'intervention", required=True)
     fourniture_ids = fields.One2many('is.sav.intervention.fourniture', 'intervention_id', string="Fourniture")
     # Heures et temps de trajet : plus saisis (masqués), conservés pour les anciens bons
@@ -48,6 +62,21 @@ class IsSavIntervention(models.Model):
     heure_fin = fields.Float(string="Heure de fin (trajet inclus)")
     duree = fields.Float(string="Durée intervention")
     temps_trajet = fields.Float(string="Temps de trajet")
+
+    @api.depends('zone_id', 'zone_id.name', 'zone_id.color')
+    def _compute_zone_html(self):
+        for rec in self:
+            zone = rec.zone_id
+            if zone:
+                name = html_escape(zone.name or '')
+                color = _ODOO_COLORS.get(zone.color, '#FFFFFF')
+                rec.zone_html = (
+                    f'<span style="background-color: {color}; border: 1px solid rgba(0,0,0,0.15); '
+                    f'color: #000; padding: 2px 10px; '
+                    f'border-radius: 50rem; white-space: nowrap; font-size: 0.875em;">{name}</span>'
+                )
+            else:
+                rec.zone_html = ''
 
     @api.constrains('intervenant_ids')
     def _check_intervenant_ids(self):
@@ -131,4 +160,5 @@ class IsSavInterventionZone(models.Model):
 
     sequence = fields.Integer(string="Séquence", default=10)
     name = fields.Char(string="Zone d'intervention", required=True)
+    color = fields.Integer(string="Couleur", default=0)
     active = fields.Boolean(string="Actif", default=True)
