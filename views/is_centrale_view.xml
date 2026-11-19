@@ -310,7 +310,7 @@
                                 <field name="edf_informations"/>                            
                             </group>
                         </page>
-                        <page string="Infos techniques" invisible="secteur in ['th']">
+                        <page string="IF" invisible="secteur in ['th']">
                             <group string="Informations techniques">
                                 <group>
                                     <field name="type_communication"/>
@@ -441,7 +441,7 @@
                                 <button string="Créer une commande d'achat" name="action_create_purchase_from_it" type="object" class="btn btn-primary"/>
                             </div>
                         </page>
-                        <page string="Plans d'exécution" invisible="secteur not in ['gp', 'st_gp', 're']">
+                        <page string="PAC" invisible="secteur not in ['gp', 'st_gp', 're']">
                             <group invisible="secteur not in ['gp', 'st_gp']">
                                 <field name="plan_masse_ids" widget="many2many_binary"/>
                             </group>
@@ -492,7 +492,7 @@
                                 </list>
                             </field>
                         </page>
-                        <page string="Maintenance" invisible="secteur != 'gp'">
+                        <page string="CDC" invisible="secteur != 'gp'">
                             <group>
                                 <group>
                                     <field name="affaire_id"/>
