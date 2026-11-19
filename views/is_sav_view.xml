@@ -220,7 +220,7 @@
                 <separator/>
                 <filter string="TH" name="secteur_th" domain="[('secteur','=','th')]"/>
                 <filter string="SI" name="secteur_si" domain="[('secteur','=','si')]"/>
-                <filter string="PV" name="secteur_pv" domain="[('secteur','in',['re','gp'])]"/>
+                <filter string="PV" name="secteur_pv" domain="[('secteur','in',['re','gp','st_gp'])]"/>
                 <separator/>
                 <filter string="Clients à risque" name="clients_a_risque" domain="[('is_client_a_risque','in',['oui','facture_non_paye','litige_en_cours'])]"/>
                 <group expand="0" string="Grouper par">

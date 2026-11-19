@@ -15,7 +15,7 @@
 
 
 
-                <field name="das" invisible="secteur!='gp'" optional="show"/>
+                <field name="das" invisible="secteur not in ['gp', 'st_gp']" optional="show"/>
                 <field name="adresse" optional="hide"/>
                 <field name="localisation" optional="hide"/>
 
@@ -123,7 +123,7 @@
                             <field name="name"/>
                             <field name="secteur"/>
                             <field name="type_installation_ids" widget="many2many_tags" invisible="secteur != 'th'"/>
-                            <field name="das" invisible="secteur!='gp'"/>
+                            <field name="das" invisible="secteur not in ['gp', 'st_gp']"/>
                             <field name="adresse"/>
                             <field name="localisation"/>
                             <field name="localisation_google_maps_url" widget="url" string="📍 Maps" invisible="not localisation"/>
@@ -133,7 +133,7 @@
                             <field name="puissance_onduleur_demandee" invisible="secteur in ['th']"/>
                             <field name="puissance_panneau_totale"    invisible="secteur in ['th']"/>
                             <field name="puissance_onduleur_totale"   invisible="secteur in ['th']"/>
-                            <field name="is_afficher_administratif" string="Afficher l’administratif" widget="boolean_toggle"/>
+                            <field name="is_afficher_administratif" string="Afficher l’administratif" widget="boolean_toggle" invisible="secteur == 'st_gp'"/>
                             <field name="is_chantier_en_cours" string="Chantier en cours" widget="boolean_toggle"/>
                         </group>
                     </group>
@@ -170,7 +170,7 @@
                                 </list>
                             </field>
                         </page>
-                        <page string="DP/PC" invisible="not is_afficher_administratif">
+                        <page string="DP/PC" invisible="secteur == 'st_gp' or not is_afficher_administratif">
                             <field name="is_chantier_en_cours" string="Chantier en cours" widget="boolean_toggle"/>
                             <group>
                                 <group>
@@ -186,7 +186,7 @@
                                 <field name="dp_attachment_ids" widget="many2many_binary"/>
                             </group>
                         </page>
-                        <page string="PTF" invisible="secteur in ['th'] or not is_afficher_administratif">
+                        <page string="PTF" invisible="secteur in ['th', 'st_gp'] or not is_afficher_administratif">
                             <field name="is_chantier_en_cours" string="Chantier en cours" widget="boolean_toggle"/>
                             <group>
                                 <group>
@@ -200,7 +200,7 @@
                                 <field name="ptf_informations"/>                            
                             </group>
                         </page>
-                        <page string="CRD" invisible="secteur in ['re','th'] or not is_afficher_administratif">
+                        <page string="CRD" invisible="secteur in ['re','th','st_gp'] or not is_afficher_administratif">
                             <field name="is_chantier_en_cours" string="Chantier en cours" widget="boolean_toggle"/>
                             <group>
                                 <group>
@@ -216,7 +216,7 @@
                                 <field name="crd_signe_ids" widget="many2many_binary"/>
                             </group>
                         </page>
-                        <page string="CARD-I" invisible="secteur in ['re', 'th'] or loget == 'tarif_bleu' or not is_afficher_administratif">
+                        <page string="CARD-I" invisible="secteur in ['re', 'th', 'st_gp'] or loget == 'tarif_bleu' or not is_afficher_administratif">
                             <field name="is_chantier_en_cours" string="Chantier en cours" widget="boolean_toggle"/>
                             <group>
                                 <group>
@@ -236,7 +236,7 @@
 
 
                         </page>
-                        <page string="Socotec" invisible="secteur in ['re', 'th'] or not is_afficher_administratif">
+                        <page string="Socotec" invisible="secteur in ['re', 'th', 'st_gp'] or not is_afficher_administratif">
                             <field name="is_chantier_en_cours" string="Chantier en cours" widget="boolean_toggle"/>
                             <group>
                                 <group>
@@ -251,7 +251,7 @@
                                 <field name="socotec_conformite_electrique_ids" widget="many2many_binary"/>
                             </group>
                         </page>
-                        <page string="Consuel" invisible="secteur in ['th'] or not is_afficher_administratif">
+                        <page string="Consuel" invisible="secteur in ['th', 'st_gp'] or not is_afficher_administratif">
                             <field name="is_chantier_en_cours" string="Chantier en cours" widget="boolean_toggle"/>
                             <group>
                                 <group>
@@ -267,7 +267,7 @@
                                 <field name="consuel_attachment_ids" widget="many2many_binary"/>
                             </group>
                         </page>
-                        <page string="Mise en service" invisible="secteur in ['th'] or not is_afficher_administratif">
+                        <page string="Mise en service" invisible="secteur in ['th', 'st_gp'] or not is_afficher_administratif">
                             <field name="is_chantier_en_cours" string="Chantier en cours" widget="boolean_toggle"/>
                             <group>
                                 <group>
@@ -279,7 +279,7 @@
                                 <field name="mes_informations"/>                            
                             </group>
                         </page>
-                        <page string="S21" invisible="secteur in ['re','th'] or not is_afficher_administratif">
+                        <page string="S21" invisible="secteur in ['re','th','st_gp'] or not is_afficher_administratif">
                             <field name="is_chantier_en_cours" string="Chantier en cours" widget="boolean_toggle"/>
                             <group>
                                 <group>
@@ -295,7 +295,7 @@
                                 <field name="s21_attestation_conformite_ids" widget="many2many_binary"/>
                             </group>
                         </page>
-                        <page string="EDF AO" invisible="secteur in ['th'] or not is_afficher_administratif">
+                        <page string="EDF AO" invisible="secteur in ['th', 'st_gp'] or not is_afficher_administratif">
                             <field name="is_chantier_en_cours" string="Chantier en cours" widget="boolean_toggle"/>
                             <group>
                                 <group>
@@ -441,8 +441,8 @@
                                 <button string="Créer une commande d'achat" name="action_create_purchase_from_it" type="object" class="btn btn-primary"/>
                             </div>
                         </page>
-                        <page string="Plans d'exécution" invisible="secteur not in ['gp', 're']">
-                            <group invisible="secteur != 'gp'">
+                        <page string="Plans d'exécution" invisible="secteur not in ['gp', 'st_gp', 're']">
+                            <group invisible="secteur not in ['gp', 'st_gp']">
                                 <field name="plan_masse_ids" widget="many2many_binary"/>
                             </group>
                             <group>
@@ -463,7 +463,7 @@
                             <group>
                                 <field name="plan_schema_unifilaire_ids" widget="many2many_binary"/>
                             </group>
-                            <group invisible="secteur != 'gp'">
+                            <group invisible="secteur not in ['gp', 'st_gp']">
                                 <field name="plan_note_calculs_ids" widget="many2many_binary"/>
                             </group>
                             <group>
@@ -1624,6 +1624,15 @@
         <field name="view_mode">list</field>
         <field name="search_view_id" ref="view_is_centrale_facture_search"/>
         <field name="domain">[('secteur', '=', 'irve')]</field>
+        <field name="context">{'search_default_non_facture_100': 1}</field>
+    </record>
+
+    <record id="is_centrale_facture_st_gp_action" model="ir.actions.act_window">
+        <field name="name">Suivi facturation Sous-traitance GP</field>
+        <field name="res_model">is.centrale.facture</field>
+        <field name="view_mode">list</field>
+        <field name="search_view_id" ref="view_is_centrale_facture_search"/>
+        <field name="domain">[('secteur', '=', 'st_gp')]</field>
         <field name="context">{'search_default_non_facture_100': 1}</field>
     </record>
 

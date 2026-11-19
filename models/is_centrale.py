@@ -11,6 +11,7 @@ SECTEUR_SELECTION = [
     ('th', 'TH'),
     ('si', 'SI'),
     ('irve', 'IRVE'),
+    ('st_gp', 'Sous-traitance GP'),
 ]
 
 
@@ -1291,6 +1292,7 @@ class IsCentrale(models.Model):
             'th'  : 'is_jura_energie_solaire_18.is_calendar_centrale_th_action',
             'si'  : 'is_jura_energie_solaire_18.is_calendar_centrale_si_action',
             'irve': 'is_jura_energie_solaire_18.is_calendar_centrale_irve_action',
+            'st_gp': 'is_jura_energie_solaire_18.is_calendar_centrale_st_gp_action',
         }
         xml_id = secteur_action_map.get(self.secteur, 'calendar.action_calendar_event')
         action = self.env["ir.actions.actions"]._for_xml_id(xml_id)

@@ -57,6 +57,7 @@
     <menuitem id="is_centrale_facture_th_menu"   name="TH"   parent="is_centrale_facture_main_menu" action="is_centrale_facture_th_action"   sequence="30"/>
     <menuitem id="is_centrale_facture_si_menu"   name="SI"   parent="is_centrale_facture_main_menu" action="is_centrale_facture_si_action"   sequence="40"/>
     <menuitem id="is_centrale_facture_irve_menu" name="IRVE" parent="is_centrale_facture_main_menu" action="is_centrale_facture_irve_action" sequence="50"/>
+    <menuitem id="is_centrale_facture_st_gp_menu" name="Sous-traitance GP" parent="is_centrale_facture_main_menu" action="is_centrale_facture_st_gp_action" sequence="60"/>
 
     <!-- JES / Calendriers -->
     <menuitem id="is_calendrier_main_menu" name="Calendriers" parent="is_crm_root_menu" sequence="15"/>
@@ -65,6 +66,7 @@
     <menuitem id="is_calendrier_th_menu"          name="Centrales TH"   parent="is_calendrier_main_menu" action="is_calendar_centrale_th_action"   sequence="30"/>
     <menuitem id="is_calendrier_si_menu"          name="Centrales SI"   parent="is_calendrier_main_menu" action="is_calendar_centrale_si_action"   sequence="40"/>
     <menuitem id="is_calendrier_irve_menu"        name="Centrales IRVE" parent="is_calendrier_main_menu" action="is_calendar_centrale_irve_action" sequence="50"/>
+    <menuitem id="is_calendrier_st_gp_menu"       name="Centrales Sous-traitance GP" parent="is_calendrier_main_menu" action="is_calendar_centrale_st_gp_action" sequence="55"/>
     <menuitem id="is_calendrier_sav_menu"         name="SAV"            parent="is_calendrier_main_menu" action="is_calendar_sav_action"           sequence="60"/>
     <menuitem id="is_calendrier_maintenance_menu" name="Maintenance"    parent="is_calendrier_main_menu" action="is_calendar_maintenance_action"   sequence="70"/>
     <menuitem id="is_calendrier_kanban_menu"      name="Vue Kanban"     parent="is_calendrier_main_menu" action="is_calendar_all_kanban_action"    sequence="80"/>
